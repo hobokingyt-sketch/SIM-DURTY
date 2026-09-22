@@ -2,7 +2,7 @@
 
 This is the recovery entry point for SIM-DURTY.
 
-The project is designed to be developed primarily through chat by a non-coding owner while engineering work is performed against this repository. A fresh engineering session must be able to recover the project without relying on old chat history.
+The project is designed to be developed primarily through chat by a non-coding owner while engineering work is performed against this repository.
 
 ## Read in this order
 
@@ -13,62 +13,52 @@ The project is designed to be developed primarily through chat by a non-coding o
 5. `/docs/architecture/overview.md`
 6. `/docs/architecture/dependency_rules.md`
 7. `/docs/architecture/state_ownership.md`
-8. The nearest scoped `AGENTS.md` for the files being changed
-9. Relevant ADRs in `/docs/decisions/`
-10. Relevant code and tests
-11. Recent Git history and any active pull request
+8. nearest scoped `AGENTS.md`
+9. relevant ADRs
+10. relevant code/tests
+11. recent Git history and active PRs
 
-Read `/docs/design/master_vision.md` when the task concerns long-range product direction. Do not use it as evidence that a described system already exists.
+Read `docs/design/master_vision.md` for long-range product direction only.
+
+For build/export/recovery issues also read:
+- `docs/architecture/build_pipeline.md`
+- `docs/debug_report.md`
 
 ## Authority model
-
-Different files answer different questions.
 
 | Source | Answers |
 | --- | --- |
 | `docs/state.md` + code/tests | What exists now? |
-| `docs/design/canon.md` | What design rules are currently accepted? |
-| `docs/architecture/*` + ADRs | How is implementation allowed to work? |
-| `docs/roadmap.md` | What order do we intend to build things? |
-| `docs/design/master_vision.md` | What kind of game are we ultimately trying to make? |
-| Chat history | Supporting intent and discussion, not sole canonical memory |
+| `docs/design/canon.md` | What design rules are accepted? |
+| `docs/architecture/*` + ADRs | How may it be engineered? |
+| `docs/roadmap.md` | What comes next? |
+| `docs/design/master_vision.md` | What are we ultimately trying to make? |
+| debug report / build metadata | Which exact build produced observed behavior? |
+| Chat history | Supporting intent, not sole canonical memory |
 
-When sources conflict, stop treating the conflict as permission to guess. Resolve it deliberately and update the repository.
-
-## Critical distinction
+## Critical distinctions
 
 **Vision is not implementation.**
 
-A system described in `master_vision.md` does not exist until `state.md`, code, and tests say it exists.
+**A build report is not gameplay state.**
 
-A planned system in `roadmap.md` does not exist until it is implemented and recorded in `state.md`.
-
-A rejected idea must not remain in `canon.md`.
+Do not invent seed/tick/save identity before those systems exist.
 
 ## Resume protocol
 
-Before making a meaningful change:
-
-1. Confirm the work starts from current `main`.
-2. Read the authority sources above.
-3. Inspect the actual files that own the behavior.
-4. Check for an existing active slice/PR touching the same area.
+1. Confirm current `main`.
+2. Read the authority sources.
+3. Check overlapping active PRs.
+4. Inspect actual owning files.
 5. Define the smallest coherent slice.
 6. Work on `slice/<number>-<name>`.
-7. Run the architecture guard, import, tests, and main-scene boot.
-8. Update `docs/state.md` and any changed canon/architecture documents.
-9. Merge only after required health checks are green.
+7. Run architecture/import/tests/boot.
+8. Require Windows preview success for owner-facing work.
+9. Update canonical docs.
+10. Merge only after required gates are green.
 
 ## Project-owner contract
 
-The project owner should normally be able to work by describing desired behavior, judging playtest results, and making design decisions.
+The owner should normally provide behavior/design direction and playtest results.
 
-They should not be required to:
-- edit GDScript,
-- resolve Git conflicts,
-- understand CI YAML,
-- manually repair save files,
-- inspect engine internals,
-- discover which file owns a system.
-
-Engineering infrastructure exists to absorb that complexity.
+They should not need to edit code, operate Git, configure CI, build exports, repair saves, or identify implementation ownership.
