@@ -33,7 +33,18 @@ var open_operations_button: Button
 var close_operations_button: Button
 var city_button: Button
 var operations_button: Button
+var record_app_button: Button
 var glance_toggle: Button
+var center_stage: Control
+var center_app_surface: OsAppSurface
+var right_app_surface: OsAppSurface
+var center_back_buttons: Array[Button] = []
+var right_back_buttons: Array[Button] = []
+var operations_work_tab: Button
+var operations_record_tab: Button
+var operations_record_work_button: Button
+var record_activity_tab: Button
+var record_storage_tab: Button
 var record_toggle: Button
 var record_scroll: ScrollContainer
 var record_label: Label
@@ -53,7 +64,13 @@ var _preferences: WorkspacePreferences
 var _expanded: Dictionary = {}
 var _folded: Dictionary = {}
 var _context: VBoxContainer
+var _context_scroll: ScrollContainer
 var _operations: VBoxContainer
+var _operations_record_label: Label
+var _rail_record_label: Label
+var _rail_storage_label: Label
+var _city_focus_path: NodePath = NodePath("")
+var _last_active_app: String = "city"
 var _recovery_row: VBoxContainer
 var _context_terms: Label
 var _context_body: Label
@@ -82,16 +99,23 @@ func _ready() -> void:
 	_build_right()
 	_build_top()
 	_build_bottom()
+	center_stage = Control.new()
+	center_stage.name = "CenterStage"
+	center_stage.clip_contents = true
+	center_stage.mouse_filter = Control.MOUSE_FILTER_STOP
+	workspace.register_region("city", center_stage)
 	city = CityBlockout.new()
-	workspace.register_region("city", city)
+	center_stage.add_child(city)
+	city.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	city.custom_minimum_size = Vector2.ZERO
 	city.work_selected.connect(select_work)
 	city.selection_cleared.connect(clear_selection)
+	_build_center_apps()
 	widget_workspace = WidgetWorkspace.new()
 	add_child(widget_workspace)
 	widget_workspace.setup(self, workspace, _bottom_widget_dock, _right_widget_dock)
 	widget_workspace.inspect_requested.connect(select_work)
-	widget_workspace.record_requested.connect(func() -> void: _choose_page("record"))
+	widget_workspace.record_requested.connect(func() -> void: open_record_app("activity"))
 	widget_workspace.status_changed.connect(_widget_status)
 	inspect_button = (widget_workspace.widgets["work_scan"] as WidgetView).inspect_button
 	reset_layout_button.pressed.connect(widget_workspace.reset_widgets)
@@ -190,10 +214,12 @@ func _build_left() -> void:
 	var launcher: VBoxContainer = OsTokens.column(rail, 10)
 	launcher.position = Vector2(10, 78)
 	launcher.size.x = 44
-	city_button = _icon(launcher, "city", "City", func() -> void: _model.open_app("city"))
+	city_button = _icon(launcher, "city", "City", func() -> void: _model.return_to_city())
 	city_button.toggle_mode = true
 	operations_button = _icon(launcher, "work", "Operations", open_operations)
 	operations_button.toggle_mode = true
+	record_app_button = _icon(launcher, "report", "Session Record", func() -> void: open_record_app())
+	record_app_button.toggle_mode = true
 	layout_toggle = _icon(launcher, "layout", "Workspace layout", func() -> void: _choose_page("layout"))
 	glance_toggle = _icon(launcher, "rail", "Show or fold the left rail", Callable())
 	glance_toggle.toggle_mode = true
@@ -236,6 +262,7 @@ func _build_right() -> void:
 	OsTokens.spacer(heading)
 	OsTokens.button(heading, "›", func() -> void: workspace.model.set_collapsed("right", true)).tooltip_text = "Fold right rail"
 	var scroll: ScrollContainer = _scroll(full)
+	_context_scroll = scroll
 	var stack: VBoxContainer = OsTokens.column(scroll, 20)
 	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_recovery_row = OsTokens.column(stack, 12)
@@ -246,16 +273,14 @@ func _build_right() -> void:
 	context_title = OsTokens.wrapped(_context, "Select work", 26, OsTokens.TEXT)
 	_context_terms = OsTokens.wrapped(_context, "", 18, OsTokens.ACCENT)
 	_context_body = OsTokens.wrapped(_context, "Choose work from a widget or its city location.", 17)
-	open_operations_button = OsTokens.button(_context, "Open Operations", open_operations)
+	open_operations_button = OsTokens.button(_context, "Open Operations", open_operations_for_selection)
 	OsTokens.button(_context, "Clear selection", clear_selection)
-	_operations = OsTokens.column(stack, 18)
-	OsTokens.label(_operations, "OPERATIONS", 13, OsTokens.ACCENT)
-	_operation_title = OsTokens.wrapped(_operations, "", 26, OsTokens.TEXT)
-	_operation_terms = OsTokens.wrapped(_operations, "", 18, OsTokens.ACCENT)
-	work_button = OsTokens.button(_operations, "Run an errand", func() -> void: work_requested.emit())
-	work_button.add_theme_stylebox_override("normal", OsTokens.box(Color("4c4637"), 12))
-	close_operations_button = OsTokens.button(_operations, "Back to city", func() -> void: _model.open_app("city"))
-	OsTokens.wrapped(_operations, "Test activity. Crew, travel and risk are not active.", 15)
+	right_app_surface = OsAppSurface.new()
+	right_app_surface.name = "RightAppSurface"
+	right_app_surface.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	full.add_child(right_app_surface)
+	right_app_surface.setup("record", OsAppManifest.HOST_RIGHT)
+	_build_right_record_views()
 	_right_widget_dock = WidgetDock.new()
 	_right_widget_dock.region = "right"
 	_right_widget_dock.name = "RightWidgets"
@@ -263,6 +288,96 @@ func _build_right() -> void:
 	var folded: VBoxContainer = _inset(rail, 8)
 	_folded["right"] = folded.get_parent()
 	OsTokens.button(folded, "‹", func() -> void: workspace.model.set_collapsed("right", false)).tooltip_text = "Expand right rail"
+
+
+func _build_center_apps() -> void:
+	center_app_surface = OsAppSurface.new()
+	center_app_surface.name = "CenterAppSurface"
+	center_stage.add_child(center_app_surface)
+	center_app_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center_app_surface.setup("operations", OsAppManifest.HOST_CENTER)
+	center_app_surface.add_theme_stylebox_override("panel", OsTokens.box(Color("151b1f"), 0))
+	var work_view: MarginContainer = MarginContainer.new()
+	var work_stack: VBoxContainer = _app_inset(work_view, 28)
+	var work_header: HBoxContainer = _app_header(work_stack, "Operations")
+	var work_back: Button = OsTokens.button(work_header, "Back", func() -> void: _model.back())
+	center_back_buttons.append(work_back)
+	close_operations_button = OsTokens.button(work_header, "City", func() -> void: _model.return_to_city())
+	operations_work_tab = OsTokens.button(work_header, "Work", func() -> void: _model.navigate_view("work"))
+	operations_record_tab = OsTokens.button(work_header, "Record", func() -> void: _model.navigate_view("record"))
+	OsTokens.label(work_stack, "SELECTED WORK", 13, OsTokens.ACCENT)
+	_operations = OsTokens.column(work_stack, 18)
+	_operation_title = OsTokens.wrapped(_operations, "", 36, OsTokens.TEXT)
+	_operation_terms = OsTokens.wrapped(_operations, "", 20, OsTokens.ACCENT)
+	OsTokens.wrapped(_operations, "Operations owns execution. City camera and selection stay mounted behind this focused view.", 17)
+	work_button = OsTokens.button(_operations, "Run an errand", func() -> void: work_requested.emit())
+	work_button.add_theme_stylebox_override("normal", OsTokens.box(Color("4c4637"), 12))
+	work_button.custom_minimum_size.y = 64
+	OsTokens.wrapped(_operations, "Test activity only. Crew, travel and risk are not active.", 15)
+	center_app_surface.register_view("work", work_view)
+	var record_view: MarginContainer = MarginContainer.new()
+	var record_stack: VBoxContainer = _app_inset(record_view, 28)
+	var record_header: HBoxContainer = _app_header(record_stack, "Operations")
+	var record_back: Button = OsTokens.button(record_header, "Back", func() -> void: _model.back())
+	center_back_buttons.append(record_back)
+	OsTokens.button(record_header, "City", func() -> void: _model.return_to_city())
+	operations_record_work_button = OsTokens.button(record_header, "Work", func() -> void: _model.navigate_view("work"))
+	OsTokens.button(record_header, "Record", func() -> void: _model.navigate_view("record"))
+	OsTokens.label(record_stack, "CURRENT SESSION RECORD", 13, OsTokens.ACCENT)
+	var record_scroll_view: ScrollContainer = _scroll(record_stack)
+	var record_content: VBoxContainer = OsTokens.column(record_scroll_view, 10)
+	record_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_operations_record_label = OsTokens.wrapped(record_content, "No events since this session was loaded or reset.", 19, OsTokens.TEXT)
+	OsTokens.wrapped(record_content, "Bounded local event journal. No invented historical data.", 15)
+	center_app_surface.register_view("record", record_view)
+
+func _build_right_record_views() -> void:
+	var activity_view: MarginContainer = MarginContainer.new()
+	var activity_stack: VBoxContainer = _app_inset(activity_view, 12)
+	OsTokens.label(activity_stack, "Session Record", 22)
+	var activity_nav: HBoxContainer = OsTokens.row(activity_stack, 6)
+	var activity_back: Button = OsTokens.button(activity_nav, "Back", func() -> void: _model.back())
+	var activity_city: Button = OsTokens.button(activity_nav, "City", func() -> void: _model.return_to_city())
+	right_back_buttons.append(activity_back)
+	var activity_tabs: HBoxContainer = OsTokens.row(activity_stack, 6)
+	record_activity_tab = OsTokens.button(activity_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
+	record_storage_tab = OsTokens.button(activity_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
+	for button: Button in [activity_back, activity_city, record_activity_tab, record_storage_tab]:
+		WidgetView._small_button(button)
+	OsTokens.label(activity_stack, "CURRENT SESSION", 13, OsTokens.ACCENT)
+	var activity_scroll: ScrollContainer = _scroll(activity_stack)
+	var activity_content: VBoxContainer = OsTokens.column(activity_scroll, 8)
+	activity_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rail_record_label = OsTokens.wrapped(activity_content, "No events since this session was loaded or reset.", 17, OsTokens.TEXT)
+	OsTokens.wrapped(activity_content, "Rail-hosted app · current session only", 14)
+	right_app_surface.register_view("activity", activity_view)
+	var storage_view: MarginContainer = MarginContainer.new()
+	var storage_stack: VBoxContainer = _app_inset(storage_view, 12)
+	OsTokens.label(storage_stack, "Session Record", 22)
+	var storage_nav: HBoxContainer = OsTokens.row(storage_stack, 6)
+	var storage_back: Button = OsTokens.button(storage_nav, "Back", func() -> void: _model.back())
+	var storage_city: Button = OsTokens.button(storage_nav, "City", func() -> void: _model.return_to_city())
+	right_back_buttons.append(storage_back)
+	var storage_tabs: HBoxContainer = OsTokens.row(storage_stack, 6)
+	var storage_activity: Button = OsTokens.button(storage_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
+	var storage_storage: Button = OsTokens.button(storage_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
+	for button: Button in [storage_back, storage_city, storage_activity, storage_storage]:
+		WidgetView._small_button(button)
+	OsTokens.label(storage_stack, "SAVE SLOT", 13, OsTokens.ACCENT)
+	_rail_storage_label = OsTokens.wrapped(storage_stack, "No saved slot yet.", 17, OsTokens.TEXT)
+	OsTokens.wrapped(storage_stack, "Read-only inspection here. Saving and recovery stay explicit.", 14)
+	right_app_surface.register_view("storage", storage_view)
+
+func _app_inset(root: MarginContainer, padding: int) -> VBoxContainer:
+	for edge: String in ["left", "right", "top", "bottom"]:
+		root.add_theme_constant_override("margin_" + edge, padding)
+	return OsTokens.column(root, 16)
+
+func _app_header(parent: Node, title: String) -> HBoxContainer:
+	var row: HBoxContainer = OsTokens.row(parent, 10)
+	OsTokens.label(row, title, 24)
+	OsTokens.spacer(row)
+	return row
 
 
 func _build_top() -> void:
@@ -436,23 +551,74 @@ func clear_selection() -> void:
 
 func open_operations() -> void:
 	_model.open_app("operations")
-	workspace.model.set_collapsed("right", false)
 
+func open_operations_for_selection() -> void:
+	var selected_id: String = str(_model.snapshot()["selected_id"])
+	if not selected_id.is_empty():
+		_model.open_deep_link("operations", "work", selected_id)
+
+func open_record_app(view_id: String = "") -> void:
+	var error: Error = _model.open_app("record", view_id)
+	if error == OK:
+		workspace.model.set_collapsed("right", false)
+
+func _remember_city_focus() -> void:
+	var owner: Control = get_viewport().gui_get_focus_owner()
+	if is_instance_valid(owner) and city.is_ancestor_of(owner):
+		_city_focus_path = city.get_path_to(owner)
+
+func _restore_city_focus() -> void:
+	if _city_focus_path.is_empty() or not city.is_visible_in_tree():
+		return
+	var target: Node = city.get_node_or_null(_city_focus_path)
+	if target is Control and target.is_visible_in_tree():
+		(target as Control).grab_focus()
 
 func _apply_navigation() -> void:
 	var state: Dictionary = _model.snapshot()
 	var selected: bool = not str(state["selected_id"]).is_empty()
-	var opened: bool = state["active_app"] == "operations"
-	_context.visible = not opened
-	_operations.visible = opened
-	city_button.set_pressed_no_signal(not opened)
-	operations_button.set_pressed_no_signal(opened)
+	var active_app: String = str(state["active_app"])
+	var active_view: String = str(state["active_view"])
+	var center_active: bool = active_app == "operations"
+	var rail_active: bool = active_app == "record"
+	if center_active and _last_active_app != "operations":
+		_remember_city_focus()
+	if center_active:
+		city.hide()
+		city.process_mode = Node.PROCESS_MODE_DISABLED
+		center_app_surface.activate(active_view)
+	else:
+		center_app_surface.suspend()
+		city.show()
+		city.process_mode = Node.PROCESS_MODE_INHERIT
+		if _last_active_app == "operations":
+			call_deferred("_restore_city_focus")
+	if rail_active:
+		right_app_surface.activate(active_view)
+		_context_scroll.hide()
+		_right_widget_dock.hide()
+	else:
+		right_app_surface.suspend()
+		_context_scroll.show()
+		_right_widget_dock.show()
+	city_button.set_pressed_no_signal(active_app == "city")
+	operations_button.set_pressed_no_signal(center_active)
+	record_app_button.set_pressed_no_signal(rail_active)
+	for button: Button in center_back_buttons:
+		button.disabled = not center_active or int(state["back_depth"]) == 0
+	for button: Button in right_back_buttons:
+		button.disabled = not rail_active or int(state["back_depth"]) == 0
+	operations_work_tab.disabled = center_active and active_view == "work"
+	operations_record_tab.disabled = center_active and active_view == "record"
+	record_activity_tab.disabled = rail_active and active_view == "activity"
+	record_storage_tab.disabled = rail_active and active_view == "storage"
 	city.set_selected(selected)
 	context_title.text = _work_name if selected else "Select work"
 	_context_terms.text = _terms if selected else ""
 	_context_body.text = "Ready to open in Operations." if selected else "Choose work from a widget or its city location."
 	open_operations_button.disabled = not selected
 	widget_workspace.set_selected(str(state["selected_id"]))
+	_last_active_app = active_app
 
 
 func show_state(state: Dictionary, work_available: bool, dirty: bool) -> void:
@@ -466,10 +632,18 @@ func show_state(state: Dictionary, work_available: bool, dirty: bool) -> void:
 
 
 func show_storage(info: Dictionary) -> void:
+	var primary: Dictionary = info.get("primary", {})
+	var primary_error: int = int(primary.get("error", OK))
+	if is_instance_valid(_rail_storage_label):
+		if primary_error == OK:
+			_rail_storage_label.text = "Ready · schema %d\n%s · %d completed" % [int(primary.get("schema", 0)), money_text(int(primary.get("cash_cents", 0))), int(primary.get("completed_actions", 0))]
+		elif primary_error == ERR_FILE_NOT_FOUND:
+			_rail_storage_label.text = "No saved slot yet."
+		else:
+			_rail_storage_label.text = "Saved slot needs attention (error %d)." % primary_error
 	var available: bool = bool(info.get("can_recover", false))
 	_recovery_row.visible = available
 	recovery_button.disabled = not available
-	var primary_error: int = int(info.get("primary", {}).get("error", OK))
 	_storage_alert = available or primary_error not in [OK, ERR_FILE_NOT_FOUND]
 	if available:
 		var backup: Dictionary = info["backup"]
@@ -502,7 +676,12 @@ func show_events(events: Array[Dictionary]) -> void:
 		if event["type"] == "advance": title = "Time advanced"
 		elif event["type"] == "rng_probe": title = "Diagnostic random draw"
 		lines.append("%s   ·   %s   ·   #%d" % [time_text(int(event["tick"])), title, int(event["sequence"])])
-	record_label.text = "\n".join(lines) if not lines.is_empty() else "No events since this session was loaded or reset."
+	var event_text: String = "\n".join(lines) if not lines.is_empty() else "No events since this session was loaded or reset."
+	record_label.text = event_text
+	if is_instance_valid(_operations_record_label):
+		_operations_record_label.text = event_text
+	if is_instance_valid(_rail_record_label):
+		_rail_record_label.text = event_text
 	widget_workspace.show_events(events)
 
 
@@ -519,6 +698,7 @@ func ui_snapshot() -> Dictionary:
 	state["widgets"] = widget_workspace.snapshot()
 	state["widget_storage_error"] = int(widget_workspace.storage_error)
 	state["widget_manipulation"] = widget_workspace.manipulation_snapshot()
+	state["app_surfaces"] = {"center": center_app_surface.snapshot(), "right": right_app_surface.snapshot()}
 	return state
 
 

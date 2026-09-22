@@ -24,7 +24,7 @@ func _test_presentation_model() -> void:
 	_check(model.open_app("crew") != OK and model.snapshot() == initial, "unimplemented app rejected")
 	_check(model.select_work("skeleton_errand") == OK, "known authored work can be selected")
 	_check(model.open_app("operations") == OK and model.snapshot()["selected_id"] == "skeleton_errand", "app receives selected identity")
-	model.open_app("city")
+	model.return_to_city()
 	_check(model.snapshot()["selected_id"] == "skeleton_errand", "closing app preserves selection")
 	var detached: Dictionary = model.snapshot()
 	detached["selected_id"] = "tampered"
@@ -59,7 +59,7 @@ func _test_shell(tree: SceneTree) -> void:
 	view.city.pan_by_screen(Vector2(50, 20))
 	var camera: Dictionary = view.city.camera_snapshot()
 	view.open_operations_button.pressed.emit()
-	_check(view.work_button.is_visible_in_tree() and view.city.is_visible_in_tree(), "Operations occupies a dock, not the city")
+	_check(view.work_button.is_visible_in_tree() and not view.city.is_visible_in_tree() and view.center_app_surface.is_visible_in_tree(), "Operations claims the center without destroying the city node")
 	_check(view.ui_snapshot()["active_app"] == "operations", "app lifecycle owns one active route")
 	view.close_operations_button.pressed.emit()
 	_check(view.city.camera_snapshot() == camera and view.ui_snapshot()["selected_id"] == "skeleton_errand", "close restores context without replacing the city")

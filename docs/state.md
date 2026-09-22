@@ -3,95 +3,71 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.8
+Game version: 0.0.9
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Phase 6B
+## Current milestone: Functional Criminal OS, Phase 6C
 
-This revision implements widget manipulation and responsive forms on the Phase 6A
-workspace. Actual acceptance and merge status belong to the matching PR and
-exact-revision CI evidence. It does not complete or imply owner acceptance of
-the full OS phase. Gameplay expansion remains blocked by ADR 0010.
+This revision implements app lifecycle, selection and navigation on the 6A/6B
+workspace. Exact acceptance/merge status belongs to the matching PR and
+exact-revision CI evidence. The full OS phase still requires 6D product/reactive
+acceptance before gameplay expansion under ADR 0010.
 
 ## Implemented
 
-The existing four rails, protected city geometry, manual game saves, recovery,
-clock/RNG/ordered commands, build identity and preview pipeline remain.
+All existing deterministic simulation, manual save/recovery, four-rail workspace
+and movable-widget contracts remain.
 
-- Work Scan and Recent Activity are movable data-backed widgets in bottom/right
-  docks, with stable identity and explicit compact/wide/tall/major form contracts.
-- Pure ordered packing separates preferred placement from current effective fit.
-  New moves/resizes must fit the visible destination; they never grow rails.
-- Pointer drag/resize has candidate outlines, destination/form or invalid feedback,
-  commit on release and cancellation. Neighbors' proposed rectangles are outlined;
-  their actual mounted views move only on commit, not during the preview.
-- Keyboard movement/transfer/form selection and clickable menu alternatives use
-  the same solver. Unavailable sizes are skipped by keyboard or disabled in menus.
-- Work Scan inspection retains the shared selected activity; only Operations
-  executes work. Recent Activity uses existing bounded, unsaved local events.
-- Views and controls are reused by ID, not rebuilt on every state update or move.
-- Committed widget preferences auto-save separately from both rail preferences
-  and gameplay, through the existing bounded/staged preference IO implementation.
-- Reset layout resets rails and widget arrangement only, not game state or camera.
-- Existing profiles/saves are not migrated or silently overwritten. A missing
-  widget profile uses defaults; damaged/future/foreign profiles are preserved.
-- Current debug reports include widget layout, manipulation and storage status.
+- One typed app manifest defines only current real apps, host modes and views.
+- Operations is a center-focus app. The city presentation hides while active,
+  but the same CityBlockout node remains mounted, retaining camera and selection.
+- Session Record is a right-rail app using only the real bounded event journal
+  and save-slot inspection. No fake historical data or future-domain shell apps.
+- City/Home is the stable root. Back is app-local. Reopening an app resumes its
+  last view for the current runtime.
+- Work context carries the selected activity into Operations. Recent Activity
+  deep-links into Session Record/Activity with the same presentation authority.
+- App views mount once. Hidden views suspend processing/input rather than being
+  destroyed or duplicated. Existing scroll state stays with the mounted view.
+- Each view remembers its last valid focus target; returning from center focus
+  also restores prior city focus when the target still exists.
+- Route, Back stack and app view memory remain presentation-only. They do not
+  enter gameplay saves, RNG, state hashes or widget/rail preference formats.
 
-## Ownership and files
+## Ownership
 
-WorkspaceLayout/WorkspaceContainer remain the rail geometry authority.
-WidgetLayout owns pure widget placement/form validation and derived rectangles.
-WidgetWorkspace coordinates input, preview and mounted widget views; WidgetDock
-owns bounded scrolling and candidate footprints. WidgetView displays real inputs.
-WorkspacePreferences owns both codecs' bounded disk operations, with explicit
-rails/widgets format selection rather than a duplicate IO implementation.
-OsPresentationState owns selection/route; CityBlockout owns its local camera.
-SkeletonSession and SkeletonSave remain unchanged gameplay/save authorities.
+OsAppManifest defines current app contracts. OsAppNavigation owns route,
+remembered views and per-app Back history. OsPresentationState combines that
+navigation with the shared selection. OsAppSurface owns mounted-view activation,
+suspension and focus memory. CriminalOsShell composes surfaces with the existing
+workspace without taking gameplay authority.
 
-Game slot: user://walking_skeleton/slot_v1.json, schema 2 with v1 reader.
-Rail profile: existing per-slot hash filename, format sim-durty.workspace v1.
-Widget profile: same per-slot stem with .widgets.json, format sim-durty.widgets v1.
-UI profiles are excluded from gameplay saves, RNG and simulation hashes.
+SkeletonSession/SkeletonSave, WorkspaceLayout/WorkspacePreferences, WidgetLayout
+and WidgetWorkspace keep their previous authorities.
 
-## Fit and support policy
+## Compatibility
 
-Minimum supported window remains 1280x800 at 100 percent. Optional 125 percent
-needs 1600x1000 or temporarily falls back without erasing preference. At the
-2560x1440 reference, the protected city reservation remains 1440x800.
+Game slot remains user://walking_skeleton/slot_v1.json, schema 2 with v1 reader.
+Rail and widget profile formats remain version 1. No migration, engine upgrade,
+Autoload, addon or new workflow.
 
-Later host shrinkage may compact existing widgets temporarily. If even readable
-compact minima cannot fit, their dock scrolls locally rather than scaling text,
-dropping widgets or changing preferred choices. A new move or explicit form
-change cannot create overflow in its destination. Restore a larger host to regain
-the preferred form. Four shell rails still exist; only bottom/right are widget
-placement regions in 6B. No claim of unrestricted four-rail grid docking.
+## Validation contract
 
-## Validation
+Retain the prior 422 assertions and packaged Windows gates. 6C adds pure route
+and presentation tests plus integrated center/rail app lifecycle, selection,
+camera/focus continuity, remembered view, repeated-switch/no-node-growth and
+gameplay/save isolation checks. Existing acceptance renders Operations and
+Session Record at supported sizes. Packaged Windows validation routes the app
+probe through the normal executable entry point.
 
-All previous suites and packaged Windows tests remain. Widget tests add strict
-layout/storage cases, stable components, real viewport pointer/key dispatch,
-preview/cancel/commit, resize, keyboard transfer, menu actions, focus-loss
-notification, wheel isolation and preferred/effective fit at multiple scales.
-Menu callbacks and focus-loss notifications are exercised directly in tests;
-this is not a physical-device or OS accessibility certification.
-
-The existing Windows gate launches the packaged game's debug probe through its
-normal application entry point, moves widgets and restores their exact preferences
-in another process while checking unchanged gameplay state/save bytes.
-The existing acceptance workflow retains actual rendered default, moved, major,
-valid-preview and invalid-preview views, plus all earlier workspace captures.
-Exact run artifacts report actual results. Source execution is in CI, not claimed
-as a local engine run in this chat environment.
+Actual pass/fail evidence belongs to the matching exact-source PR run.
 
 ## Limits and next
 
-The city is still a static blockout with one existing errand, no invented live
-opportunities, simulated people or fake event history. Widget forms demonstrate
-functional composition on limited existing data; full product/material polish
-and richer reactive information remain 6D. No new engine, addon, Autoload, game
-save schema or CI workflow. One writer per profile; no power-loss guarantee.
-Physical mouse hardware, clipboard and Windows GPU testing remain separate.
+The city is still a static blockout with the existing errand. App view memory is
+runtime presentation state, not a new persistent preference. Full responsive
+product treatment, stable-ID reactive updates, reduced-motion behavior and
+explicit empty/loading/error/unavailable component states remain Phase 6D.
 
-Next: Phase 6C app lifecycle, selection and navigation. Gameplay expansion remains
-blocked until the bounded functional OS is accepted. See ADR 0012 and
-architecture/widgets.md for 6B maintenance and interaction rules.
+Next: Phase 6D reactive product components and integrated OS acceptance.
+Gameplay expansion remains blocked until the owner accepts the functional OS.

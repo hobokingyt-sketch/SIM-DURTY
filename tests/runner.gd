@@ -9,6 +9,7 @@ const RecoveryTests = preload("res://tests/recovery_tests.gd")
 const OsTests = preload("res://tests/os_shell_tests.gd")
 const WorkspaceTests = preload("res://tests/workspace_tests.gd")
 const WidgetTests = preload("res://tests/widget_tests.gd")
+const AppTests = preload("res://tests/app_tests.gd")
 var failures: int = 0
 
 
@@ -17,7 +18,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Widgets 6B")
+	print("[tests] SIM-DURTY Apps 6C")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
@@ -34,6 +35,8 @@ func _run() -> void:
 	failures += await workspace_suite.run(self)
 	var widget_suite: RefCounted = WidgetTests.new()
 	failures += await widget_suite.run(self)
+	var app_suite: RefCounted = AppTests.new()
+	failures += await app_suite.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)

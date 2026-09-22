@@ -40,3 +40,5 @@ finally {
 }
 & (Join-Path $PSScriptRoot 'verify_workspace.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory
 & (Join-Path $PSScriptRoot 'verify_widgets.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory
+
+& (Join-Path $PSScriptRoot 'verify_apps.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory
