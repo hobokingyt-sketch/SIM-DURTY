@@ -52,19 +52,12 @@ static func install_default_theme(theme: Theme, palette: Dictionary) -> void:
 
 
 static func style_for(role: String, state: String, palette: Dictionary, padding_override: int = -1) -> StyleBoxTexture:
-	var fill: Color = _fill(role, state, palette)
-	var edge_palette: Dictionary = _edge_palette(role, state, palette)
 	var padding: int = padding_override if padding_override >= 0 else int(_metrics(role)["padding"])
-	return OsFrames.frame_style(OsFrames.ROLE_CONTROL, fill, padding, edge_palette)
+	return OsControlSurface.style(role, state, palette, padding)
 
 
 static func focus_style(role: String, palette: Dictionary) -> StyleBoxTexture:
-	var focus_palette: Dictionary = {
-		"shadow": palette["accent_dark"],
-		"middle": palette["accent"],
-		"highlight": palette["accent_light"],
-	}
-	return OsFrames.frame_style(OsFrames.ROLE_CONTROL, Color(0, 0, 0, 0), 0, focus_palette)
+	return OsControlSurface.focus_style(role, palette)
 
 
 static func set_selected(button: Button, selected: bool) -> void:
@@ -109,40 +102,3 @@ static func _metrics(role: String) -> Dictionary:
 	return {"height": 38, "padding": 3}
 
 
-static func _fill(role: String, state: String, palette: Dictionary) -> Color:
-	if state == "disabled":
-		return palette["disabled"]
-	var selected_state: bool = state in ["pressed", "hover_pressed"]
-	if role == ROLE_PRIMARY:
-		if selected_state:
-			return palette["primary_pressed"]
-		return palette["primary_hover"] if state == "hover" else palette["primary"]
-	if role in [ROLE_TAB, ROLE_LAUNCHER]:
-		if selected_state:
-			return palette["selected_hover"] if state == "hover_pressed" else palette["selected"]
-		return palette["raised_hover"] if state == "hover" else palette["raised"]
-	if role == ROLE_HANDLE:
-		if selected_state:
-			return palette["raised_pressed"]
-		return palette["handle_hover"] if state == "hover" else palette["handle"]
-	if role == ROLE_FOLD:
-		if selected_state:
-			return palette["raised_pressed"]
-		return palette["well"].lightened(0.06) if state == "hover" else palette["well"]
-	if selected_state:
-		return palette["raised_pressed"]
-	return palette["raised_hover"] if state == "hover" else palette["raised"]
-
-
-static func _edge_palette(role: String, state: String, palette: Dictionary) -> Dictionary:
-	if role == ROLE_PRIMARY or (role in [ROLE_TAB, ROLE_LAUNCHER] and state in ["pressed", "hover_pressed"]):
-		return {
-			"shadow": palette["shadow"],
-			"middle": palette["accent_dark"],
-			"highlight": palette["accent_light"],
-		}
-	return {
-		"shadow": palette["shadow"],
-		"middle": palette["middle"],
-		"highlight": palette["highlight"],
-	}

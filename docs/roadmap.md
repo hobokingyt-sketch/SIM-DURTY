@@ -79,7 +79,7 @@ Deliver:
 - soft edge light/shadow falloff rather than new decorative outlines,
 - identical 6A–6C geometry and widget fitting before/after the pass.
 
-### Visual Refinement R2 — Border & Shape Craft — CURRENT IMPLEMENTATION
+### Visual Refinement R2 — Border & Shape Craft — COMPLETE
 
 Refine existing frame construction only:
 - border thickness consistency,
@@ -90,13 +90,19 @@ Refine existing frame construction only:
 
 No decorative lines, bolts or invented detail. The implementation removes the old center seam ticks, normalizes the shape family to 10/8/6/4-unit chamfers, uses directional bevel lighting for raised versus recessed surfaces, and lets the existing Context/Workbench wells share the inset-frame grammar without adding new containers.
 
-### Visual Refinement R3 — Button & Control Craft — NEXT
+### Visual Refinement R3 — Button & Control Craft — CURRENT IMPLEMENTATION
 
 Refine the existing control kit's physical construction without changing its
 roles or placement: chassis/face depth, selected seating, primary-action brass
 economy, launcher engagement and tab integration.
 
-### Visual Refinement R4 — Unified Visual Calibration
+The implementation uses one generated control-surface system: a dark housing
+contains an inset face; normal faces rise subtly, pressed/selected faces seat
+inward, selected tabs/launcher plates keep dark faces with brass structural
+edges, and primary actions use dark bronze faces with brass edge emphasis rather
+than large solid-brass fills.
+
+### Visual Refinement R4 — Unified Visual Calibration — NEXT
 
 Compare the whole existing screen against the locked reference and normalize
 material brightness, recess depth, border strength, accent economy, icon
