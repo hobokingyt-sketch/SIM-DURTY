@@ -11,58 +11,61 @@ Reference UI viewport: 2560×1440
 
 ## Current milestone
 
-**Infrastructure 1 — Project Memory & Guardrails — COMPLETE**
+**Infrastructure 2 — Build & Recovery Pipeline**
 
-Purpose: make long-running chat-to-game development recoverable and resistant to architecture/design drift.
+Purpose: let the non-coding project owner test repository changes and report exact build identity without operating Godot or Git.
 
 ## Implemented infrastructure
 
 ### Foundation 0
 - [x] Repository bootstrapped
 - [x] Godot version pinned
-- [x] Project configuration
 - [x] Application composition root
-- [x] Runtime health diagnostic
-- [x] Automated smoke test runner
-- [x] GitHub Actions health workflow
-- [x] Root AI engineering contract
-- [x] CI verified on GitHub
+- [x] Automated tests and GitHub health workflow
+- [x] CI verified
 
 ### Infrastructure 1
-- [x] Fresh-session recovery entry point
-- [x] Source-of-truth authority model
-- [x] Long-range master vision separated from implementation state
-- [x] Durable design canon
-- [x] Long-term roadmap
-- [x] Repository map
-- [x] Project health contract
+- [x] Fresh-session recovery model
+- [x] Vision/canon/state/roadmap separation
 - [x] Scoped AGENTS contracts
-- [x] Dependency rules
-- [x] State-ownership contract
-- [x] Godot-native UI runtime contract
-- [x] Godot-native UI ADR
-- [x] 2560×1440 reference-resolution ADR/config
-- [x] Pull-request health checklist
-- [x] Architecture-guard script
-- [x] Architecture guard wired into CI
-- [x] Infrastructure 1 CI verified
-- [x] Infrastructure 1 merged to main
+- [x] Architecture guard
+- [x] Dependency/state-ownership contracts
+- [x] Native Godot UI and 2560×1440 decisions
+- [x] CI verified and merged
+
+### Infrastructure 2
+- [x] Windows preview export preset
+- [x] Explicit generated build manifest
+- [x] Runtime BuildInfo fallback/reader
+- [x] Copyable debug-report contract
+- [x] Build ID/ref visible on boot surface
+- [x] COPY DEBUG REPORT action
+- [x] Local reproducible preview-build command
+- [x] PR Windows preview workflow
+- [x] Official matching export-template installation in CI
+- [x] Preview ZIP naming and 14-day retention policy
+- [x] Build metadata verification step
+- [ ] Infrastructure 2 health CI verified
+- [ ] Windows preview artifact verified
+- [ ] Infrastructure 2 merged to main
 
 ## Runtime
 
 The game intentionally contains no gameplay yet.
 
-It still boots the Foundation status surface. Infrastructure 1 changes repository memory, validation, and reference geometry rather than adding gameplay.
+The boot surface now identifies Infrastructure 2, the current build/ref, and exposes a copyable debug report.
 
 ## Gameplay systems
 
 None implemented.
 
-Systems described in the master vision are aspirational until this file and the code/tests record them as implemented.
-
 ## Save schema
 
 No persistent gameplay save format exists yet.
+
+## Simulation identity
+
+No simulation seed or tick exists yet. Debug reports explicitly show `none` rather than inventing values.
 
 ## Autoloads
 
@@ -74,10 +77,10 @@ None.
 
 ## Next milestone
 
-**Infrastructure 2 — Build & Recovery Pipeline**
+**Walking Skeleton**
 
-Goal: produce reliable owner-facing Windows preview artifacts, build metadata, and debug identity so the non-coding project owner can test repository changes without operating Godot/Git.
+Goal: prove one tiny complete path through authored data -> authoritative state -> command -> state mutation -> UI -> save -> load.
 
 ## Health principle
 
-New work should make the next feature easier without inventing infrastructure for hypothetical features.
+Owner-facing builds must be traceable to exact repository identity before gameplay complexity begins.
