@@ -31,7 +31,11 @@ func run(app: Control, mode: String) -> void:
 		else:
 			var surface: Control = view.center_app_surface if mode == "operations" else view.right_app_surface
 			var surface_bounds: Rect2 = surface.get_global_rect().grow(1.0)
-			var controls: Array[Control] = [view.operations_work_tab, view.operations_record_tab] if mode == "operations" else [view.record_activity_tab, view.record_storage_tab, view.right_back_buttons[0], view.right_back_buttons[1]]
+			var controls: Array[Control] = []
+			if mode == "operations":
+				controls.assign([view.operations_work_tab, view.operations_record_tab])
+			else:
+				controls.assign([view.record_activity_tab, view.record_storage_tab, view.right_back_buttons[0], view.right_back_buttons[1]])
 			for control: Control in controls:
 				if control.is_visible_in_tree():
 					_check(surface_bounds.encloses(control.get_global_rect()), "visible app chrome stays inside its owning surface")
