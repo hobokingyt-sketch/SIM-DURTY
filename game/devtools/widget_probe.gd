@@ -104,7 +104,7 @@ func _mouse(point: Vector2, pressed: bool) -> void:
 	event.position = point
 	event.global_position = point
 	event.pressed = pressed
-	_tree.root.push_input(event)
+	_tree.root.push_input(event, true)
 
 
 func _motion(point: Vector2) -> void:
@@ -112,7 +112,7 @@ func _motion(point: Vector2) -> void:
 	event.position = point
 	event.global_position = point
 	event.button_mask = MOUSE_BUTTON_MASK_LEFT
-	_tree.root.push_input(event)
+	_tree.root.push_input(event, true)
 
 
 func _put(path: String, text: String) -> void:

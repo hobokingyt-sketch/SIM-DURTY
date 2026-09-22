@@ -186,12 +186,13 @@ func _test_input_and_continuity(tree: SceneTree) -> void:
 	tree.root.focus_exited.emit()
 	_check(manager.manipulation_snapshot().is_empty() and manager.snapshot() == preferred, "focus-loss notification cancels widget manipulation")
 	_mouse(tree, start, false)
+	tree.root.focus_entered.emit()
 	var wheel: InputEventMouseButton = InputEventMouseButton.new()
 	wheel.position = work.get_global_rect().get_center()
 	wheel.global_position = wheel.position
 	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
 	wheel.pressed = true
-	tree.root.push_input(wheel)
+	tree.root.push_input(wheel, true)
 	_check(view.city.camera_snapshot() == camera, "widget wheel input does not zoom the city")
 	start = work.drag_handle.get_global_rect().get_center()
 	_mouse(tree, start, true)
@@ -213,6 +214,8 @@ func _test_input_and_continuity(tree: SceneTree) -> void:
 	_mouse(tree, start, true)
 	destination = recent.get_parent().get_parent().get_global_rect().position + Vector2(40, 30)
 	_motion(tree, destination)
+	if manager.manipulation_snapshot().is_empty():
+		print("[widget-input-diagnostic] viewport=%s scale=%s start=%s handle=%s dock=%s hovered=%s" % [tree.root.get_visible_rect(), view.workspace.scale, start, work.drag_handle.get_global_rect(), work.get_parent().get_parent().get_global_rect(), tree.root.gui_get_hovered_control()])
 	_check(not manager.manipulation_snapshot().is_empty(), "enlarged UI transforms pointer manipulation without losing the gesture")
 	_key(tree, KEY_ESCAPE)
 	_mouse(tree, destination, false)
@@ -240,12 +243,13 @@ func _frames(tree: SceneTree) -> void:
 
 
 func _mouse(tree: SceneTree, point: Vector2, pressed: bool) -> void:
+	# Points come from Control global rectangles in this viewport, not desktop coordinates.
 	var event: InputEventMouseButton = InputEventMouseButton.new()
 	event.button_index = MOUSE_BUTTON_LEFT
 	event.position = point
 	event.global_position = point
 	event.pressed = pressed
-	tree.root.push_input(event)
+	tree.root.push_input(event, true)
 
 
 func _motion(tree: SceneTree, point: Vector2) -> void:
@@ -253,17 +257,17 @@ func _motion(tree: SceneTree, point: Vector2) -> void:
 	event.position = point
 	event.global_position = point
 	event.button_mask = MOUSE_BUTTON_MASK_LEFT
-	tree.root.push_input(event)
+	tree.root.push_input(event, true)
 
 
 func _key(tree: SceneTree, code: Key) -> void:
 	var event: InputEventKey = InputEventKey.new()
 	event.keycode = code
 	event.pressed = true
-	tree.root.push_input(event)
+	tree.root.push_input(event, true)
 	event = event.duplicate() as InputEventKey
 	event.pressed = false
-	tree.root.push_input(event)
+	tree.root.push_input(event, true)
 
 
 func _put(path: String, text: String) -> void:
