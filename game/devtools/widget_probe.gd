@@ -21,7 +21,10 @@ func run(app: Control, mode: String) -> void:
 	var view: SkeletonView = app.get("view") as SkeletonView
 	var session: SkeletonSession = app.get("session") as SkeletonSession
 	view.configure_workspace(SLOT, true)
-	if mode != "read": session.reset()
+	if mode != "read":
+		# Main may have loaded an earlier capture's profile before this isolated cleanup.
+		view.workspace.model.restore(WorkspaceLayout.defaults())
+		session.reset()
 	await _frames()
 	var widgets: WidgetWorkspace = view.widget_workspace
 	var work: WidgetView = widgets.widgets["work_scan"]
@@ -69,7 +72,7 @@ func run(app: Control, mode: String) -> void:
 			await _frames()
 			_check(widgets.move_widget("work_scan", "right", 0), "capture moves Work Scan into instrument rail")
 			await _frames()
-			widgets.resize_widget("work_scan", "tall")
+			_check(widgets.resize_widget("work_scan", "tall"), "moved capture uses a valid tall form")
 		await _frames()
 		if mode in ["capture-preview", "capture-invalid"]:
 			var start: Vector2 = work.drag_handle.get_global_rect().get_center()
