@@ -51,7 +51,7 @@ Deliver:
 
 This pass should make the OS read as a connected machine before fine detail. The implementation uses generated nine-patch frame textures so chamfers and border layers survive rail/widget resizing, plus non-interactive seam overlays for restrained structural ticks.
 
-### 6D.3 — Control and icon kit — CURRENT IMPLEMENTATION
+### 6D.3 — Control and icon kit — COMPLETE
 
 Polish reusable interaction assets:
 - launcher plates,
@@ -67,7 +67,42 @@ Polish reusable interaction assets:
 
 Interaction states change material seating and edge hierarchy rather than adding neon glow. The implementation uses authored control roles for standard, primary, tab, launcher, navigation, compact, handle and fold controls, plus one outlined SVG icon family for launcher and manipulation/navigation symbols.
 
-### 6D.4 — Typography, spacing and information rhythm — NEXT
+### Visual Refinement R1 — Panel & Inset Depth — CURRENT IMPLEMENTATION
+
+Refine only the surfaces that already exist. Do not change shell structure,
+rail geometry, app hosting, widget placement, content hierarchy or feature set.
+
+Deliver:
+- clearer chassis → rail → inset well → raised module depth hierarchy,
+- darker app/context/workbench wells,
+- widgets reading as modules seated above their bays,
+- soft edge light/shadow falloff rather than new decorative outlines,
+- identical 6A–6C geometry and widget fitting before/after the pass.
+
+### Visual Refinement R2 — Border & Shape Craft — NEXT
+
+Refine existing frame construction only:
+- border thickness consistency,
+- chamfer proportion,
+- outer-vs-inner edge hierarchy,
+- corner joins,
+- structural transitions between existing surfaces.
+
+No decorative lines, bolts or invented detail.
+
+### Visual Refinement R3 — Button & Control Craft
+
+Refine the existing control kit's physical construction without changing its
+roles or placement: chassis/face depth, selected seating, primary-action brass
+economy, launcher engagement and tab integration.
+
+### Visual Refinement R4 — Unified Visual Calibration
+
+Compare the whole existing screen against the locked reference and normalize
+material brightness, recess depth, border strength, accent economy, icon
+brightness and surface consistency. No new interface structure.
+
+### 6D.4 — Typography, spacing and information rhythm — AFTER R4
 
 Apply the concept's visual hierarchy:
 - large app/task titles,

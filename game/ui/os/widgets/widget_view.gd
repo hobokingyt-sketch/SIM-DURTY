@@ -32,8 +32,10 @@ func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_force_pass_scroll_events = false
-	add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_WIDGET, OsTokens.WELL, 0, OsTokens.frame_palette()))
+	add_theme_stylebox_override("panel", OsDepth.frame_style(OsFrames.ROLE_WIDGET, OsDepth.ROLE_WIDGET))
+	set_meta("os_depth_role", OsDepth.ROLE_WIDGET)
 	OsMaterials.apply_diffuse(self, OsMaterials.ROLE_WELL, "widget-" + widget_id)
+	OsDepth.attach(self, OsDepth.ROLE_WIDGET)
 	OsFrames.attach_overlay(self, OsFrames.ROLE_WIDGET, OsTokens.frame_palette())
 	var inset: MarginContainer = MarginContainer.new()
 	add_child(inset)

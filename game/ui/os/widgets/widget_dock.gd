@@ -14,6 +14,9 @@ func _ready() -> void:
 	vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	set_meta("os_depth_role", OsDepth.ROLE_WORKBENCH_WELL)
+	add_theme_stylebox_override("panel", OsDepth.fill_style(OsDepth.ROLE_WORKBENCH_WELL))
+	OsMaterials.apply_diffuse(self, OsMaterials.ROLE_WELL, "widget-dock-" + region)
 	canvas = Control.new()
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(canvas)

@@ -3,10 +3,10 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.12
+Game version: 0.0.13
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Phase 6D.3 — Control and Icon Kit
+## Current milestone: Functional Criminal OS, Visual Refinement R1 — Panel & Inset Depth
 
 This revision applies one stateful interaction kit across launcher plates,
 ordinary controls, primary actions, tabs, navigation, fold controls and widget
@@ -68,21 +68,22 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-The locked target now has the 6D.1 charcoal material foundation, 6D.2 scalable
-engineered frames, and 6D.3 stateful machined controls. Launcher plates, primary
-actions, tabs, navigation, fold controls and widget handles share one role/state
-system; selected/focus emphasis uses restrained brass rather than glow. Unicode
-interaction glyphs are replaced by one outlined icon family. Typography remains
-the next dedicated visual pass.
+The locked target has 6D.1 charcoal materials, 6D.2 engineered frames and 6D.3
+stateful controls. Visual Refinement R1 now calibrates only the existing surface
+depth hierarchy: darker chassis, slightly raised rails, deeper app/context/
+workbench wells and raised widget modules. Soft edge lighting/shadow is attached
+behind existing content and contributes no layout size or interaction. No UI
+structure, rail geometry, widget placement, information architecture or control
+dimensions are changed.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Phase 6D.4 typography, spacing and information rhythm, followed by
-reactive Work Scan, second-surface proof, motion and final integrated OS
-acceptance.
+Next: Visual Refinement R2 — Border & Shape Craft. R3 then refines button/control
+construction, R4 performs unified visual calibration, and only then does the
+roadmap resume typography/information refinement.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.
