@@ -17,12 +17,24 @@ func run(app: Control, mode: String) -> void:
 	_check(view.ui_snapshot()["active_app"] == "record" and view.city.visible, "widget opens rail Session Record")
 	view.record_storage_tab.pressed.emit(); view.city_button.pressed.emit(); view.record_app_button.pressed.emit(); _check(view.ui_snapshot()["active_view"] == "storage", "rail app resumes view")
 	_check(session.checkpoint() == initial, "navigation consumes no simulation state")
-	if mode == "operations": view.city_button.pressed.emit(); view.operations_button.pressed.emit()
-	elif mode == "record": view.city_button.pressed.emit(); view.record_app_button.pressed.emit()
+	if mode == "operations":
+		view.city_button.pressed.emit()
+		view.operations_button.pressed.emit()
+		view.operations_work_tab.pressed.emit()
+	elif mode == "record":
+		view.city_button.pressed.emit()
+		view.record_app_button.pressed.emit()
+		view.record_activity_tab.pressed.emit()
 	await _frames()
 	if mode != "verify":
 		if DisplayServer.get_name() == "headless": _fail("capture requires graphical display")
 		else:
+			var surface: Control = view.center_app_surface if mode == "operations" else view.right_app_surface
+			var surface_bounds: Rect2 = surface.get_global_rect().grow(1.0)
+			var controls: Array[Control] = [view.operations_work_tab, view.operations_record_tab] if mode == "operations" else [view.record_activity_tab, view.record_storage_tab, view.right_back_buttons[0], view.right_back_buttons[1]]
+			for control: Control in controls:
+				if control.is_visible_in_tree():
+					_check(surface_bounds.encloses(control.get_global_rect()), "visible app chrome stays inside its owning surface")
 			await RenderingServer.frame_post_draw
 			var path: String = OS.get_environment("SIM_DURTY_CAPTURE_PATH")
 			_check(not path.is_empty() and app.get_viewport().get_texture().get_image().save_png(path) == OK, "real app capture written")
