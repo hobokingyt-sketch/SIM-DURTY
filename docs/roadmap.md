@@ -16,7 +16,7 @@ Exit conditions:
 - GitHub Actions verified.
 - Root engineering contract exists.
 
-## Phase 1 — Infrastructure 1: Project Memory & Guardrails — CURRENT
+## Phase 1 — Infrastructure 1: Project Memory & Guardrails — COMPLETE
 
 Purpose: make long-running chat-to-game development recoverable and resistant to architectural drift.
 
@@ -40,7 +40,7 @@ Exit conditions:
 - CI rejects initial high-risk dependency violations,
 - reference UI geometry is explicit.
 
-## Phase 2 — Infrastructure 2: Build & Recovery Pipeline
+## Phase 2 — Infrastructure 2: Build & Recovery Pipeline — NEXT
 
 Purpose: let the non-coding project owner test repository changes without operating Godot or Git.
 
