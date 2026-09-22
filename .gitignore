@@ -2,9 +2,10 @@
 .godot/
 .import/
 
-# Generated build identity and build output
-game/core/build/generated/
-build/
+# Generated build identity and root build output only.
+# Do not hide source under game/core/build/ or tools/build/.
+/game/core/build/generated/
+/build/
 
 # Export settings and credentials
 export.cfg

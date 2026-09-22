@@ -11,76 +11,67 @@ Reference UI viewport: 2560×1440
 
 ## Current milestone
 
-**Infrastructure 2 — Build & Recovery Pipeline — COMPLETE**
+**Infrastructure 2 — Build & Recovery Pipeline**
 
-Purpose: let the non-coding project owner test repository changes and report exact build identity without operating Godot or Git.
+Baseline export/build-identity implementation is complete (PRs #6 and #7).
+Delivery hardening adds a mandatory packaged-Windows startup gate. A branch's
+actual validation result is its matching CI run, not a checkbox in this file.
+
+Purpose: let the non-coding project owner test repository changes and report
+exact build identity without operating Godot or Git.
 
 ## Implemented infrastructure
 
 ### Foundation 0
-- [x] Repository bootstrapped
-- [x] Godot version pinned
-- [x] Application composition root
-- [x] Automated tests and GitHub health workflow
-- [x] CI verified
+- Repository bootstrapped; engine pinned; application composition root.
+- Automated tests and GitHub health workflow.
 
 ### Infrastructure 1
-- [x] Fresh-session recovery model
-- [x] Vision/canon/state/roadmap separation
-- [x] Scoped AGENTS contracts
-- [x] Architecture guard
-- [x] Dependency/state-ownership contracts
-- [x] Native Godot UI and 2560×1440 decisions
-- [x] CI verified and merged
+- Fresh-session recovery and vision/canon/state/roadmap separation.
+- Scoped AGENTS contracts and architecture guard.
+- Dependency/state-ownership contracts.
+- Native Godot UI and 2560×1440 decisions.
 
 ### Infrastructure 2
-- [x] Windows preview export preset
-- [x] Explicit generated build manifest
-- [x] Runtime BuildInfo fallback/reader
-- [x] Copyable debug-report contract
-- [x] Build ID/ref visible on boot surface
-- [x] COPY DEBUG REPORT action
-- [x] Local reproducible preview-build command
-- [x] PR Windows preview workflow
-- [x] Official matching export-template installation in CI
-- [x] Preview ZIP naming and 14-day retention policy
-- [x] Build metadata verification step
-- [x] Infrastructure 2 health CI verified
-- [x] Windows preview artifact verified
-- [x] Infrastructure 2 merged to main
+- Windows preview export preset with separate EXE/PCK.
+- Explicit generated build manifest and runtime BuildInfo fallback/reader.
+- Build/ref identity on the boot surface and COPY DEBUG REPORT action.
+- Local PowerShell preview-build command.
+- PR export workflow with matching official editor/templates.
+- Generated outputs remain outside tracked source.
+- Exact-source import, architecture checks, tests, manifest check, and export.
+- Native Windows packaged-startup validator with negative-test fixtures.
+- Checksum verification, isolated path-with-spaces launch, timeout, error-log
+  checks, and sidecar/runtime/source identity matching.
+- Verified preview is published only after Windows Packaged Boot succeeds.
+- Owner instructions, SHA-256 sidecar, logs, and machine-readable test evidence.
+- Candidate artifacts expire after 1 day; verified previews and logs after 14.
 
 ## Runtime
 
-The game intentionally contains no gameplay yet.
+No gameplay systems exist yet. The unchanged boot surface identifies
+Infrastructure 2 and the build/ref, and exposes a copyable debug report.
 
-The boot surface now identifies Infrastructure 2, the current build/ref, and exposes a copyable debug report.
+## Save and simulation identity
 
-## Gameplay systems
+No persistent gameplay save format, seed, or simulation tick exists. Reports
+show `none` rather than invented values. Autoloads: none. External addons: none.
 
-None implemented.
+## Validation boundary
 
-## Save schema
-
-No persistent gameplay save format exists yet.
-
-## Simulation identity
-
-No simulation seed or tick exists yet. Debug reports explicitly show `none` rather than inventing values.
-
-## Autoloads
-
-None.
-
-## External addons
-
-None.
+The new delivery gate validates native Windows headless startup and build
+identity. Graphical appearance, input/clipboard, audio, performance, and save
+compatibility are not covered by that gate. Record owner playtest results
+separately. See `docs/architecture/build_pipeline.md` and ADR 0005.
 
 ## Next milestone
 
 **Walking Skeleton**
 
-Goal: prove one tiny complete path through authored data -> authoritative state -> command -> state mutation -> UI -> save -> load.
+One tiny path through authored data -> authoritative state -> command ->
+state mutation -> UI -> save -> load. It has not started in this slice.
 
 ## Health principle
 
-Owner-facing builds must be traceable to exact repository identity before gameplay complexity begins.
+Deliver the tested artifact from the tested revision. Do not mistake an
+export, a candidate upload, or a status document for runtime verification.
