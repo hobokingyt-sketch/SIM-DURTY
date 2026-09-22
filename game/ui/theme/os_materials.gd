@@ -7,14 +7,14 @@ const ROLE_CHASSIS: String = "chassis"
 const ROLE_SURFACE: String = "surface"
 const ROLE_WELL: String = "well"
 
-const GRAIN_STRENGTH: float = 0.006
-const MOTTLE_STRENGTH: float = 0.012
+const GRAIN_STRENGTH: float = 0.008
+const MOTTLE_STRENGTH: float = 0.018
 
 
 static func apply_diffuse(target: CanvasItem, role: String, identity: String) -> void:
 	var material: ShaderMaterial = ShaderMaterial.new()
 	material.shader = DIFFUSE_SHADER
-	var role_factor: float = 0.82 if role == ROLE_CHASSIS else (0.9 if role == ROLE_WELL else 1.0)
+	var role_factor: float = 0.78 if role == ROLE_CHASSIS else (0.96 if role == ROLE_WELL else 1.0)
 	material.set_shader_parameter("grain_strength", GRAIN_STRENGTH * role_factor)
 	material.set_shader_parameter("mottle_strength", MOTTLE_STRENGTH * role_factor)
 	material.set_shader_parameter("material_seed", _seed(identity))

@@ -22,17 +22,17 @@ static func fill(role: String) -> Color:
 static func spec(role: String) -> Dictionary:
 	match role:
 		ROLE_CHASSIS:
-			return {"mode": "raised", "width": 4, "shadow": 0.10, "light": 0.025}
+			return {"mode": "raised", "width": 4, "shadow": 0.08, "light": 0.028}
 		ROLE_RAIL:
-			return {"mode": "raised", "width": 5, "shadow": 0.15, "light": 0.045}
+			return {"mode": "raised", "width": 5, "shadow": 0.12, "light": 0.042}
 		ROLE_APP_WELL:
-			return {"mode": "recessed", "width": 7, "shadow": 0.24, "light": 0.045}
+			return {"mode": "recessed", "width": 7, "shadow": 0.18, "light": 0.042}
 		ROLE_CONTEXT_WELL:
-			return {"mode": "recessed", "width": 5, "shadow": 0.18, "light": 0.035}
+			return {"mode": "recessed", "width": 5, "shadow": 0.15, "light": 0.036}
 		ROLE_WORKBENCH_WELL:
-			return {"mode": "recessed", "width": 5, "shadow": 0.17, "light": 0.035}
+			return {"mode": "recessed", "width": 5, "shadow": 0.15, "light": 0.036}
 		ROLE_WIDGET:
-			return {"mode": "raised", "width": 4, "shadow": 0.13, "light": 0.04}
+			return {"mode": "raised", "width": 4, "shadow": 0.11, "light": 0.038}
 	return spec(ROLE_RAIL)
 
 

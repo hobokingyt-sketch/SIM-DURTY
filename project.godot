@@ -3,7 +3,7 @@ config_version=5
 
 [application]
 config/name="SIM-DURTY"
-config/version="0.0.15"
+config/version="0.0.16"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/main_scene="res://game/app/main.tscn"
 
@@ -17,4 +17,4 @@ window/stretch/mode="disabled"
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.0667, 0.0745, 0.0824, 1)
+environment/defaults/default_clear_color=Color(0.0667, 0.0784, 0.0863, 1)
