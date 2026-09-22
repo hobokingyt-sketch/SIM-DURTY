@@ -17,22 +17,28 @@ func run(tree: SceneTree) -> int:
 
 func _test_role_contract() -> void:
 	var contract: Dictionary = OsFrames.contract()
-	_check(contract.size() == 5, "frame grammar exposes five authored roles")
+	_check(contract.size() == 6, "frame grammar exposes six existing-surface roles")
 	_check(int(contract[OsFrames.ROLE_SHELL]["chamfer"]) > int(contract[OsFrames.ROLE_WIDGET]["chamfer"]), "shell chamfer is stronger than widget chamfer")
 	_check(int(contract[OsFrames.ROLE_APP]["patch"]) > int(contract[OsFrames.ROLE_CONTROL]["patch"]), "app frame preserves larger corner patch than control frame")
-	_check(float(contract[OsFrames.ROLE_CONTROL]["seam"]) == 0.0, "control frame does not inherit decorative seams")
-	_check(float(contract[OsFrames.ROLE_SURFACE]["seam"]) > 0.0, "structural rail frame permits restrained seam detail")
+	_check(int(contract[OsFrames.ROLE_SURFACE]["chamfer"]) == int(contract[OsFrames.ROLE_APP]["chamfer"]), "rail and app use the same major chamfer family")
+	_check(int(contract[OsFrames.ROLE_INSET]["chamfer"]) == int(contract[OsFrames.ROLE_WIDGET]["chamfer"]), "insets and widgets share the secondary chamfer family")
+	_check(not contract[OsFrames.ROLE_SURFACE].has("seam"), "R2 removes decorative seam-tick geometry from structural frames")
 
 
 func _test_style_contract() -> void:
-	var style: StyleBoxTexture = OsFrames.frame_style(OsFrames.ROLE_WIDGET, OsTokens.WELL, 9, OsTokens.frame_palette())
+	var style: StyleBoxTexture = OsFrames.frame_style(OsFrames.ROLE_WIDGET, OsTokens.WELL, 9, OsTokens.frame_palette(), OsFrames.EDGE_RAISED)
 	_check(style.texture != null, "widget frame produces a scalable texture")
 	_check(style.get_texture_margin(SIDE_LEFT) > 0.0 and style.get_texture_margin(SIDE_TOP) > 0.0, "nine-patch frame protects corner geometry")
 	_check(is_equal_approx(style.get_content_margin(SIDE_LEFT), 9.0), "frame preserves caller content padding")
 	var image: Image = style.texture.get_image()
 	_check(image.get_pixel(0, 0).a == 0.0, "outer corner is truly clipped/transparent")
-	_check(image.get_pixel(18, 18).a > 0.99, "frame center remains opaque")
-	_check(image.get_pixel(18, 0).is_equal_approx(OsTokens.EDGE_SHADOW), "outer containment edge uses the deep seam color")
+	_check(image.get_pixel(22, 22).a > 0.99, "frame center remains opaque")
+	_check(image.get_pixel(22, 0).is_equal_approx(OsTokens.EDGE_SHADOW), "outer containment edge uses the deep edge color")
+	var raised_top: Color = image.get_pixel(22, 2)
+	var raised_bottom: Color = image.get_pixel(22, image.get_height() - 3)
+	_check(raised_top.get_luminance() > raised_bottom.get_luminance(), "raised frame lights the top edge and seats the bottom edge")
+	var recessed: Image = OsFrames.frame_style(OsFrames.ROLE_APP, OsTokens.APP_WELL, 0, OsTokens.frame_palette(), OsFrames.EDGE_RECESSED).texture.get_image()
+	_check(recessed.get_pixel(22, 3).get_luminance() < recessed.get_pixel(22, recessed.get_height() - 4).get_luminance(), "recessed frame inverts the bevel direction")
 
 
 func _test_geometry_contract() -> void:
@@ -55,16 +61,16 @@ func _test_live_frames(tree: SceneTree) -> void:
 	var view: SkeletonView = app.get("view") as SkeletonView
 	var session: SkeletonSession = app.get("session") as SkeletonSession
 	var before: Dictionary = session.checkpoint()
-	_check(_has_overlay(view, OsFrames.ROLE_SHELL), "shell carries the global engineered frame overlay")
+	_check(_has_overlay(view, OsFrames.ROLE_SHELL), "shell keeps one structural outer reinforcement")
 	for side: String in ["LeftRail", "RightRail", "TopRail", "BottomRail"]:
 		var rail: Control = view.workspace.get_node_or_null(side) as Control
-		_check(is_instance_valid(rail) and _has_overlay(rail, OsFrames.ROLE_SURFACE), side + " carries structural seam treatment")
+		_check(is_instance_valid(rail) and not _has_overlay(rail, OsFrames.ROLE_SURFACE), side + " relies on its crafted frame instead of extra seam decoration")
 		var rail_style: StyleBox = rail.get_theme_stylebox("panel")
 		_check(rail_style is StyleBoxTexture, side + " uses scalable chamfered frame texture")
-	_check(_has_overlay(view.center_app_surface, OsFrames.ROLE_APP), "center app carries app frame treatment")
-	_check(_has_overlay(view.right_app_surface, OsFrames.ROLE_APP), "rail app carries app frame treatment")
+	_check(not _has_overlay(view.center_app_surface, OsFrames.ROLE_APP), "center app uses recessed border construction without extra overlay lines")
+	_check(not _has_overlay(view.right_app_surface, OsFrames.ROLE_APP), "rail app uses recessed border construction without extra overlay lines")
 	for widget: WidgetView in view.widget_workspace.widgets.values():
-		_check(_has_overlay(widget, OsFrames.ROLE_WIDGET), widget.widget_id + " carries widget frame treatment")
+		_check(not _has_overlay(widget, OsFrames.ROLE_WIDGET), widget.widget_id + " uses frame construction without decorative seam ticks")
 		_check(widget.get_theme_stylebox("panel") is StyleBoxTexture, widget.widget_id + " uses scalable widget frame")
 	var dummy: Panel = Panel.new()
 	dummy.custom_minimum_size = Vector2(123, 45)

@@ -23,32 +23,13 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	if size.x < 8.0 or size.y < 8.0 or _palette.is_empty():
+	# R2 removes decorative seam ticks. Only the outer shell gets one structural
+	# reinforcement line; all other border craft lives in the actual frame texture.
+	if not _full_frame or size.x < 8.0 or size.y < 8.0 or _palette.is_empty():
 		return
-	var definition: Dictionary = OsFrames.spec(_role)
-	var chamfer: float = float(definition["chamfer"])
-	var seam: float = float(definition["seam"])
-	if _full_frame:
-		_draw_layer(1.0, chamfer, _palette["shadow"], 2.0)
-		_draw_layer(3.5, maxf(1.0, chamfer - 2.0), _palette["middle"], 1.0)
-		var highlight: Color = _palette["highlight"]
-		highlight.a = 0.72
-		_draw_layer(6.0, maxf(1.0, chamfer - 4.0), highlight, 1.0)
-	if seam <= 0.0:
-		return
-	var center: float = size.x * 0.5
-	var half: float = minf(seam * 0.5, maxf(0.0, size.x * 0.18))
-	if half <= 2.0:
-		return
-	var hi: Color = _palette["highlight"]
-	hi.a = 0.62
-	var shadow: Color = _palette["shadow"]
-	shadow.a = 0.92
-	draw_line(Vector2(center - half, 3.0), Vector2(center + half, 3.0), hi, 1.0)
-	draw_line(Vector2(center - half, size.y - 3.0), Vector2(center + half, size.y - 3.0), shadow, 1.0)
-
-
-func _draw_layer(inset: float, chamfer: float, color: Color, width: float) -> void:
-	var points: PackedVector2Array = OsFrames.chamfer_points(size, chamfer, inset)
+	var chamfer: float = float(OsFrames.spec(_role)["chamfer"])
+	var outer: Color = _palette["shadow"]
+	outer.a = 0.82
+	var points: PackedVector2Array = OsFrames.chamfer_points(size, chamfer, 1.0)
 	if points.size() >= 2:
-		draw_polyline(points, color, width, true)
+		draw_polyline(points, outer, 1.0, true)

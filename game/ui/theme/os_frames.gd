@@ -4,30 +4,43 @@ extends RefCounted
 const ROLE_SHELL: String = "shell"
 const ROLE_SURFACE: String = "surface"
 const ROLE_APP: String = "app"
+const ROLE_INSET: String = "inset"
 const ROLE_WIDGET: String = "widget"
 const ROLE_CONTROL: String = "control"
 
-const TEXTURE_SIZE: int = 36
+const EDGE_RAISED: String = "raised"
+const EDGE_RECESSED: String = "recessed"
+const EDGE_NEUTRAL: String = "neutral"
+
+const TEXTURE_SIZE: int = 44
 
 
 static func spec(role: String) -> Dictionary:
 	match role:
 		ROLE_SHELL:
-			return {"chamfer": 9, "outer": 2, "middle": 2, "inner": 1, "patch": 13, "seam": 36.0}
+			return {"chamfer": 10, "outer": 2, "structure": 2, "bevel": 2, "patch": 15}
 		ROLE_SURFACE:
-			return {"chamfer": 7, "outer": 2, "middle": 1, "inner": 1, "patch": 11, "seam": 26.0}
+			return {"chamfer": 8, "outer": 1, "structure": 2, "bevel": 1, "patch": 12}
 		ROLE_APP:
-			return {"chamfer": 8, "outer": 2, "middle": 1, "inner": 1, "patch": 12, "seam": 30.0}
+			return {"chamfer": 8, "outer": 1, "structure": 2, "bevel": 2, "patch": 13}
+		ROLE_INSET:
+			return {"chamfer": 6, "outer": 1, "structure": 1, "bevel": 2, "patch": 10}
 		ROLE_WIDGET:
-			return {"chamfer": 6, "outer": 1, "middle": 1, "inner": 1, "patch": 10, "seam": 18.0}
+			return {"chamfer": 6, "outer": 1, "structure": 1, "bevel": 1, "patch": 9}
 		ROLE_CONTROL:
-			return {"chamfer": 4, "outer": 1, "middle": 1, "inner": 1, "patch": 7, "seam": 0.0}
+			return {"chamfer": 4, "outer": 1, "structure": 1, "bevel": 1, "patch": 6}
 	return spec(ROLE_WIDGET)
 
 
-static func frame_style(role: String, fill: Color, padding: int, palette: Dictionary) -> StyleBoxTexture:
+static func frame_style(
+	role: String,
+	fill: Color,
+	padding: int,
+	palette: Dictionary,
+	edge_mode: String = EDGE_RAISED
+) -> StyleBoxTexture:
 	var style: StyleBoxTexture = StyleBoxTexture.new()
-	style.texture = _frame_texture(role, fill, palette)
+	style.texture = _frame_texture(role, fill, palette, edge_mode)
 	var patch: float = float(spec(role)["patch"])
 	for side: int in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
 		style.set_texture_margin(side, patch)
@@ -51,7 +64,7 @@ static func attach_overlay(target: Control, role: String, palette: Dictionary, f
 
 static func contract() -> Dictionary:
 	var result: Dictionary = {}
-	for role: String in [ROLE_SHELL, ROLE_SURFACE, ROLE_APP, ROLE_WIDGET, ROLE_CONTROL]:
+	for role: String in [ROLE_SHELL, ROLE_SURFACE, ROLE_APP, ROLE_INSET, ROLE_WIDGET, ROLE_CONTROL]:
 		result[role] = spec(role)
 	return result
 
@@ -74,31 +87,83 @@ static func chamfer_points(size: Vector2, chamfer: float, inset: float = 0.0) ->
 	])
 
 
-static func _frame_texture(role: String, fill: Color, palette: Dictionary) -> Texture2D:
+static func _frame_texture(role: String, fill: Color, palette: Dictionary, edge_mode: String) -> Texture2D:
 	var image: Image = Image.create(TEXTURE_SIZE, TEXTURE_SIZE, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
 	var definition: Dictionary = spec(role)
 	var outer_width: int = int(definition["outer"])
-	var middle_width: int = int(definition["middle"])
-	var inner_width: int = int(definition["inner"])
+	var structure_width: int = int(definition["structure"])
+	var bevel_width: int = int(definition["bevel"])
 	var chamfer: int = int(definition["chamfer"])
-	var outer_color: Color = palette["shadow"]
-	var middle_color: Color = palette["middle"]
-	var highlight_color: Color = fill.lerp(palette["highlight"], 0.42)
+	var structure_inset: int = outer_width
+	var bevel_inset: int = outer_width + structure_width
+	var fill_inset: int = bevel_inset + bevel_width
+
 	for y: int in range(TEXTURE_SIZE):
 		for x: int in range(TEXTURE_SIZE):
 			var point: Vector2i = Vector2i(x, y)
 			if not _inside(point, 0, chamfer):
 				continue
+
 			var color: Color = fill
 			if not _inside(point, outer_width, maxi(1, chamfer - outer_width)):
-				color = outer_color
-			elif not _inside(point, outer_width + middle_width, maxi(1, chamfer - outer_width - middle_width)):
-				color = middle_color
-			elif not _inside(point, outer_width + middle_width + inner_width, maxi(1, chamfer - outer_width - middle_width - inner_width)):
-				color = highlight_color
+				color = palette["shadow"]
+			elif not _inside(point, bevel_inset, maxi(1, chamfer - bevel_inset)):
+				color = _directional_edge_color(point, structure_inset, fill, palette, edge_mode, false)
+			elif not _inside(point, fill_inset, maxi(1, chamfer - fill_inset)):
+				color = _directional_edge_color(point, bevel_inset, fill, palette, edge_mode, true)
 			image.set_pixel(x, y, color)
+
 	return ImageTexture.create_from_image(image)
+
+
+static func _directional_edge_color(
+	point: Vector2i,
+	inset: int,
+	fill: Color,
+	palette: Dictionary,
+	edge_mode: String,
+	inner_bevel: bool
+) -> Color:
+	if edge_mode == EDGE_NEUTRAL:
+		return fill.lerp(palette["middle"], 0.55 if inner_bevel else 0.8)
+
+	var high: Color = fill.lerp(palette["highlight"], 0.34 if inner_bevel else 0.44)
+	var low: Color = fill.lerp(palette["shadow"], 0.46 if inner_bevel else 0.62)
+	var neutral: Color = fill.lerp(palette["middle"], 0.68)
+
+	var high_side: bool = _top_left_side(point, inset)
+	var low_side: bool = _bottom_right_side(point, inset)
+	if edge_mode == EDGE_RECESSED:
+		var swap: bool = high_side
+		high_side = low_side
+		low_side = swap
+
+	if high_side:
+		return high
+	if low_side:
+		return low
+	return neutral
+
+
+static func _top_left_side(point: Vector2i, inset: int) -> bool:
+	var low: int = inset
+	var top_distance: int = point.y - low
+	var left_distance: int = point.x - low
+	var high: int = TEXTURE_SIZE - 1 - inset
+	var bottom_distance: int = high - point.y
+	var right_distance: int = high - point.x
+	return mini(top_distance, left_distance) < mini(bottom_distance, right_distance)
+
+
+static func _bottom_right_side(point: Vector2i, inset: int) -> bool:
+	var low: int = inset
+	var top_distance: int = point.y - low
+	var left_distance: int = point.x - low
+	var high: int = TEXTURE_SIZE - 1 - inset
+	var bottom_distance: int = high - point.y
+	var right_distance: int = high - point.x
+	return mini(bottom_distance, right_distance) < mini(top_distance, left_distance)
 
 
 static func _inside(point: Vector2i, inset: int, chamfer: int) -> bool:

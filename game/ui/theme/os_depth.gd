@@ -47,7 +47,18 @@ static func fill_style(role: String) -> StyleBoxFlat:
 
 
 static func frame_style(frame_role: String, depth_role: String, padding: int = 0) -> StyleBoxTexture:
-	return OsFrames.frame_style(frame_role, fill(depth_role), padding, OsTokens.frame_palette())
+	var edge_mode: String = OsFrames.EDGE_RECESSED if str(spec(depth_role)["mode"]) == "recessed" else OsFrames.EDGE_RAISED
+	return OsFrames.frame_style(frame_role, fill(depth_role), padding, OsTokens.frame_palette(), edge_mode)
+
+
+static func frame_role(depth_role: String) -> String:
+	match depth_role:
+		ROLE_CHASSIS: return OsFrames.ROLE_SHELL
+		ROLE_RAIL: return OsFrames.ROLE_SURFACE
+		ROLE_APP_WELL: return OsFrames.ROLE_APP
+		ROLE_CONTEXT_WELL, ROLE_WORKBENCH_WELL: return OsFrames.ROLE_INSET
+		ROLE_WIDGET: return OsFrames.ROLE_WIDGET
+	return OsFrames.ROLE_WIDGET
 
 
 static func attach(target: Control, role: String) -> OsDepthOverlay:
@@ -68,7 +79,7 @@ static func attach(target: Control, role: String) -> OsDepthOverlay:
 
 static func apply_scroll(scroll: ScrollContainer, role: String, identity: String) -> void:
 	scroll.set_meta("os_depth_role", role)
-	scroll.add_theme_stylebox_override("panel", fill_style(role))
+	scroll.add_theme_stylebox_override("panel", frame_style(frame_role(role), role))
 	OsMaterials.apply_diffuse(scroll, OsMaterials.ROLE_WELL, identity)
 
 

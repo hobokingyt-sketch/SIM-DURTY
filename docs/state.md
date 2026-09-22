@@ -3,10 +3,10 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.13
+Game version: 0.0.14
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Visual Refinement R1 — Panel & Inset Depth
+## Current milestone: Functional Criminal OS, Visual Refinement R2 — Border & Shape Craft
 
 This revision applies one stateful interaction kit across launcher plates,
 ordinary controls, primary actions, tabs, navigation, fold controls and widget
@@ -68,22 +68,23 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-The locked target has 6D.1 charcoal materials, 6D.2 engineered frames and 6D.3
-stateful controls. Visual Refinement R1 now calibrates only the existing surface
-depth hierarchy: darker chassis, slightly raised rails, deeper app/context/
-workbench wells and raised widget modules. Soft edge lighting/shadow is attached
-behind existing content and contributes no layout size or interaction. No UI
-structure, rail geometry, widget placement, information architecture or control
-dimensions are changed.
+The locked target has the charcoal material, engineered frame, stateful control
+and R1 depth layers. Visual Refinement R2 now improves only existing border/shape
+craft: a normalized 10/8/6/4 chamfer family, directional raised versus recessed
+bevels, cleaner corner joins, darker outer containment and quieter structural
+edges. Decorative center seam ticks were removed rather than embellished.
+Context/workbench wells use the same recessed shape grammar. No UI structure,
+rail geometry, widget placement, information hierarchy or control dimensions
+are changed.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Visual Refinement R2 — Border & Shape Craft. R3 then refines button/control
-construction, R4 performs unified visual calibration, and only then does the
-roadmap resume typography/information refinement.
+Next: Visual Refinement R3 — Button & Control Craft. R4 then performs unified
+visual calibration, and only after that does the roadmap resume typography and
+information refinement.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.

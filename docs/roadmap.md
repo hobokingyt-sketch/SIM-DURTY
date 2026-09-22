@@ -67,7 +67,7 @@ Polish reusable interaction assets:
 
 Interaction states change material seating and edge hierarchy rather than adding neon glow. The implementation uses authored control roles for standard, primary, tab, launcher, navigation, compact, handle and fold controls, plus one outlined SVG icon family for launcher and manipulation/navigation symbols.
 
-### Visual Refinement R1 — Panel & Inset Depth — CURRENT IMPLEMENTATION
+### Visual Refinement R1 — Panel & Inset Depth — COMPLETE
 
 Refine only the surfaces that already exist. Do not change shell structure,
 rail geometry, app hosting, widget placement, content hierarchy or feature set.
@@ -79,7 +79,7 @@ Deliver:
 - soft edge light/shadow falloff rather than new decorative outlines,
 - identical 6A–6C geometry and widget fitting before/after the pass.
 
-### Visual Refinement R2 — Border & Shape Craft — NEXT
+### Visual Refinement R2 — Border & Shape Craft — CURRENT IMPLEMENTATION
 
 Refine existing frame construction only:
 - border thickness consistency,
@@ -88,9 +88,9 @@ Refine existing frame construction only:
 - corner joins,
 - structural transitions between existing surfaces.
 
-No decorative lines, bolts or invented detail.
+No decorative lines, bolts or invented detail. The implementation removes the old center seam ticks, normalizes the shape family to 10/8/6/4-unit chamfers, uses directional bevel lighting for raised versus recessed surfaces, and lets the existing Context/Workbench wells share the inset-frame grammar without adding new containers.
 
-### Visual Refinement R3 — Button & Control Craft
+### Visual Refinement R3 — Button & Control Craft — NEXT
 
 Refine the existing control kit's physical construction without changing its
 roles or placement: chassis/face depth, selected seating, primary-action brass

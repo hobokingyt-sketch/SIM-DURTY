@@ -25,6 +25,8 @@ func _draw() -> void:
 	var shadow_alpha: float = float(definition["shadow"])
 	var light_alpha: float = float(definition["light"])
 	var recessed: bool = str(definition["mode"]) == "recessed"
+	var frame_role: String = OsDepth.frame_role(_role)
+	var chamfer: float = float(OsFrames.spec(frame_role)["chamfer"])
 
 	for step: int in range(width):
 		var t: float = float(step) / maxf(1.0, float(width - 1))
@@ -34,29 +36,33 @@ func _draw() -> void:
 		var light: Color = OsTokens.EDGE_HIGHLIGHT
 		light.a = light_alpha * falloff
 		var inset: float = float(step) + 1.0
+		var points: PackedVector2Array = OsFrames.chamfer_points(
+			size,
+			maxf(1.0, chamfer - float(step)),
+			inset
+		)
+		if points.size() < 9:
+			continue
 		if recessed:
-			_draw_top(inset, dark)
-			_draw_left(inset, dark)
-			_draw_bottom(inset, light)
-			_draw_right(inset, light)
+			_draw_path_segments(points, dark, light)
 		else:
-			_draw_top(inset, light)
-			_draw_left(inset, light)
-			_draw_bottom(inset, dark)
-			_draw_right(inset, dark)
+			_draw_path_segments(points, light, dark)
 
 
-func _draw_top(inset: float, color: Color) -> void:
-	draw_rect(Rect2(Vector2(inset, inset), Vector2(maxf(0.0, size.x - inset * 2.0), 1.0)), color)
+func _draw_path_segments(points: PackedVector2Array, top_left: Color, bottom_right: Color) -> void:
+	# top, top-right diagonal, right, bottom-right diagonal, bottom,
+	# bottom-left diagonal, left, top-left diagonal.
+	var light_segments: PackedInt32Array = PackedInt32Array([0, 7])
+	var dark_segments: PackedInt32Array = PackedInt32Array([2, 3, 4])
+	var mid_light: Color = top_left
+	mid_light.a *= 0.65
+	var mid_dark: Color = bottom_right
+	mid_dark.a *= 0.65
 
-
-func _draw_bottom(inset: float, color: Color) -> void:
-	draw_rect(Rect2(Vector2(inset, maxf(inset, size.y - inset - 1.0)), Vector2(maxf(0.0, size.x - inset * 2.0), 1.0)), color)
-
-
-func _draw_left(inset: float, color: Color) -> void:
-	draw_rect(Rect2(Vector2(inset, inset), Vector2(1.0, maxf(0.0, size.y - inset * 2.0))), color)
-
-
-func _draw_right(inset: float, color: Color) -> void:
-	draw_rect(Rect2(Vector2(maxf(inset, size.x - inset - 1.0), inset), Vector2(1.0, maxf(0.0, size.y - inset * 2.0))), color)
+	for index: int in light_segments:
+		draw_line(points[index], points[index + 1], top_left, 1.0)
+	draw_line(points[1], points[2], mid_light, 1.0)
+	for index: int in dark_segments:
+		draw_line(points[index], points[index + 1], bottom_right, 1.0)
+	draw_line(points[5], points[6], mid_dark, 1.0)
+	draw_line(points[6], points[7], top_left, 1.0)
