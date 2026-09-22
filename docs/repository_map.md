@@ -1,76 +1,72 @@
 # Repository Map
 
-This is the long-term repository shape. Directories should be created when they contain real project material; empty framework theater is discouraged.
+This map grows only when real files need the ownership boundary.
 
 ```text
 SIM-DURTY/
 ├── AGENTS.md
 ├── README.md
 ├── project.godot
+├── export_presets.cfg
 ├── .godot-version
 ├── .github/
 │   ├── workflows/
+│   │   ├── ci.yml
+│   │   └── preview_build.yml
 │   └── pull_request_template.md
 ├── docs/
 │   ├── START_HERE.md
 │   ├── state.md
 │   ├── roadmap.md
 │   ├── health.md
+│   ├── debug_report.md
 │   ├── repository_map.md
 │   ├── design/
-│   │   ├── master_vision.md
-│   │   ├── canon.md
-│   │   ├── ui_principles.md
-│   │   └── vocabulary.md
 │   ├── architecture/
 │   │   ├── overview.md
 │   │   ├── dependency_rules.md
 │   │   ├── state_ownership.md
-│   │   └── ui_runtime.md
+│   │   ├── ui_runtime.md
+│   │   └── build_pipeline.md
 │   └── decisions/
 ├── game/
 │   ├── app/
 │   ├── core/
-│   │   └── AGENTS.md
+│   │   ├── AGENTS.md
+│   │   ├── build/
+│   │   └── debug/
 │   ├── simulation/
-│   │   └── AGENTS.md
 │   ├── features/
 │   ├── ui/
-│   │   └── AGENTS.md
 │   ├── content/
-│   │   └── AGENTS.md
 │   └── devtools/
 ├── tests/
-│   └── AGENTS.md
 └── tools/
+    ├── build/
     └── validation/
 ```
 
 ## Growth policy
 
-The map is directional, not a command to pre-create every folder.
+Create a directory only when a real file or roadmap capability needs it.
 
-Create a directory when:
-- a real file needs its ownership boundary,
-- a roadmap phase explicitly establishes the subsystem,
-- keeping the file elsewhere would blur ownership.
+Do not create speculative domain folders because the master vision mentions future systems.
 
-Do not create:
-- empty domain folders merely because the master vision names a future system,
-- generic `managers/`, `helpers/`, or `utils/` dumping grounds,
-- mirrored UI/simulation copies of the same domain model.
+## Generated paths
+
+These are intentionally not canonical source:
+- `game/core/build/generated/`
+- `build/`
+
+They are regenerated from explicit source/build inputs and are Git-ignored.
 
 ## Scoped AGENTS
 
-The root `AGENTS.md` always applies.
+The root contract always applies. Current scoped contracts exist for:
+- core,
+- simulation,
+- UI,
+- content,
+- tests.
 
-A scoped `AGENTS.md` adds rules for its subtree.
-
-Current scoped contracts:
-- `game/core/AGENTS.md`
-- `game/simulation/AGENTS.md`
-- `game/ui/AGENTS.md`
-- `game/content/AGENTS.md`
-- `tests/AGENTS.md`
-
-Add a new scoped contract only when a subsystem has distinct engineering risks that the root contract cannot express cleanly.
+Add another only when a subtree develops distinct engineering risks.
