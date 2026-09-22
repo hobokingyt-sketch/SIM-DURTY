@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location             --output godot.zip             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl --fail --location --output godot.zip "https://downloads.godotengine.org/?flavor=stable&platform=linux.64&slug=linux.x86_64.zip&version=${GODOT_VERSION}"
           unzip -q godot.zip
           mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
           chmod +x godot
@@ -41,4 +41,4 @@ jobs:
         run: ./godot --headless --path . --script tests/runner.gd
 
       - name: Boot main scene
-        run: ./godot --headless --path . --editor --quit-after 2
+        run: ./godot --headless --path . --quit-after 2
