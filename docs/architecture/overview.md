@@ -2,24 +2,7 @@
 
 SIM-DURTY grows through coherent vertical slices rather than a speculative framework.
 
-## Runtime composition
-
-`game/app/main.tscn` is the composition root.
-
-Long-term shape may resemble:
-
-```text
-Main
-├── GameSession
-├── World
-├── UI
-├── Audio
-└── DebugTools
-```
-
-These nodes are created only when required by real behavior.
-
-## Dependency direction
+## Runtime dependency direction
 
 ```text
 Authored Data
@@ -28,12 +11,14 @@ Simulation / Domain Logic
      ↓
 Authoritative State
      ↓
-Presentation Adapter / Explicit References
+Presentation Boundary
      ↓
 UI and Visual World
 ```
 
-The application layer composes these pieces.
+The application layer composes the pieces.
+
+Build identity and diagnostics are technical metadata. They may describe a runtime but never become gameplay state.
 
 ## Major repository areas
 
@@ -41,39 +26,39 @@ The application layer composes these pieces.
 Startup, composition, lifecycle wiring.
 
 ### game/core
-Reusable technical foundations such as clock, deterministic RNG, IDs, persistence primitives, diagnostics, build metadata.
+Reusable technical foundations including diagnostics and build identity.
 
 ### game/simulation
-Authoritative world state and state transitions.
+Authoritative gameplay/world state and transitions.
 
 ### game/features
-Vertically grouped gameplay behavior where co-location improves clarity without creating duplicated global state.
+Vertical feature-local composition without duplicated shared authority.
 
 ### game/ui
-OS shell, shared presentation components, widgets, applications, context surfaces, alerts, Theme resources.
+OS shell and presentation.
 
 ### game/content
-Authored Resources/data. Content is data, not a second simulation implementation.
+Authored Resources/data.
 
 ### game/devtools
-Development-only inspection and control surfaces. They may observe broad project state but production gameplay must not depend on them.
+Development-only observation/control; production gameplay must not depend on it.
 
 ### tests
-Unit, integration, smoke, architecture, determinism, persistence, scenario, content, and performance tests as those capabilities appear.
+Behavior and architecture validation.
+
+### tools
+Build, repository, and validation automation.
 
 ## Architectural posture
 
-Start local.
-
-Promote a dependency or state owner to broader scope only when its lifetime and consumers justify it.
+Start local. Promote scope only when real lifetime/consumer needs justify it.
 
 Avoid:
 - global-manager proliferation,
-- service-locator scene-tree traversal,
+- service-locator tree traversal,
 - duplicate authoritative state,
 - UI-owned gameplay state,
-- giant base classes,
-- generic event buses replacing clear ownership,
+- generic event buses,
 - framework creation for hypothetical features.
 
 ## Detailed contracts
@@ -82,4 +67,5 @@ Read:
 - `dependency_rules.md`
 - `state_ownership.md`
 - `ui_runtime.md`
+- `build_pipeline.md`
 - relevant ADRs in `docs/decisions/`
