@@ -45,8 +45,8 @@ Purpose: let the non-coding project owner test repository changes and report exa
 - [x] Official matching export-template installation in CI
 - [x] Preview ZIP naming and 14-day retention policy
 - [x] Build metadata verification step
-- [ ] Infrastructure 2 health CI verified
-- [ ] Windows preview artifact verified
+- [x] Infrastructure 2 health CI verified
+- [x] Windows preview artifact verified
 - [ ] Infrastructure 2 merged to main
 
 ## Runtime
