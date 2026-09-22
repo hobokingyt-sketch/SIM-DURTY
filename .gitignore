@@ -1,0 +1,22 @@
+# Godot generated/imported state
+.godot/
+.import/
+
+# Export settings and credentials
+export.cfg
+export_credentials.cfg
+
+# Mono/.NET generated state (ignored even though this project uses GDScript)
+.mono/
+data_*/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and local scratch
+*.log
+.local/
+tmp/
