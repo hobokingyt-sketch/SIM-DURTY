@@ -11,7 +11,7 @@ Reference UI viewport: 2560×1440
 
 ## Current milestone
 
-**Infrastructure 2 — Build & Recovery Pipeline**
+**Infrastructure 2 — Build & Recovery Pipeline — COMPLETE**
 
 Purpose: let the non-coding project owner test repository changes and report exact build identity without operating Godot or Git.
 
@@ -47,7 +47,7 @@ Purpose: let the non-coding project owner test repository changes and report exa
 - [x] Build metadata verification step
 - [x] Infrastructure 2 health CI verified
 - [x] Windows preview artifact verified
-- [ ] Infrastructure 2 merged to main
+- [x] Infrastructure 2 merged to main
 
 ## Runtime
 

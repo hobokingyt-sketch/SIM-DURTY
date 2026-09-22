@@ -10,7 +10,7 @@ Bootable, tested Godot repository.
 
 Recoverable repository truth, scoped engineering contracts, architecture rules, and CI guardrails.
 
-## Phase 2 — Infrastructure 2: Build & Recovery Pipeline — CURRENT
+## Phase 2 — Infrastructure 2: Build & Recovery Pipeline — COMPLETE
 
 Purpose: let the non-coding project owner test repository changes without operating Godot or Git.
 
