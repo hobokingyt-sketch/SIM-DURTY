@@ -1,0 +1,106 @@
+name: Windows Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-preview:
+    name: Build Windows Preview
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GODOT_VERSION: "4.7.2"
+      SIM_DURTY_BUILD_CHANNEL: "preview"
+      SIM_DURTY_BUILD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SIM_DURTY_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SIM_DURTY_BUILD_REF: ${{ github.head_ref || github.ref_name }}
+      SIM_DURTY_BUILD_NUMBER: ${{ github.run_number }}
+      SIM_DURTY_BUILD_RUN_ID: ${{ github.run_id }}
+      SIM_DURTY_BUILD_PR: ${{ github.event.pull_request.number || 'manual' }}
+
+    steps:
+      - name: Checkout preview source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location \
+            --output godot.zip \
+            "https://downloads.godotengine.org/?flavor=stable&platform=linux.64&slug=linux.x86_64.zip&version=${GODOT_VERSION}"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Install export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location \
+            --output export_templates.tpz \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          rm -rf template_unpack
+          mkdir template_unpack
+          unzip -q export_templates.tpz -d template_unpack
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          rm -rf "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mv template_unpack/templates \
+            "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+
+      - name: Generate build metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SIM_DURTY_BUILD_TIME_UTC="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          ./godot --headless --path . --script tools/build/write_build_manifest.gd
+
+      - name: Import project
+        run: ./godot --headless --path . --editor --quit-after 1
+
+      - name: Verify build metadata
+        run: ./godot --headless --path . --script tools/build/verify_build_manifest.gd
+
+      - name: Export Windows preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/windows
+          ./godot --headless --path . \
+            --export-debug "Windows Preview" \
+            "build/windows/SIM-DURTY.exe"
+          cp game/core/build/generated/build_manifest.json \
+            build/windows/BUILD-METADATA.json
+
+      - name: Package preview
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          short_sha="${SIM_DURTY_BUILD_SHA:0:12}"
+          artifact_name="SIM-DURTY-preview-${GITHUB_RUN_NUMBER}-${short_sha}"
+          archive_path="build/artifacts/${artifact_name}.zip"
+          mkdir -p build/artifacts
+          (
+            cd build/windows
+            zip -q -r "../../artifacts/${artifact_name}.zip" .
+          )
+          echo "artifact_name=${artifact_name}" >> "$GITHUB_OUTPUT"
+          echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: ${{ steps.package.outputs.archive_path }}
+          if-no-files-found: error
+          retention-days: 14
