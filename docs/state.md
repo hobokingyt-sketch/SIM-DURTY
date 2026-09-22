@@ -6,16 +6,18 @@ Repository: `hobokingyt-sketch/SIM-DURTY`
 
 Engine: Godot 4.7.2 stable  
 Language: typed GDScript  
-Primary branch: `main`
+Primary branch: `main`  
+Reference UI viewport: 2560×1440
 
 ## Current milestone
 
-**Foundation 0**
+**Infrastructure 1 — Project Memory & Guardrails**
 
-Purpose: establish a bootable, testable Godot repository with rules that make chat-driven development sustainable.
+Purpose: make long-running chat-to-game development recoverable and resistant to architecture/design drift.
 
-## Foundation components
+## Implemented infrastructure
 
+### Foundation 0
 - [x] Repository bootstrapped
 - [x] Godot version pinned
 - [x] Project configuration
@@ -23,16 +25,40 @@ Purpose: establish a bootable, testable Godot repository with rules that make ch
 - [x] Runtime health diagnostic
 - [x] Automated smoke test runner
 - [x] GitHub Actions health workflow
-- [x] AI engineering contract
-- [x] Architecture documentation
-- [x] Chat-to-repository workflow documentation
-- [x] Architecture decision record
+- [x] Root AI engineering contract
 - [x] CI verified on GitHub
-- [x] Foundation branch merged to main
+
+### Infrastructure 1
+- [x] Fresh-session recovery entry point
+- [x] Source-of-truth authority model
+- [x] Long-range master vision separated from implementation state
+- [x] Durable design canon
+- [x] Long-term roadmap
+- [x] Repository map
+- [x] Project health contract
+- [x] Scoped AGENTS contracts
+- [x] Dependency rules
+- [x] State-ownership contract
+- [x] Godot-native UI runtime contract
+- [x] Godot-native UI ADR
+- [x] 2560×1440 reference-resolution ADR/config
+- [x] Pull-request health checklist
+- [x] Architecture-guard script
+- [x] Architecture guard wired into CI
+- [ ] Infrastructure 1 CI verified
+- [ ] Infrastructure 1 merged to main
 
 ## Runtime
 
-The current game intentionally contains no gameplay. It boots a Foundation 0 status screen and writes a runtime health line to the console.
+The game intentionally contains no gameplay yet.
+
+It still boots the Foundation status surface. Infrastructure 1 changes repository memory, validation, and reference geometry rather than adding gameplay.
+
+## Gameplay systems
+
+None implemented.
+
+Systems described in the master vision are aspirational until this file and the code/tests record them as implemented.
 
 ## Save schema
 
@@ -48,9 +74,9 @@ None.
 
 ## Next milestone
 
-**Walking Skeleton**
+**Infrastructure 2 — Build & Recovery Pipeline**
 
-Goal: one tiny end-to-end gameplay state change that crosses data/state, simulation logic, UI response, and persistence without expanding scope into the full game.
+Goal: produce reliable owner-facing Windows preview artifacts, build metadata, and debug identity so the non-coding project owner can test repository changes without operating Godot/Git.
 
 ## Health principle
 
