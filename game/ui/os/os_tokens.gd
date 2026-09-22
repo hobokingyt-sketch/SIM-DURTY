@@ -30,10 +30,12 @@ static func make_theme() -> Theme:
 		result.set_color(name, "Button", TEXT)
 	result.set_color("font_disabled_color", "Button", MUTED.darkened(0.3))
 	result.set_stylebox("panel", "PanelContainer", box(SURFACE))
-	result.set_stylebox("normal", "Button", box(RAISED, 8))
-	result.set_stylebox("hover", "Button", box(Color("344148"), 8))
-	result.set_stylebox("pressed", "Button", box(Color("49483c"), 8))
-	result.set_stylebox("disabled", "Button", box(Color("20262b"), 8))
+	# Content margins must not force compact header buttons beyond a 48-unit rail.
+	# Standard controls still have a 38-unit target; icon launchers retain 44 units.
+	result.set_stylebox("normal", "Button", box(RAISED, 3))
+	result.set_stylebox("hover", "Button", box(Color("344148"), 3))
+	result.set_stylebox("pressed", "Button", box(Color("49483c"), 3))
+	result.set_stylebox("disabled", "Button", box(Color("20262b"), 3))
 	var focus: StyleBoxFlat = box(Color(0, 0, 0, 0), 0)
 	focus.border_color = ACCENT
 	focus.set_border_width_all(2)

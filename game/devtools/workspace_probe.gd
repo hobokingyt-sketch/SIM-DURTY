@@ -12,8 +12,6 @@ static func run(app: Control, mode: String) -> void:
 	var view: SkeletonView = app.get("view") as SkeletonView
 	var session: SkeletonSession = app.get("session") as SkeletonSession
 	var profile: String = WorkspacePreferences.path_for_slot(SLOT)
-	# Headless windows default to the minimum, not the graphical override. This
-	# specific persistence scenario needs 1600x900; captures retain their requested size.
 	if mode in ["write", "read"]:
 		app.get_window().size = Vector2i(1600, 900)
 	await app.get_tree().process_frame
@@ -102,6 +100,9 @@ static func run(app: Control, mode: String) -> void:
 			if not control.is_visible_in_tree() or not bounds.encloses(control.get_global_rect()):
 				_fail(app, "critical control outside visible viewport")
 				return
+		if not _chrome_fits(view):
+			_fail(app, "visible fixed rail control clipped by its own region")
+			return
 		if DisplayServer.get_name() == "headless":
 			_fail(app, "capture requires a graphical display")
 			return
@@ -110,10 +111,30 @@ static func run(app: Control, mode: String) -> void:
 		if path.is_empty() or app.get_viewport().get_texture().get_image().save_png(path) != OK:
 			_fail(app, "capture write failed")
 			return
-		print("[workspace-render] viewport=%s logical=%s scale=%.2f city=%s minimum=%s" % [bounds.size, view.workspace.size, view.workspace.scale.x, city_rect.size, minimum])
+		print("[workspace-render] viewport=%s logical=%s scale=%.2f city=%s minimum=%s chrome=passed" % [bounds.size, view.workspace.size, view.workspace.scale.x, city_rect.size, minimum])
 	var fingerprint: String = JSON.stringify(view.workspace.model.snapshot(), "", true).sha256_text()
 	print("[workspace-probe] PASS %s profile_hash=%s state_hash=%s" % [mode, fingerprint, session.state_hash()])
 	app.get_tree().quit(0)
+
+
+static func _chrome_fits(view: Control) -> bool:
+	# Scrollable content may intentionally extend past its viewport. Fixed launcher,
+	# tab and fold buttons must remain fully inside their containing rail panel.
+	for node: Node in view.find_children("*", "BaseButton", true, false):
+		var button: Control = node as Control
+		if not button.is_visible_in_tree():
+			continue
+		var parent: Node = button.get_parent()
+		while parent != null and parent != view:
+			if parent is ScrollContainer:
+				break
+			if parent is Panel:
+				if not (parent as Control).get_global_rect().encloses(button.get_global_rect()):
+					print("[workspace-render] clipped control: %s" % button.get_path())
+					return false
+				break
+			parent = parent.get_parent()
+	return true
 
 
 static func _button(app: Control, point: Vector2, pressed: bool) -> void:
