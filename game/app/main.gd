@@ -21,6 +21,7 @@ func _ready() -> void:
 	var os_mode: String = ""
 	var workspace_mode: String = ""
 	var widget_mode: String = ""
+	var app_mode: String = ""
 	get_window().min_size = Vector2i(1280, 800)
 	if OS.is_debug_build():
 		for argument: String in OS.get_cmdline_user_args():
@@ -34,6 +35,8 @@ func _ready() -> void:
 				widget_mode = argument.trim_prefix("--widget-probe=")
 			if argument.begins_with("--workspace-probe="):
 				workspace_mode = argument.trim_prefix("--workspace-probe=")
+			if argument.begins_with("--app-probe="):
+				app_mode = argument.trim_prefix("--app-probe=")
 		if not probe_mode.is_empty():
 			save_path = "user://_ci_walking_skeleton/probe_slot_v1.json"
 			auto_load = false
@@ -49,6 +52,9 @@ func _ready() -> void:
 		if not widget_mode.is_empty():
 			save_path = "user://_ci_widgets/slot.json"
 			auto_load = widget_mode == "read"
+		if not app_mode.is_empty():
+			save_path = "user://_ci_apps/slot.json"
+			auto_load = false
 	session = SkeletonSession.new(WORK)
 	save_slot = SkeletonSave.new(save_path)
 	session.changed.connect(_refresh)
@@ -62,7 +68,7 @@ func _ready() -> void:
 	view.inspection_requested.connect(_inspect_storage)
 	view.recovery_requested.connect(_recover)
 	view.configure_work(WORK)
-	view.configure_workspace(save_path, not workspace_mode.is_empty() or not widget_mode.is_empty())
+	view.configure_workspace(save_path, not workspace_mode.is_empty() or not widget_mode.is_empty() or not app_mode.is_empty())
 	view.show_build(BuildInfo.snapshot())
 	_refresh()
 	_inspect_storage()
@@ -72,9 +78,13 @@ func _ready() -> void:
 		view.show_status("Saved slot is missing. A previous save is available in the right rail.", true)
 	else:
 		view.show_status("Save when you want to keep this session.")
-	print("[SIM-DURTY] Widgets 6B boot OK | build=%s" % BuildInfo.build_id())
+	print("[SIM-DURTY] Apps 6C boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
-	if not widget_mode.is_empty():
+	if not app_mode.is_empty():
+		var app_probe_script: Script = load("res://game/devtools/app_probe.gd") as Script
+		_widget_probe = app_probe_script.new()
+		_widget_probe.call_deferred("run", self, app_mode)
+	elif not widget_mode.is_empty():
 		var probe_script: Script = load("res://game/devtools/widget_probe.gd") as Script
 		_widget_probe = probe_script.new()
 		_widget_probe.call_deferred("run", self, widget_mode)
@@ -179,7 +189,7 @@ func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
 	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "6B Widget manipulation & responsive forms", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"milestone": "6C App lifecycle, selection & navigation", "save_schema": SkeletonSave.SCHEMA_VERSION,
 		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
 		"clock_mode": "command-driven; one tick = one minute",
 		"next_command": spine["next_command"], "next_event_id": spine["next_id"],

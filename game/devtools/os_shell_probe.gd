@@ -18,8 +18,8 @@ static func run(app: Control, mode: String) -> void:
 	view.city.pan_by_screen(Vector2(28, 12))
 	var camera: Dictionary = view.city.camera_snapshot()
 	view.open_operations_button.pressed.emit()
-	if not view.work_button.is_visible_in_tree() or not view.city.is_visible_in_tree():
-		_fail(app, "Operations must remain alongside the city")
+	if not view.work_button.is_visible_in_tree() or view.city.is_visible_in_tree() or not view.center_app_surface.is_visible_in_tree():
+		_fail(app, "Operations must claim the center while keeping the city mounted")
 		return
 	view.close_operations_button.pressed.emit()
 	if view.city.camera_snapshot() != camera or session.checkpoint() != initial:
@@ -45,7 +45,7 @@ static func run(app: Control, mode: String) -> void:
 			_fail(app, "capture requires a graphical display")
 			return
 		var bounds: Rect2 = view.get_global_rect().grow(1.0)
-		for target: Control in [view.city, view.city_button, view.operations_button, view.cash_label,
+		for target: Control in [view.center_stage, view.city_button, view.operations_button, view.cash_label,
 				view.copy_button, view.save_button, view.load_button, view.status_label, view.work_button]:
 			if target.is_visible_in_tree() and not bounds.encloses(target.get_global_rect()):
 				_fail(app, "visible control exceeds the screen: " + str(target.get_path()))

@@ -75,6 +75,8 @@ jobs:
           done
           check os-verify godot --headless --path . -- --os-probe=verify
           grep -q '^\[os-probe\] PASS selection navigation command isolation' "$reports/os-verify.log"
+          check app-verify godot --headless --path . -- --app-probe=verify
+          grep -q '^\[app-probe\] PASS lifecycle navigation continuity' "$reports/app-verify.log"
           for size in 2560x1440 1600x900; do
             for mode in city operations tools; do
               export SIM_DURTY_CAPTURE_PATH="$reports/os-$mode-$size.png"
@@ -98,6 +100,14 @@ jobs:
             check "widgets-$mode-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
               godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
               -- "--widget-probe=$mode"
+            test -s "$SIM_DURTY_CAPTURE_PATH"
+          done
+          for case in '1600x900:operations' '1600x900:record' '2560x1440:operations' '1280x800:record'; do
+            size="${case%%:*}"; mode="${case#*:}"
+            export SIM_DURTY_CAPTURE_PATH="$reports/apps-$mode-$size.png"
+            check "apps-$mode-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
+              godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
+              -- "--app-probe=$mode"
             test -s "$SIM_DURTY_CAPTURE_PATH"
           done
 

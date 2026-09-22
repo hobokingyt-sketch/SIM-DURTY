@@ -34,3 +34,10 @@ Copy report gathers current build, save, simulation and UI-profile information.
 BUILD-METADATA.json identifies the exact exported source even if startup fails.
 Acceptance includes injected native input and packaged Windows restart checks;
 physical hardware, clipboard and Windows GPU behavior are tested separately.
+
+PHASE 6C APP FLOW
+- City is Home/root.
+- Operations is center-focus; returning restores city camera and selection.
+- Session Record is a right-rail app using real local journal/save inspection.
+- Back stays inside the active app; reopening resumes its remembered view.
+- App navigation is presentation-only.
