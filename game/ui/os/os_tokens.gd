@@ -2,9 +2,14 @@ class_name OsTokens
 extends RefCounted
 
 # Phase 6D.1: locked charcoal material hierarchy.
-const CHASSIS: Color = Color("111315")
+const CHASSIS: Color = Color("0f1112")
 const BACKGROUND: Color = CHASSIS
 const SURFACE: Color = Color("1b1f21")
+const RAIL_SURFACE: Color = Color("191d1f")
+const APP_WELL: Color = Color("101315")
+const CONTEXT_WELL: Color = Color("141719")
+const WORKBENCH_WELL: Color = Color("121517")
+const WIDGET_SURFACE: Color = Color("171b1d")
 const WELL: Color = Color("15181a")
 const RAISED: Color = Color("272c2f")
 const RAISED_HOVER: Color = Color("30363a")

@@ -100,10 +100,12 @@ func _ready() -> void:
 	chassis_surface = Panel.new()
 	chassis_surface.name = "ChassisSurface"
 	chassis_surface.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	chassis_surface.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_SHELL, OsTokens.CHASSIS, 0, OsTokens.frame_palette()))
+	chassis_surface.add_theme_stylebox_override("panel", OsDepth.frame_style(OsFrames.ROLE_SHELL, OsDepth.ROLE_CHASSIS))
 	add_child(chassis_surface)
 	chassis_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	chassis_surface.set_meta("os_depth_role", OsDepth.ROLE_CHASSIS)
 	OsMaterials.apply_diffuse(chassis_surface, OsMaterials.ROLE_CHASSIS, "shell-chassis")
+	OsDepth.attach(chassis_surface, OsDepth.ROLE_CHASSIS)
 	workspace = WorkspaceContainer.new()
 	workspace.name = "Workspace"
 	add_child(workspace)
@@ -182,8 +184,10 @@ func _surface(side: String) -> Panel:
 	panel.clip_contents = true
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.mouse_force_pass_scroll_events = false
-	panel.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_SURFACE, OsTokens.SURFACE, 0, OsTokens.frame_palette()))
+	panel.add_theme_stylebox_override("panel", OsDepth.frame_style(OsFrames.ROLE_SURFACE, OsDepth.ROLE_RAIL))
+	panel.set_meta("os_depth_role", OsDepth.ROLE_RAIL)
 	OsMaterials.apply_diffuse(panel, OsMaterials.ROLE_SURFACE, "rail-" + side)
+	OsDepth.attach(panel, OsDepth.ROLE_RAIL)
 	OsFrames.attach_overlay(panel, OsFrames.ROLE_SURFACE, OsTokens.frame_palette())
 	workspace.register_region(side, panel)
 	return panel
@@ -284,6 +288,7 @@ func _build_right() -> void:
 	_control_icon(fold_right, "fold_right", OsControls.ROLE_FOLD)
 	fold_right.tooltip_text = "Fold right rail"
 	var scroll: ScrollContainer = _scroll(full)
+	OsDepth.apply_scroll(scroll, OsDepth.ROLE_CONTEXT_WELL, "context-well")
 	_context_scroll = scroll
 	var stack: VBoxContainer = OsTokens.column(scroll, 20)
 	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -303,8 +308,10 @@ func _build_right() -> void:
 	right_app_surface.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	full.add_child(right_app_surface)
 	right_app_surface.setup("record", OsAppManifest.HOST_RIGHT)
-	right_app_surface.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_APP, OsTokens.WELL, 0, OsTokens.frame_palette()))
+	right_app_surface.add_theme_stylebox_override("panel", OsDepth.frame_style(OsFrames.ROLE_APP, OsDepth.ROLE_APP_WELL))
+	right_app_surface.set_meta("os_depth_role", OsDepth.ROLE_APP_WELL)
 	OsMaterials.apply_diffuse(right_app_surface, OsMaterials.ROLE_WELL, "app-record")
+	OsDepth.attach(right_app_surface, OsDepth.ROLE_APP_WELL)
 	OsFrames.attach_overlay(right_app_surface, OsFrames.ROLE_APP, OsTokens.frame_palette())
 	_build_right_record_views()
 	_right_widget_dock = WidgetDock.new()
@@ -324,8 +331,10 @@ func _build_center_apps() -> void:
 	center_stage.add_child(center_app_surface)
 	center_app_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center_app_surface.setup("operations", OsAppManifest.HOST_CENTER)
-	center_app_surface.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_APP, OsTokens.WELL, 0, OsTokens.frame_palette()))
+	center_app_surface.add_theme_stylebox_override("panel", OsDepth.frame_style(OsFrames.ROLE_APP, OsDepth.ROLE_APP_WELL))
+	center_app_surface.set_meta("os_depth_role", OsDepth.ROLE_APP_WELL)
 	OsMaterials.apply_diffuse(center_app_surface, OsMaterials.ROLE_WELL, "app-operations")
+	OsDepth.attach(center_app_surface, OsDepth.ROLE_APP_WELL)
 	OsFrames.attach_overlay(center_app_surface, OsFrames.ROLE_APP, OsTokens.frame_palette())
 	var work_view: MarginContainer = MarginContainer.new()
 	var work_stack: VBoxContainer = _app_inset(work_view, 28)
@@ -493,11 +502,13 @@ func _build_bottom() -> void:
 	pages.add_child(_bottom_widget_dock)
 	_work_scroll = _bottom_widget_dock
 	record_scroll = _scroll(pages)
+	OsDepth.apply_scroll(record_scroll, OsDepth.ROLE_WORKBENCH_WELL, "workbench-record")
 	var records: VBoxContainer = OsTokens.column(record_scroll, 8)
 	records.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	record_label = OsTokens.wrapped(records, "", 18, OsTokens.TEXT)
 	OsTokens.label(records, "Current session only", 14, OsTokens.MUTED)
 	developer_scroll = _scroll(pages)
+	OsDepth.apply_scroll(developer_scroll, OsDepth.ROLE_WORKBENCH_WELL, "workbench-tools")
 	var tools: VBoxContainer = OsTokens.column(developer_scroll, 12)
 	tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spine_panel = SpinePanel.new()
@@ -511,6 +522,7 @@ func _build_bottom() -> void:
 	reset_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	reset_button.tooltip_text = "Reset live gameplay only. Saved progress stays intact."
 	layout_scroll = _scroll(pages)
+	OsDepth.apply_scroll(layout_scroll, OsDepth.ROLE_WORKBENCH_WELL, "workbench-layout")
 	_build_layout_controls(layout_scroll)
 
 
