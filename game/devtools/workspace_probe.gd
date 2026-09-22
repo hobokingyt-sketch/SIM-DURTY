@@ -12,6 +12,10 @@ static func run(app: Control, mode: String) -> void:
 	var view: SkeletonView = app.get("view") as SkeletonView
 	var session: SkeletonSession = app.get("session") as SkeletonSession
 	var profile: String = WorkspacePreferences.path_for_slot(SLOT)
+	# Headless windows default to the minimum, not the graphical override. This
+	# specific persistence scenario needs 1600x900; captures retain their requested size.
+	if mode in ["write", "read"]:
+		app.get_window().size = Vector2i(1600, 900)
 	await app.get_tree().process_frame
 	await app.get_tree().process_frame
 	if mode == "read":
@@ -20,7 +24,9 @@ static func run(app: Control, mode: String) -> void:
 			_fail(app, "missing first-process oracle")
 			return
 		var oracle: Dictionary = parser.data
-		if view.workspace.model.snapshot() != oracle["layout"] or session.state_hash() != oracle["state_hash"] \
+		var expected_model: WorkspaceLayout = WorkspaceLayout.new()
+		if expected_model.restore(oracle.get("layout", {})) != OK \
+				or view.workspace.model.snapshot() != expected_model.snapshot() or session.state_hash() != oracle["state_hash"] \
 				or FileAccess.get_file_as_bytes(SLOT).hex_encode().sha256_text() != oracle["game_bytes"]:
 			_fail(app, "fresh process did not restore independent layout and gameplay")
 			return

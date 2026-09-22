@@ -11,7 +11,6 @@ func _init(path: String) -> void:
 
 
 static func path_for_slot(slot: String) -> String:
-	# Separate namespace, stable per-slot association; never writes the gameplay file.
 	return "user://ui_workspaces/%s.json" % slot.sha256_text().substr(0, 24)
 
 
@@ -24,7 +23,6 @@ func write_layout(layout: Dictionary) -> Error:
 		return ERR_INVALID_DATA
 	var previous: Dictionary = read_layout()
 	if int(previous["error"]) not in [OK, ERR_FILE_NOT_FOUND]:
-		# A broken/future profile stays intact. Live fallback never resets game state.
 		return int(previous["error"]) as Error
 	var error: Error = DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_path.get_base_dir()))
 	if error != OK:
@@ -76,4 +74,11 @@ func _read(path: String) -> Dictionary:
 		return {"error": ERR_UNAVAILABLE, "layout": {}}
 	if not WorkspaceLayout.validate(incoming):
 		return {"error": ERR_FILE_CORRUPT, "layout": {}}
-	return {"error": OK, "layout": incoming.duplicate(true)}
+	# JSON reads numeric values as floats. Validate first, then restore canonical types
+	# before nested Dictionary comparison and publishing a persistence snapshot.
+	var normalized: Dictionary = incoming.duplicate(true)
+	normalized["version"] = int(normalized["version"])
+	normalized["scale_percent"] = int(normalized["scale_percent"])
+	for side: String in WorkspaceLayout.SIDES:
+		normalized["rails"][side]["extent"] = int(normalized["rails"][side]["extent"])
+	return {"error": OK, "layout": normalized}

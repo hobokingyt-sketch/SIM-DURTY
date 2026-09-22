@@ -169,6 +169,10 @@ func _test_input(tree: SceneTree) -> void:
 	_check(session.checkpoint() == checkpoint and not FileAccess.file_exists(SLOT), "dispatched layout input never mutates or autosaves gameplay")
 	view.layout_toggle.pressed.emit()
 	(view.rail_controls["right"]["larger"] as Button).pressed.emit()
+	_check(view.workspace.model.snapshot()["rails"]["right"]["extent"] == 300, "click resizing stops when the city reservation is full")
+	# Create room explicitly; valid expansion must not steal it from the protected city.
+	(view.rail_controls["left"]["smaller"] as Button).pressed.emit()
+	(view.rail_controls["right"]["larger"] as Button).pressed.emit()
 	_check(view.layout_scroll.visible and view.workspace.model.snapshot()["rails"]["right"]["extent"] == 320, "non-drag pointer alternative uses same geometry model")
 	view.reset_layout_button.pressed.emit()
 	_check(view.workspace.model.snapshot() == WorkspaceLayout.defaults() and session.checkpoint() == checkpoint and view.city.camera_snapshot() == camera, "Reset layout leaves simulation and camera intact")
