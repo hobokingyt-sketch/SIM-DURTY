@@ -1,12 +1,12 @@
 ; Engine configuration file.
-; Infrastructure 1: 2560x1440 is the authored UI reference viewport.
+; Infrastructure 2: traceable builds and owner-facing preview pipeline.
 
 config_version=5
 
 [application]
 
 config/name="SIM-DURTY"
-config/version="0.0.1-infrastructure.1"
+config/version="0.0.2-infrastructure.2"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/main_scene="res://game/app/main.tscn"
 
