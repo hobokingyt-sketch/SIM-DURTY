@@ -1,0 +1,44 @@
+name: Godot Health
+
+on:
+  push:
+    branches:
+      - main
+      - "slice/**"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  foundation-health:
+    name: Import, Test, Boot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GODOT_VERSION: "4.7.2"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location             --output godot.zip             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Import project
+        run: ./godot --headless --path . --editor --quit-after 1
+
+      - name: Run automated tests
+        run: ./godot --headless --path . --script tests/runner.gd
+
+      - name: Boot main scene
+        run: ./godot --headless --path . --editor --quit-after 2
