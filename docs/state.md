@@ -28,7 +28,7 @@ Purpose: establish a bootable, testable Godot repository with rules that make ch
 - [x] Chat-to-repository workflow documentation
 - [x] Architecture decision record
 - [ ] CI verified on GitHub
-- [ ] Foundation branch merged to main
+- [x] Foundation branch merged to main
 
 ## Runtime
 
