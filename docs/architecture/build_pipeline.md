@@ -48,7 +48,9 @@ As simulation infrastructure arrives, the report will gain real save schema, see
 
 ## Windows preview artifact
 
-Pull requests run `.github/workflows/preview_build.yml`.
+Pull requests with owner-facing/project-runtime changes run `.github/workflows/preview_build.yml`.
+
+Documentation-only changes under `docs/**`, `README.md`, and the PR template intentionally skip the Windows preview because they cannot change the runnable game.
 
 The workflow:
 1. checks out the exact source revision used for the preview,
