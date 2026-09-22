@@ -12,6 +12,14 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+function Assert-RuntimeEngineVersion {
+    param([string]$Actual, [string]$Expected)
+    # Engine.get_version_info().string is not the CLI --version representation.
+    if ($Actual -cne "$Expected-stable (official)") {
+        throw "Expected official Godot $Expected runtime, got '$Actual'."
+    }
+}
+
 function Assert-PreviewLog {
     param([string]$Text, [System.Collections.IDictionary]$Metadata)
     if ($Text -match '(?im)^\s*(SCRIPT ERROR:|ERROR:|FATAL:|Parse Error:|Failed loading resource:)') {
@@ -55,7 +63,14 @@ if ($SelfTest) {
         catch { $rejected = $true }
         if (-not $rejected) { throw 'Smoke validator accepted an invalid fixture.' }
     }
-    Write-Host '[preview-gate] PASS: valid fixture accepted; 4 invalid fixtures rejected.'
+    Assert-RuntimeEngineVersion -Actual '4.7.2-stable (official)' -Expected '4.7.2'
+    foreach ($badVersion in @('4.7.3-stable (official)', '4.7.2-beta1 (official)', '4.7.2.stable.official.hash')) {
+        $rejected = $false
+        try { Assert-RuntimeEngineVersion -Actual $badVersion -Expected '4.7.2' }
+        catch { $rejected = $true }
+        if (-not $rejected) { throw 'Engine validator accepted an invalid runtime-version fixture.' }
+    }
+    Write-Host '[preview-gate] PASS: valid log/version fixtures accepted; 7 invalid fixtures rejected.'
     return
 }
 
@@ -93,9 +108,7 @@ try {
     if ($metadata['commit_sha'] -ne $ExpectedSha -or $metadata['source_sha'] -ne $ExpectedSha) {
         throw 'The archive does not identify the expected source commit.'
     }
-    if (-not $metadata['engine_version'].StartsWith("$ExpectedGodotVersion.stable")) {
-        throw 'Export was produced by a different engine version.'
-    }
+    Assert-RuntimeEngineVersion -Actual $metadata['engine_version'] -Expected $ExpectedGodotVersion
     if ($metadata['channel'] -ne 'preview') { throw 'Expected a generated preview, not local fallback.' }
 
     # Start the exported EXE outside the checkout, with no editor or source-project argument.
@@ -112,15 +125,16 @@ try {
     if (-not $started) { throw 'Unable to launch the packaged executable.' }
     $stdoutTask = $process.StandardOutput.ReadToEndAsync()
     $stderrTask = $process.StandardError.ReadToEndAsync()
-    if (-not $process.WaitForExit(30000)) {
+    $timedOut = -not $process.WaitForExit(30000)
+    if ($timedOut) {
         $process.Kill($true)
         $process.WaitForExit()
-        throw 'Packaged executable exceeded its 30-second smoke-test timeout.'
     }
     $stdout = $stdoutTask.GetAwaiter().GetResult()
     $stderr = $stderrTask.GetAwaiter().GetResult()
     $stdout | Set-Content -LiteralPath (Join-Path $reports 'stdout.log') -Encoding utf8
     $stderr | Set-Content -LiteralPath (Join-Path $reports 'stderr.log') -Encoding utf8
+    if ($timedOut) { throw 'Packaged executable exceeded its 30-second smoke-test timeout.' }
     if ($process.ExitCode -ne 0) { throw "Packaged executable exited with code $($process.ExitCode)." }
     $engineLog = Join-Path $reports 'engine.log'
     if (-not (Test-Path -LiteralPath $engineLog)) { throw 'Engine did not write its startup log.' }
@@ -134,6 +148,10 @@ try {
         graphical_playtest = 'not_run'; clipboard_test = 'not_run'
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $reports 'verification.json') -Encoding utf8
     Write-Host "[preview-gate] PASS: $($metadata['build_id']) launched from the delivered ZIP on Windows."
+}
+catch {
+    $_.Exception.Message | Set-Content -LiteralPath (Join-Path $reports 'failure.txt') -Encoding utf8
+    throw
 }
 finally {
     if ($null -ne $process) {
