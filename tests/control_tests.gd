@@ -18,9 +18,9 @@ func run(tree: SceneTree) -> int:
 func _test_role_contract() -> void:
 	var contract: Dictionary = OsControls.contract()
 	_check(contract.size() == 8, "control kit exposes eight bounded roles")
-	_check(int(contract[OsControls.ROLE_PRIMARY]["height"]) > int(contract[OsControls.ROLE_TAB]["height"]), "primary action has stronger physical hierarchy than tabs")
+	_check(int(contract[OsControls.ROLE_PRIMARY]["height"]) > int(contract[OsControls.ROLE_TAB]["height"]), "primary role preserves standard height while tabs remain more compact")
 	_check(int(contract[OsControls.ROLE_LAUNCHER]["height"]) == 44, "launcher plate keeps the authored 44-unit footprint")
-	_check(int(contract[OsControls.ROLE_HANDLE]["height"]) <= int(contract[OsControls.ROLE_COMPACT]["height"]), "widget handles stay compact")
+	_check(int(contract[OsControls.ROLE_HANDLE]["height"]) == 28 and int(contract[OsControls.ROLE_COMPACT]["height"]) == 28, "widget handles and compact controls preserve the 6B geometry contract")
 
 
 func _test_state_styles() -> void:

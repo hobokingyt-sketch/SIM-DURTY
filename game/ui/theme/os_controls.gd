@@ -13,14 +13,14 @@ const ROLE_FOLD: String = "fold"
 const STATES: PackedStringArray = ["normal", "hover", "pressed", "hover_pressed", "disabled"]
 
 
-static func apply(button: Button, role: String, palette: Dictionary) -> void:
+static func apply(button: Button, role: String, palette: Dictionary, height_override: float = -1.0) -> void:
 	button.set_meta("os_control_role", role)
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	button.mouse_force_pass_scroll_events = false
 	button.flat = false
 	var metrics: Dictionary = _metrics(role)
-	button.custom_minimum_size.y = maxf(button.custom_minimum_size.y, float(metrics["height"]))
+	button.custom_minimum_size.y = height_override if height_override > 0.0 else float(metrics["height"])
 	if role == ROLE_LAUNCHER:
 		button.custom_minimum_size.x = maxf(button.custom_minimum_size.x, 44.0)
 	for state: String in STATES:
@@ -92,7 +92,7 @@ static func contract() -> Dictionary:
 static func _metrics(role: String) -> Dictionary:
 	match role:
 		ROLE_PRIMARY:
-			return {"height": 56, "padding": 12}
+			return {"height": 38, "padding": 12}
 		ROLE_LAUNCHER:
 			return {"height": 44, "padding": 4}
 		ROLE_TAB:
@@ -100,7 +100,7 @@ static func _metrics(role: String) -> Dictionary:
 		ROLE_NAV:
 			return {"height": 34, "padding": 7}
 		ROLE_COMPACT:
-			return {"height": 30, "padding": 5}
+			return {"height": 28, "padding": 5}
 		ROLE_HANDLE:
 			return {"height": 28, "padding": 4}
 		ROLE_FOLD:
