@@ -1,74 +1,106 @@
 # Chat-to-Repository Workflow
 
-The user provides game direction in plain language. The engineering workflow translates that direction into small repository slices.
+The project owner provides game direction in plain language. Engineering work translates that direction into small repository slices.
+
+The workflow is intentionally designed so the owner normally never needs to edit code or operate Git.
 
 ## Standard slice
 
 ```text
-User intent
+owner intent
     ↓
-Repository inspection
+recover repository truth
     ↓
-Small behavior contract
+inspect current implementation
+    ↓
+define small slice contract
     ↓
 slice/<number>-<name>
     ↓
-Implementation
+implementation
     ↓
-Automated health checks
+architecture guard
     ↓
-Review / correction
+import + tests + boot
     ↓
-Merge to main
+owner-facing preview/playtest when needed
     ↓
-docs/state.md updated
+docs/state.md update
+    ↓
+PR → main
 ```
 
-## User responsibilities
+## Starting/resuming
 
-The user does not need to write code or operate Git for normal development.
+Follow `docs/START_HERE.md`.
 
-The user's primary responsibilities are:
-- define desired behavior,
-- judge whether the game feels right,
-- provide visual/design direction,
-- playtest builds when experiential judgment is required,
-- approve or reject design outcomes.
+Never reconstruct current architecture only from chat history when the repository can answer the question.
+
+## Owner responsibilities
+
+The project owner primarily:
+- defines desired behavior and game direction,
+- judges whether the game feels right,
+- gives visual/product feedback,
+- playtests owner-facing builds,
+- accepts/rejects design outcomes.
+
+They should not normally need to:
+- edit GDScript,
+- resolve Git conflicts,
+- configure CI,
+- repair save files,
+- identify which file owns a system,
+- diagnose architecture from raw engine logs.
 
 ## Engineering responsibilities
 
-The automated engineering side is responsible for:
-- repository inspection,
+The engineering side owns:
+- repository recovery/inspection,
 - architecture,
 - implementation,
 - tests,
 - migrations,
+- diagnostics,
 - dependency health,
-- version control hygiene,
+- version-control hygiene,
 - CI health,
-- keeping project documentation current.
+- build metadata,
+- keeping canonical documentation truthful.
 
 ## Slice sizing
 
-A slice should produce one coherent outcome that can be described in a few sentences. Large ideas should be decomposed before implementation.
+A slice should produce one coherent outcome describable in a few sentences.
 
 Good:
 - add the simulation clock,
+- establish Windows preview export,
 - add one profession loop,
 - make dealer inventory persist,
 - add the inspect panel.
 
 Bad:
-- build the entire economy, world, UI, AI, and save system in one change.
+- build the entire economy, world, UI, AI, save system, and content pipeline in one change.
 
 ## Definition of done
 
-A slice is complete when:
+A slice is engineering-complete when:
+- architecture guard passes,
 - project import succeeds,
 - automated tests pass,
-- the main scene boots,
+- main scene boots,
 - no known broken references were introduced,
 - behavior matches the slice contract,
-- project state documentation is updated.
+- `docs/state.md` reflects reality,
+- relevant canon/architecture docs are updated if their truth changed.
 
-Visual/game-feel work may additionally require user playtesting before being considered accepted.
+Visual/game-feel work may still require owner playtesting before design acceptance.
+
+## Documentation discipline
+
+- Vision changes go to `docs/design/master_vision.md`.
+- Accepted durable design rules go to `docs/design/canon.md`.
+- Build order goes to `docs/roadmap.md`.
+- Current implementation goes to `docs/state.md`.
+- Project-wide engineering decisions go to ADRs.
+- Do not use one document as a dumping ground for all categories.
