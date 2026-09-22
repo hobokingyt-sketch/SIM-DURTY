@@ -42,6 +42,7 @@ var status_kind: Label
 
 var _model: OsPresentationState = OsPresentationState.new()
 var _left: VBoxContainer
+var _glance_scroll: ScrollContainer
 var _context: VBoxContainer
 var _operations: VBoxContainer
 var _recovery_row: VBoxContainer
@@ -108,15 +109,22 @@ func _build_header(parent: Node) -> void:
 
 
 func _build_glance(parent: Node) -> void:
-	_left = OsTokens.column(parent, 16)
-	_left.custom_minimum_size.x = 350
+	# Bound the rail independently: opening a drawer must never push Save off-screen.
+	_glance_scroll = ScrollContainer.new()
+	_glance_scroll.custom_minimum_size.x = 350
+	_glance_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_glance_scroll.mouse_force_pass_scroll_events = false
+	parent.add_child(_glance_scroll)
+	_left = OsTokens.column(_glance_scroll, 16)
+	_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_left.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var money: VBoxContainer = OsTokens.card(_left)
 	OsTokens.label(money, "ON HAND", 22, OsTokens.MUTED)
 	cash_label = OsTokens.label(money, "$10.00", 52)
 	dirty_label = OsTokens.label(money, "Unsaved session", 22, OsTokens.MUTED)
 	var scan: VBoxContainer = OsTokens.card(_left)
 	OsTokens.label(scan, "Work Scan", 30)
-	_availability = OsTokens.label(scan, "Checking work", 22, OsTokens.ACCENT)
+	_availability = OsTokens.wrapped(scan, "Checking work", 22, OsTokens.ACCENT)
 	_scan_title = OsTokens.wrapped(scan, "", 28, OsTokens.TEXT)
 	_scan_terms = OsTokens.label(scan, "", 24, OsTokens.MUTED)
 	inspect_button = OsTokens.button(scan, "Inspect work", func() -> void: select_work(_work_id))
@@ -273,7 +281,7 @@ func _apply_navigation() -> void:
 	var operations_open: bool = state["active_app"] == "operations"
 	_context.visible = not operations_open
 	_operations.visible = operations_open
-	_left.visible = state["glance_open"]
+	_glance_scroll.visible = state["glance_open"]
 	glance_toggle.set_pressed_no_signal(state["glance_open"])
 	city_button.set_pressed_no_signal(not operations_open)
 	operations_button.set_pressed_no_signal(operations_open)

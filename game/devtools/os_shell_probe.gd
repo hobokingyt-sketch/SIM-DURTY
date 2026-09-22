@@ -44,11 +44,18 @@ static func run(app: Control, mode: String) -> void:
 		if DisplayServer.get_name() == "headless":
 			_fail(app, "capture requires a graphical display")
 			return
+		var bounds: Rect2 = view.get_global_rect().grow(1.0)
+		for target: Control in [view.city, view.city_button, view.operations_button, view.cash_label,
+				view.copy_button, view.save_button, view.load_button, view.status_label, view.work_button]:
+			if target.is_visible_in_tree() and not bounds.encloses(target.get_global_rect()):
+				_fail(app, "visible control exceeds the screen: " + str(target.get_path()))
+				return
 		await RenderingServer.frame_post_draw
 		var path: String = OS.get_environment("SIM_DURTY_CAPTURE_PATH")
 		if path.is_empty() or app.get_viewport().get_texture().get_image().save_png(path) != OK:
 			_fail(app, "capture write failed")
 			return
+		print("[os-layout] PASS visible city and controls inside viewport")
 	print("[os-probe] PASS selection navigation command isolation")
 	print(app.call("debug_report"))
 	app.get_tree().quit(0)
