@@ -32,8 +32,9 @@ func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_force_pass_scroll_events = false
-	add_theme_stylebox_override("panel", OsTokens.box(OsTokens.WELL, 0))
+	add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_WIDGET, OsTokens.WELL, 0, OsTokens.frame_palette()))
 	OsMaterials.apply_diffuse(self, OsMaterials.ROLE_WELL, "widget-" + widget_id)
+	OsFrames.attach_overlay(self, OsFrames.ROLE_WIDGET, OsTokens.frame_palette())
 	var inset: MarginContainer = MarginContainer.new()
 	add_child(inset)
 	inset.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -101,10 +102,10 @@ func _handle(parent: Node, kind: String) -> WidgetHandle:
 static func _small_button(button: Button) -> void:
 	button.custom_minimum_size = Vector2(28, 28)
 	button.add_theme_font_size_override("font_size", 15)
-	button.add_theme_stylebox_override("normal", OsTokens.box(OsTokens.RAISED, 5))
-	button.add_theme_stylebox_override("hover", OsTokens.box(OsTokens.RAISED_HOVER, 5))
-	button.add_theme_stylebox_override("pressed", OsTokens.box(OsTokens.RAISED_PRESSED, 5))
-	button.add_theme_stylebox_override("disabled", OsTokens.box(OsTokens.DISABLED, 5))
+	button.add_theme_stylebox_override("normal", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.RAISED, 5, OsTokens.frame_palette()))
+	button.add_theme_stylebox_override("hover", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.RAISED_HOVER, 5, OsTokens.frame_palette()))
+	button.add_theme_stylebox_override("pressed", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.RAISED_PRESSED, 5, OsTokens.frame_palette()))
+	button.add_theme_stylebox_override("disabled", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.DISABLED, 5, OsTokens.frame_palette()))
 	button.mouse_force_pass_scroll_events = false
 
 

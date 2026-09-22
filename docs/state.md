@@ -3,15 +3,16 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.10
+Game version: 0.0.11
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Phase 6D.1 — Material Foundation
+## Current milestone: Functional Criminal OS, Phase 6D.2 — Engineered Frame System
 
-This revision begins the locked charcoal visual system without changing the
-6A–6C interaction contracts. Exact acceptance/merge status belongs to the
-matching PR and exact-revision CI evidence. Gameplay expansion remains blocked
-until the full Phase 6 visual/product acceptance under ADR 0010/0014.
+This revision layers the locked frame grammar onto the 6D.1 material foundation
+without changing the 6A–6C interaction contracts. Exact acceptance/merge status
+belongs to the matching PR and exact-revision CI evidence. Gameplay expansion
+remains blocked until the full Phase 6 visual/product acceptance under ADR
+0010/0014.
 
 ## Implemented
 
@@ -67,18 +68,18 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-The locked target is now partially implemented. Phase 6D.1 changes the material
-foundation only: palette, depth roles and subtle diffuse charcoal texture.
-Engineered frames, control geometry and typography remain later 6D passes.
+The locked target now has both the 6D.1 charcoal material foundation and the
+6D.2 scalable engineered frame grammar: true clipped/chamfered corners, layered
+outer/structural/inner edges and restrained seam marks on shell, rails, apps and
+widgets. Fine control/icon state treatment and typography remain later 6D passes.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Phase 6D.2 engineered frame system, followed by control assets,
-typography, reactive Work Scan, second-surface proof, motion and final integrated
-OS acceptance.
+Next: Phase 6D.3 control and icon kit, followed by typography, reactive Work
+Scan, second-surface proof, motion and final integrated OS acceptance.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.

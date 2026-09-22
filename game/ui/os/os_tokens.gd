@@ -21,6 +21,14 @@ const ERROR: Color = Color("d4927b")
 const GAP: int = 20
 
 
+static func frame_palette() -> Dictionary:
+	return {
+		"shadow": EDGE_SHADOW,
+		"middle": EDGE_MID,
+		"highlight": EDGE_HIGHLIGHT,
+	}
+
+
 static func box(color: Color, padding: int = 12) -> StyleBoxFlat:
 	var result: StyleBoxFlat = StyleBoxFlat.new()
 	result.bg_color = color
@@ -41,14 +49,23 @@ static func make_theme() -> Theme:
 	result.set_color("font_disabled_color", "Button", MUTED.darkened(0.35))
 	result.set_stylebox("panel", "PanelContainer", box(SURFACE))
 	# 6D.1 changes material/color only. Engineered edge grammar lands in 6D.2.
-	result.set_stylebox("normal", "Button", box(RAISED, 3))
-	result.set_stylebox("hover", "Button", box(RAISED_HOVER, 3))
-	result.set_stylebox("pressed", "Button", box(RAISED_PRESSED, 3))
-	result.set_stylebox("disabled", "Button", box(DISABLED, 3))
+	result.set_stylebox("normal", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, RAISED, 3, frame_palette()))
+	result.set_stylebox("hover", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, RAISED_HOVER, 3, frame_palette()))
+	result.set_stylebox("pressed", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, RAISED_PRESSED, 3, frame_palette()))
+	result.set_stylebox("disabled", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, DISABLED, 3, frame_palette()))
 	var focus: StyleBoxFlat = box(Color(0, 0, 0, 0), 0)
 	focus.border_color = ACCENT
 	focus.set_border_width_all(2)
 	result.set_stylebox("focus", "Button", focus)
+	var hline: StyleBoxLine = StyleBoxLine.new()
+	hline.color = EDGE_MID
+	hline.thickness = 1
+	result.set_stylebox("separator", "HSeparator", hline)
+	var vline: StyleBoxLine = StyleBoxLine.new()
+	vline.color = EDGE_MID
+	vline.thickness = 1
+	vline.vertical = true
+	result.set_stylebox("separator", "VSeparator", vline)
 	result.set_constant("separation", "VBoxContainer", GAP)
 	result.set_constant("separation", "HBoxContainer", GAP)
 	return result
