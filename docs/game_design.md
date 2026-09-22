@@ -1,13 +1,14 @@
-# Game Design Canon
+# Game Design Index
 
-This file is reserved for durable, accepted game-design rules.
+This file remains as a stable compatibility entry point.
 
-Foundation 0 intentionally does not invent gameplay design. Design decisions become canonical here only after they are explicitly established for SIM-DURTY.
+Use:
 
-## Current canon
+- `docs/design/master_vision.md` — long-range product direction; aspirational.
+- `docs/design/canon.md` — durable accepted design rules.
+- `docs/design/ui_principles.md` — Godot-native UI engineering translation.
+- `docs/design/vocabulary.md` — player-facing language contract.
+- `docs/state.md` — what is actually implemented now.
+- `docs/roadmap.md` — intended build order.
 
-No gameplay systems are implemented yet.
-
-## Rule for future updates
-
-Record durable rules, not brainstorming. Rejected or superseded concepts should not remain mixed with current canon.
+**Do not treat the master vision as implementation state.**
