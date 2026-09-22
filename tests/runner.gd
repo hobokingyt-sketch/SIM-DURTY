@@ -16,6 +16,7 @@ const ControlTests = preload("res://tests/control_tests.gd")
 const DepthTests = preload("res://tests/depth_tests.gd")
 const BorderCraftTests = preload("res://tests/border_craft_tests.gd")
 const ControlCraftTests = preload("res://tests/control_craft_tests.gd")
+const VisualCalibrationTests = preload("res://tests/visual_calibration_tests.gd")
 var failures: int = 0
 
 
@@ -24,7 +25,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Visual Refinement R3")
+	print("[tests] SIM-DURTY Visual Refinement R4")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
@@ -55,6 +56,8 @@ func _run() -> void:
 	failures += await border_suite.run(self)
 	var control_craft_suite: RefCounted = ControlCraftTests.new()
 	failures += await control_craft_suite.run(self)
+	var calibration_suite: RefCounted = VisualCalibrationTests.new()
+	failures += await calibration_suite.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)

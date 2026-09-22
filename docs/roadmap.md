@@ -90,7 +90,7 @@ Refine existing frame construction only:
 
 No decorative lines, bolts or invented detail. The implementation removes the old center seam ticks, normalizes the shape family to 10/8/6/4-unit chamfers, uses directional bevel lighting for raised versus recessed surfaces, and lets the existing Context/Workbench wells share the inset-frame grammar without adding new containers.
 
-### Visual Refinement R3 — Button & Control Craft — CURRENT IMPLEMENTATION
+### Visual Refinement R3 — Button & Control Craft — COMPLETE
 
 Refine the existing control kit's physical construction without changing its
 roles or placement: chassis/face depth, selected seating, primary-action brass
@@ -102,13 +102,21 @@ inward, selected tabs/launcher plates keep dark faces with brass structural
 edges, and primary actions use dark bronze faces with brass edge emphasis rather
 than large solid-brass fills.
 
-### Visual Refinement R4 — Unified Visual Calibration — NEXT
+### Visual Refinement R4 — Unified Visual Calibration — CURRENT IMPLEMENTATION
 
 Compare the whole existing screen against the locked reference and normalize
 material brightness, recess depth, border strength, accent economy, icon
 brightness and surface consistency. No new interface structure.
 
-### 6D.4 — Typography, spacing and information rhythm — AFTER R4
+R4 uses measured comparison of the R3 capture and locked north star as a tuning
+guide rather than inventing new styling. The implementation lifts overly black
+app/context/workbench wells into the charcoal range, modestly brightens rails
+and modules, softens depth shadows, increases diffuse texture within the
+restrained material contract, quiets normal icons, and slightly reduces brass
+brightness while keeping the R1–R3 hierarchy and every existing geometry
+contract intact.
+
+### 6D.4 — Typography, spacing and information rhythm — NEXT AFTER R4 ACCEPTANCE
 
 Apply the concept's visual hierarchy:
 - large app/task titles,

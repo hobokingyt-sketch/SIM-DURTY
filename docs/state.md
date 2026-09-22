@@ -3,10 +3,10 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.15
+Game version: 0.0.16
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Visual Refinement R3 — Button & Control Craft
+## Current milestone: Functional Criminal OS, Visual Refinement R4 — Unified Visual Calibration
 
 This revision applies one stateful interaction kit across launcher plates,
 ordinary controls, primary actions, tabs, navigation, fold controls and widget
@@ -68,21 +68,21 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-The locked target now includes R1 depth and R2 border craft. Visual Refinement
-R3 improves only the existing controls: each control is rendered as a dark
-housing plus inset face, pressed states physically seat inward, tabs/launcher
-selection use brass primarily on the structural edge, and primary actions use a
-dark bronze face instead of a broad solid-brass fill. Control roles, positions,
-minimum sizes, content margins, navigation behavior and widget geometry are
-unchanged.
+R1–R3 establish depth, border craft and control construction. Visual Refinement
+R4 calibrates the complete existing screen against the locked north star:
+near-black wells move into a readable charcoal range, rails/widgets brighten
+slightly while preserving depth order, edge/shadow strength is softened, normal
+icons are quieter than primary text, brass remains scarce, and diffuse texture
+is slightly more visible without becoming grainy. No UI structure, dimensions,
+information hierarchy or interaction contract changes.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Visual Refinement R4 — Unified Visual Calibration. After that the roadmap
-resumes typography, spacing and information refinement.
+Next: Phase 6D.4 — Typography, spacing and information rhythm. The focused
+R1–R4 visual-refinement series is complete once R4 is accepted.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.

@@ -25,7 +25,9 @@ func _test_palette_contract() -> void:
 func _test_material_contract() -> void:
 	var contract: Dictionary = OsMaterials.contract()
 	_check(float(contract["grain_strength"]) <= 0.01, "fine grain remains restrained")
+	_check(float(contract["grain_strength"]) >= 0.007, "fine grain remains visible after R4 calibration")
 	_check(float(contract["mottle_strength"]) <= 0.02, "broad mottling remains restrained")
+	_check(float(contract["mottle_strength"]) >= 0.016, "broad mottling remains visible after R4 calibration")
 	_check((contract["roles"] as Array).size() == 3, "material kit exposes only the current three depth roles")
 	_check(OsMaterials.DIFFUSE_SHADER != null, "diffuse shader resource loads")
 
