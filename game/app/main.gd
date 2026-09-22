@@ -18,18 +18,24 @@ var _recovery_note: String = "none"
 func _ready() -> void:
 	var probe_mode: String = ""
 	var recovery_mode: String = ""
+	var os_mode: String = ""
 	if OS.is_debug_build():
 		for argument: String in OS.get_cmdline_user_args():
 			if argument.begins_with("--skeleton-probe="):
 				probe_mode = argument.trim_prefix("--skeleton-probe=")
 			if argument.begins_with("--recovery-probe="):
 				recovery_mode = argument.trim_prefix("--recovery-probe=")
+			if argument.begins_with("--os-probe="):
+				os_mode = argument.trim_prefix("--os-probe=")
 		if not probe_mode.is_empty():
 			save_path = "user://_ci_walking_skeleton/probe_slot_v1.json"
 			auto_load = false
 		if not recovery_mode.is_empty():
 			save_path = "user://_ci_recovery/probe_slot_v1.json"
 			auto_load = recovery_mode == "read"
+		if not os_mode.is_empty():
+			save_path = "user://_ci_os_shell/slot_v1.json"
+			auto_load = false
 	session = SkeletonSession.new(WORK)
 	save_slot = SkeletonSave.new(save_path)
 	session.changed.connect(_refresh)
@@ -52,9 +58,12 @@ func _ready() -> void:
 		view.show_status("Saved slot is missing. A previous save is available below.", true)
 	else:
 		view.show_status("Save when you want to keep this session.")
-	print("[SIM-DURTY] Persistence Tools boot OK | build=%s" % BuildInfo.build_id())
+	print("[SIM-DURTY] OS City Skeleton boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
-	if not recovery_mode.is_empty():
+	if not os_mode.is_empty():
+		var probe: Script = load("res://game/devtools/os_shell_probe.gd") as Script
+		probe.call_deferred("run", self, os_mode)
+	elif not recovery_mode.is_empty():
 		var probe: Script = load("res://game/devtools/recovery_probe.gd") as Script
 		probe.call_deferred("run", self, recovery_mode)
 	elif not probe_mode.is_empty():
@@ -116,7 +125,6 @@ func _load() -> void:
 
 
 func _recover() -> void:
-	# Use the inspected token so a changed file is not recovered behind the user's back.
 	var result: Dictionary = save_slot.recover_backup(str(_storage_info.get("recovery_token", "")))
 	last_storage_error = int(result["error"]) as Error
 	if last_storage_error == OK:
@@ -142,6 +150,7 @@ func _reset() -> void:
 func _refresh() -> void:
 	var state: Dictionary = session.snapshot()
 	view.show_state(state, session.can_work(), session.checkpoint() != _saved_checkpoint)
+	view.show_events(session.recent_events())
 	view.spine_panel.show_spine(session.spine_snapshot(), session.state_hash(), GameClock.MAX_TICK, IdFactory.MAX_ID, SimulationRng.MAX_DRAWS)
 	view.spine_panel.show_inspection(_storage_info, session.recent_events())
 
@@ -150,7 +159,7 @@ func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
 	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "Persistence & Developer Tools", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"milestone": "OS + City Skeleton", "save_schema": SkeletonSave.SCHEMA_VERSION,
 		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
 		"clock_mode": "command-driven; one tick = one minute",
 		"next_command": spine["next_command"], "next_event_id": spine["next_id"],
@@ -164,6 +173,7 @@ func debug_report() -> String:
 		"backup_inspection": _storage_info.get("backup", {}),
 		"recovery": _recovery_note,
 		"recent_events": session.recent_events(),
+		"presentation": view.ui_snapshot(),
 	})
 
 
