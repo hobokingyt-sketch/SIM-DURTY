@@ -42,6 +42,7 @@ static func attach_overlay(target: Control, role: String, palette: Dictionary, f
 			return child as OsFrameOverlay
 	var overlay: OsFrameOverlay = OsFrameOverlay.new()
 	overlay.name = "EngineeredFrame_" + role.capitalize()
+	overlay.set_meta("os_frame_role", role)
 	overlay.setup(role, palette, full_frame)
 	target.add_child(overlay)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
