@@ -36,7 +36,6 @@ func _ready() -> void:
 	set_meta("os_depth_role", OsDepth.ROLE_WIDGET)
 	OsMaterials.apply_diffuse(self, OsMaterials.ROLE_WELL, "widget-" + widget_id)
 	OsDepth.attach(self, OsDepth.ROLE_WIDGET)
-	OsFrames.attach_overlay(self, OsFrames.ROLE_WIDGET, OsTokens.frame_palette())
 	var inset: MarginContainer = MarginContainer.new()
 	add_child(inset)
 	inset.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

@@ -188,7 +188,6 @@ func _surface(side: String) -> Panel:
 	panel.set_meta("os_depth_role", OsDepth.ROLE_RAIL)
 	OsMaterials.apply_diffuse(panel, OsMaterials.ROLE_SURFACE, "rail-" + side)
 	OsDepth.attach(panel, OsDepth.ROLE_RAIL)
-	OsFrames.attach_overlay(panel, OsFrames.ROLE_SURFACE, OsTokens.frame_palette())
 	workspace.register_region(side, panel)
 	return panel
 
@@ -312,7 +311,6 @@ func _build_right() -> void:
 	right_app_surface.set_meta("os_depth_role", OsDepth.ROLE_APP_WELL)
 	OsMaterials.apply_diffuse(right_app_surface, OsMaterials.ROLE_WELL, "app-record")
 	OsDepth.attach(right_app_surface, OsDepth.ROLE_APP_WELL)
-	OsFrames.attach_overlay(right_app_surface, OsFrames.ROLE_APP, OsTokens.frame_palette())
 	_build_right_record_views()
 	_right_widget_dock = WidgetDock.new()
 	_right_widget_dock.region = "right"
@@ -335,7 +333,6 @@ func _build_center_apps() -> void:
 	center_app_surface.set_meta("os_depth_role", OsDepth.ROLE_APP_WELL)
 	OsMaterials.apply_diffuse(center_app_surface, OsMaterials.ROLE_WELL, "app-operations")
 	OsDepth.attach(center_app_surface, OsDepth.ROLE_APP_WELL)
-	OsFrames.attach_overlay(center_app_surface, OsFrames.ROLE_APP, OsTokens.frame_palette())
 	var work_view: MarginContainer = MarginContainer.new()
 	var work_stack: VBoxContainer = _app_inset(work_view, 28)
 	var work_header: HBoxContainer = _app_header(work_stack, "Operations")
