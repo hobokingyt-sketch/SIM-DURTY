@@ -1,68 +1,35 @@
 # State Ownership
 
-Every authoritative field has one owner.
+Every authoritative field has one owner. Other systems read detached snapshots
+or request changes through an explicit API; they do not keep competing mutable copies.
 
-Other systems may read it or request a change through an explicit interface, but they do not maintain competing copies.
+## Implemented ownership
+
+| State | Owner | Mutation API | Persistent? |
+| --- | --- | --- | --- |
+| cash_cents | SkeletonSession | perform_work / restore / reset | Yes, v1 |
+| elapsed_minutes | SkeletonSession | perform_work / restore / reset | Yes, v1 |
+| completed_actions | SkeletonSession | perform_work / restore / reset | Yes, v1 |
+| authored payout/duration | skeleton_errand.tres | authoring; session copies on creation | Content, not mutable save state |
+| save envelope and disk slot | SkeletonSave | write_state / read_state | v1 format |
+| last successful saved snapshot | Main | after successful save/load | No; comparison baseline only |
+| status text, button state | SkeletonView | show_state / show_status | No |
+| build identity | BuildInfo / generated manifest | build pipeline | Build metadata only |
+
+Main composes these objects. SkeletonSession imports no UI or filesystem code.
+SkeletonSave validates data but cannot mutate a session. Main restores only a
+successful validated read. UI owns no money, outcome, or authoritative time.
 
 ## Categories
 
-### Authoritative simulation state
+Authoritative state determines outcomes. Presentation state controls how state
+is viewed. Derived state (including the unsaved indicator) must identify its
+source inputs and must never become another authority.
 
-Determines gameplay outcomes and must survive or reproduce correctly.
+## When adding fields
 
-Examples later may include money, pressure, people, operations, neighborhoods, inventory, simulation time.
+Record precise meaning, one owner, mutation API, readers, persistence/schema
+implications, determinism inputs/order, and whether the field is derived.
 
-### Presentation state
-
-Controls how authoritative state is viewed.
-
-Examples:
-- selected entity,
-- current app/tab,
-- local sort/filter,
-- expanded section,
-- widget placement,
-- transient animation state.
-
-Presentation state must not quietly become gameplay state.
-
-### Derived state
-
-Computed from authoritative inputs.
-
-Prefer recomputing or explicitly caching derived state rather than creating an undocumented second authority.
-
-## Current ownership table
-
-Infrastructure 1 intentionally has no real gameplay state yet.
-
-| State | Owner | May modify | Notes |
-| --- | --- | --- | --- |
-| Foundation boot status | runtime diagnostic / app | boot flow | Diagnostic only; not gameplay |
-| Main scene composition | `game/app` | application layer | Startup ownership |
-| Future gameplay state | **not implemented** | **not implemented** | Vision does not imply existence |
-
-## Required process when adding state
-
-Before introducing a persistent or cross-system field, document:
-
-| Question | Required answer |
-| --- | --- |
-| What is the state? | Precise meaning |
-| Who owns it? | One authoritative module/object |
-| Who can mutate it? | Explicit command/API |
-| Who can observe it? | Known consumers |
-| Is it persistent? | Yes/no and schema implications |
-| Is it deterministic? | Inputs/order requirements |
-| Is it derived? | Source fields and cache policy |
-
-Update this file when a major ownership boundary appears or changes.
-
-## Anti-patterns
-
-Do not:
-- mirror authoritative values inside UI controls,
-- keep two mutable copies and "sync" them,
-- let unrelated systems directly edit each other's internals,
-- infer ownership from whichever script first needed the value,
-- put shared state in an Autoload solely because access is convenient.
+Future crew, pressure, city, inventory, RNG, and tick ownership is not implemented.
+Do not infer it from the master vision. See ADR 0006 for this limited slice.

@@ -141,10 +141,14 @@ try {
     $allLogs = $stdout + "`n" + $stderr + "`n" + (Get-Content -LiteralPath $engineLog -Raw)
     Assert-PreviewLog -Text $allLogs -Metadata $metadata
 
+    & (Join-Path $PSScriptRoot 'verify_skeleton_roundtrip.ps1') `
+        -ExecutablePath (Join-Path $scratch 'SIM-DURTY.exe') -ReportDirectory $reports
+
     [ordered]@{
         test = 'windows-packaged-headless-boot'; status = 'passed'; exit_code = $process.ExitCode
         commit_sha = $ExpectedSha; build_id = $metadata['build_id']; archive_sha256 = $actualHash
         engine_version = $metadata['engine_version']; platform = 'Windows'
+        skeleton_two_process_save_load = 'passed'
         graphical_playtest = 'not_run'; clipboard_test = 'not_run'
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $reports 'verification.json') -Encoding utf8
     Write-Host "[preview-gate] PASS: $($metadata['build_id']) launched from the delivered ZIP on Windows."
