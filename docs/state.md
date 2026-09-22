@@ -2,76 +2,62 @@
 
 ## Canonical project
 
-Repository: `hobokingyt-sketch/SIM-DURTY`
-
-Engine: Godot 4.7.2 stable  
-Language: typed GDScript  
-Primary branch: `main`  
-Reference UI viewport: 2560×1440
+Repository: hobokingyt-sketch/SIM-DURTY
+Engine: Godot 4.7.2 stable (unchanged)
+Language: typed GDScript
+Reference UI viewport: 2560x1440
+Game version: 0.0.3
 
 ## Current milestone
 
-**Infrastructure 2 — Build & Recovery Pipeline**
+**Walking Skeleton**
 
-Baseline export/build-identity implementation is complete (PRs #6 and #7).
-Delivery hardening adds a mandatory packaged-Windows startup gate. A branch's
-actual validation result is its matching CI run, not a checkbox in this file.
+This revision implements the slice below. Completion/merge and test results must
+be read from the matching PR and exact-revision CI runs, not inferred from this file.
+Foundation 0 and Infrastructure 1/2 remain the underlying baseline.
 
-Purpose: let the non-coding project owner test repository changes and report
-exact build identity without operating Godot or Git.
+## Implemented runtime
 
-## Implemented infrastructure
+- One authored placeholder errand: +500 cents and +15 minutes per accepted action.
+- One headless session owner: cash, elapsed minutes, completed actions.
+- Fresh session: 1000 cents, zero elapsed minutes, zero completed actions.
+- Native Godot test surface displaying real values, activity, Save, Load,
+  Reset session, unsaved-state feedback, and a fresh Copy debug report.
+- Explicit save slot with schema 1; startup loads a saved slot automatically.
+- Reset changes only the live session. Unsaved changes are not saved on quit.
+- Strict save validation, staged/read-back-checked replacement, previous-save
+  backup, and preservation of corrupt/newer-format primary files.
 
-### Foundation 0
-- Repository bootstrapped; engine pinned; application composition root.
-- Automated tests and GitHub health workflow.
+## Validation implemented
 
-### Infrastructure 1
-- Fresh-session recovery and vision/canon/state/roadmap separation.
-- Scoped AGENTS contracts and architecture guard.
-- Dependency/state-ownership contracts.
-- Native Godot UI and 2560×1440 decisions.
+- Retained infrastructure tests plus session, malformed data, bounds, disk
+  roundtrip/replacement, v1 fixture, and UI integration tests.
+- Two-process Windows EXE save/load acceptance before publishing the preview.
+- Linux source/render acceptance at 2560x1440 and 1600x900.
+- Isolated test/probe save locations, separate from the normal player slot.
 
-### Infrastructure 2
-- Windows preview export preset with separate EXE/PCK.
-- Explicit generated build manifest and runtime BuildInfo fallback/reader.
-- Build/ref identity on the boot surface and COPY DEBUG REPORT action.
-- Local PowerShell preview-build command.
-- PR export workflow with matching official editor/templates.
-- Generated outputs remain outside tracked source.
-- Exact-source import, architecture checks, tests, manifest check, and export.
-- Native Windows packaged-startup validator with negative-test fixtures.
-- Checksum verification, isolated path-with-spaces launch, timeout, error-log
-  checks, and sidecar/runtime/source identity matching.
-- Verified preview is published only after Windows Packaged Boot succeeds.
-- Owner instructions, SHA-256 sidecar, logs, and machine-readable test evidence.
-- Candidate artifacts expire after 1 day; verified previews and logs after 14.
+## Limits
 
-## Runtime
+No live clock, RNG/seed, simulation tick, offline progress, city, crew, pressure,
+real economy, or full Criminal OS. The screen is a test surface, not the final UI.
+The payout/duration are test fixtures, not balance decisions.
 
-No gameplay systems exist yet. The unchanged boot surface identifies
-Infrastructure 2 and the build/ref, and exposes a copyable debug report.
+The save slot is user://walking_skeleton/slot_v1.json. Backup recovery tools,
+power-loss durability, file locking across concurrent game instances, and future
+migrations are not implemented. Failed loads/writes report errors without silently
+resetting the slot. Only one game instance should write to a slot.
 
-## Save and simulation identity
+## Identity
 
-No persistent gameplay save format, seed, or simulation tick exists. Reports
-show `none` rather than invented values. Autoloads: none. External addons: none.
-
-## Validation boundary
-
-The new delivery gate validates native Windows headless startup and build
-identity. Graphical appearance, input/clipboard, audio, performance, and save
-compatibility are not covered by that gate. Record owner playtest results
-separately. See `docs/architecture/build_pipeline.md` and ADR 0005.
+Save schema: 1 (sim-durty.walking-skeleton)
+Simulation seed/tick: none; elapsed_minutes is real but is not a running clock.
+Autoloads: none. External Godot addons: none.
 
 ## Next milestone
 
-**Walking Skeleton**
+**Simulation Spine**: controlled clock, seeded RNG, stable IDs, and explicit
+command ordering, added incrementally on top of this proven vertical path.
 
-One tiny path through authored data -> authoritative state -> command ->
-state mutation -> UI -> save -> load. It has not started in this slice.
-
-## Health principle
-
-Deliver the tested artifact from the tested revision. Do not mistake an
-export, a candidate upload, or a status document for runtime verification.
+See ADR 0006 and docs/architecture/state_ownership.md. Tests and preview evidence
+belong to the exact source SHA they exercised. Owner graphical/game-feel approval
+remains distinct from automated engineering acceptance.

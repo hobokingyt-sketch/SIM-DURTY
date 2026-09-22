@@ -1,0 +1,86 @@
+name: Skeleton Acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/pull_request_template.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skeleton-acceptance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    name: State, Persistence, Render
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Install pinned engine and virtual display
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < .godot-version)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          engine_dir="$RUNNER_TEMP/skeleton-engine"
+          mkdir -p "$engine_dir"
+          curl --fail --location --retry 3 --output "$engine_dir/editor.zip" \
+            "https://downloads.godotengine.org/?flavor=stable&platform=linux.64&slug=linux.x86_64.zip&version=${version}"
+          unzip -q "$engine_dir/editor.zip" -d "$engine_dir"
+          mv "$engine_dir/Godot_v${version}-stable_linux.x86_64" "$engine_dir/godot"
+          chmod +x "$engine_dir/godot"
+          echo "$engine_dir" >> "$GITHUB_PATH"
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb libgl1-mesa-dri
+
+      - name: Test state and persistence, then capture real UI
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          set -euo pipefail
+          reports="$RUNNER_TEMP/skeleton-acceptance"
+          mkdir -p "$reports"
+          check() {
+            name="$1"; shift
+            timeout 90s "$@" 2>&1 | tee "$reports/$name.log"
+            if grep -Eq '^[[:space:]]*(SCRIPT ERROR:|ERROR:|FATAL:|Parse Error:)' "$reports/$name.log"; then
+              exit 1
+            fi
+          }
+          check import godot --headless --path . --import
+          check tests godot --headless --path . --script tests/runner.gd
+          grep -q '^\[tests\] PASS' "$reports/tests.log"
+          for mode in write read; do
+            check "$mode" godot --headless --path . -- --skeleton-probe="$mode"
+            grep -q "^\[skeleton-probe\] PASS $mode" "$reports/$mode.log"
+          done
+          for size in 2560x1440 1600x900; do
+            export SIM_DURTY_CAPTURE_PATH="$reports/skeleton-$size.png"
+            check "render-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
+              godot --path . --resolution "$size" --rendering-method gl_compatibility \
+              -- --skeleton-probe=capture
+            test -s "$SIM_DURTY_CAPTURE_PATH"
+          done
+          git rev-parse HEAD > "$reports/source-sha.txt"
+
+      - name: Preserve acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skeleton-acceptance-${{ github.run_id }}-a${{ github.run_attempt }}
+          path: ${{ runner.temp }}/skeleton-acceptance/
+          if-no-files-found: warn
+          retention-days: 14
