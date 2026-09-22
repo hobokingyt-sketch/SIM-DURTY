@@ -193,6 +193,10 @@ func _test_input_and_continuity(tree: SceneTree) -> void:
 	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
 	wheel.pressed = true
 	tree.root.push_input(wheel, true)
+	# A synthetic wheel press needs its matching release, like the native event pair.
+	wheel = wheel.duplicate() as InputEventMouseButton
+	wheel.pressed = false
+	tree.root.push_input(wheel, true)
 	_check(view.city.camera_snapshot() == camera, "widget wheel input does not zoom the city")
 	start = work.drag_handle.get_global_rect().get_center()
 	_mouse(tree, start, true)
