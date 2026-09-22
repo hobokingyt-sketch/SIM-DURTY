@@ -52,15 +52,15 @@ static func focus_style(role: String, palette: Dictionary) -> StyleBoxTexture:
 static func spec(role: String) -> Dictionary:
 	match role:
 		OsControls.ROLE_PRIMARY:
-			return {"chamfer": 4, "face_inset": 4, "patch": 8}
+			return {"chamfer": 4, "face_inset": 4, "face_bevel": 2, "patch": 8}
 		OsControls.ROLE_LAUNCHER:
 			return {"chamfer": 4, "face_inset": 4, "patch": 8}
 		OsControls.ROLE_TAB:
-			return {"chamfer": 4, "face_inset": 3, "patch": 7}
+			return {"chamfer": 4, "face_inset": 3, "face_bevel": 2, "patch": 7}
 		OsControls.ROLE_NAV:
-			return {"chamfer": 4, "face_inset": 3, "patch": 7}
+			return {"chamfer": 4, "face_inset": 3, "face_bevel": 2, "patch": 7}
 		OsControls.ROLE_HANDLE, OsControls.ROLE_COMPACT:
-			return {"chamfer": 3, "face_inset": 3, "patch": 6}
+			return {"chamfer": 3, "face_inset": 3, "face_bevel": 1, "patch": 6}
 		OsControls.ROLE_FOLD:
 			return {"chamfer": 3, "face_inset": 3, "patch": 6}
 	return {"chamfer": 4, "face_inset": 3, "patch": 7}
@@ -88,6 +88,7 @@ static func _texture(role: String, state: String, palette: Dictionary) -> Textur
 	var definition: Dictionary = spec(role)
 	var chamfer: int = int(definition["chamfer"])
 	var face_inset: int = int(definition["face_inset"])
+	var face_bevel: int = int(definition["face_bevel"])
 	var face_chamfer: int = maxi(1, chamfer - 1)
 	var accent_edge: bool = _uses_accent_edge(role, state)
 	var pressed: bool = state in ["pressed", "hover_pressed"]
@@ -119,7 +120,7 @@ static func _texture(role: String, state: String, palette: Dictionary) -> Textur
 					color = structure
 			elif _inside(point, face_inset, face_chamfer):
 				color = face
-				if not _inside(point, face_inset + 1, maxi(1, face_chamfer - 1)):
+				if not _inside(point, face_inset + face_bevel, maxi(1, face_chamfer - face_bevel)):
 					color = _face_bevel(point, face_inset, face, palette, pressed)
 
 			image.set_pixel(x, y, color)
