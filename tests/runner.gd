@@ -4,7 +4,7 @@ const RuntimeHealthScript = preload("res://game/core/debug/runtime_health.gd")
 const BuildInfoScript = preload("res://game/core/build/build_info.gd")
 const DebugReportScript = preload("res://game/core/debug/debug_report.gd")
 const SkeletonTests = preload("res://tests/skeleton_tests.gd")
-
+const SpineTests = preload("res://tests/spine_tests.gd")
 var failures: int = 0
 
 
@@ -13,13 +13,15 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Walking Skeleton")
+	print("[tests] SIM-DURTY Simulation Spine")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
 	_test_main_scene_loads()
-	var suite: RefCounted = SkeletonTests.new()
-	failures += await suite.run(self)
+	var skeleton: RefCounted = SkeletonTests.new()
+	failures += await skeleton.run(self)
+	var spine: RefCounted = SpineTests.new()
+	failures += await spine.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)
@@ -42,17 +44,17 @@ func _test_build_info_contract() -> void:
 
 
 func _test_debug_report_contract() -> void:
-	var report: String = DebugReportScript.compose({"milestone": "Walking Skeleton"})
+	var report: String = DebugReportScript.compose({"milestone": "Simulation Spine"})
 	_assert_true(report.contains("SIM-DURTY DEBUG REPORT"), "debug report has stable header")
 	_assert_true(report.contains("build_id:"), "debug report contains build identity")
-	_assert_true(report.contains("simulation_tick: none"), "debug report does not invent a simulation clock")
+	_assert_true(report.contains("simulation_tick: none"), "missing supplied simulation identity is not fabricated")
 
 
 func _test_main_scene_loads() -> void:
-	var packed_scene: PackedScene = load("res://game/app/main.tscn") as PackedScene
-	_assert_true(packed_scene != null, "main scene resource loads")
-	if packed_scene != null:
-		var instance: Node = packed_scene.instantiate()
+	var scene: PackedScene = load("res://game/app/main.tscn") as PackedScene
+	_assert_true(scene != null, "main scene resource loads")
+	if scene != null:
+		var instance: Node = scene.instantiate()
 		_assert_true(instance != null, "main scene instantiates")
 		if instance != null:
 			instance.free()

@@ -1,29 +1,27 @@
-SIM-DURTY | WALKING SKELETON | 0.0.3
+SIM-DURTY 0.0.4 - SIMULATION SPINE
 
-Extract the whole ZIP to a folder, then open SIM-DURTY.exe.
-Keep SIM-DURTY.pck beside the executable. Godot is not required.
+Extract the WHOLE ZIP to a folder, then open SIM-DURTY.exe.
+Keep SIM-DURTY.pck beside the EXE. No Godot or Git installation is needed.
 This is an unsigned development preview. Do not disable security software.
 
-TRY THE LOOP
-1. Run an errand three times. A fresh session becomes $25.00, Day 1 08:45, 3 completed.
-2. Press Save.
-3. Press Reset session. The live values reset; the saved slot stays untouched.
-4. Press Load. The saved values return.
-5. Close and reopen the game. The saved slot loads automatically.
+From a fresh session: run three errands -> $25.00 / Day 1 08:45 / 3 completed.
+Save -> Reset session -> Load restores the saved checkpoint.
+Close/reopen loads the saved slot. Unsaved changes are NOT saved on quit.
 
-Save is manual. Unsaved changes are NOT kept on exit.
-On a repeat run, your previous saved values may already be present.
-Use only one instance of the game at a time.
+Step 1 minute / Step 15 minutes advances only the simulation clock.
+Test random draw advances a saved diagnostic RNG stream; payouts stay fixed.
+Save -> draw -> note value -> Load -> draw should repeat the same next value.
+The state fingerprint identifies the complete simulation checkpoint.
 
-This is one placeholder action, not the full economy or final Criminal OS UI.
-Time advances when you act. There is no idle timer or offline progress yet.
+Existing Walking Skeleton v1 saves are read without rewriting them. The next
+explicit Save writes schema 2 and keeps the previous primary in its .bak file.
+The slot filename still says slot_v1.json intentionally; the file's schema is
+inside it. Use one game instance at a time. Backup recovery UI is not yet built.
 
-REPORTING A PROBLEM
-Press Copy debug report and paste it into chat with what happened.
-The report is generated from the current state, not a cached startup snapshot.
-If the app cannot start, BUILD-METADATA.json identifies the exact package.
-No save files are stored inside this extracted folder.
+Copy debug report and paste it into chat with the steps that caused a problem.
+BUILD-METADATA.json identifies this build even if it cannot open.
 
-The automated Windows gate checks startup and two-process save/load through
-native button signals. It does not certify physical mouse input, audio,
-clipboard behavior or your particular GPU/display configuration.
+This is still a temporary test surface, not the final Criminal OS. The clock is
+command-driven: no automatic city simulation or offline progress is implemented.
+Automated Windows validation covers packaged startup and separate-process
+save/RNG/ID/clock continuation, not physical mouse, clipboard or GPU behavior.

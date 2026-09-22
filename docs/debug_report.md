@@ -1,45 +1,23 @@
-# Debug Report Contract
+# Debug report contract
 
-The debug report is the preferred owner-to-engineering bug identity.
+Copy debug report is generated from the CURRENT session, not cached at startup.
+BuildInfo supplies the existing game/build/commit/ref/engine identity.
 
-The owner should eventually be able to copy one report from inside the game and paste it directly into chat.
+Simulation Spine adds:
 
-## Current format
+- milestone: Simulation Spine
+- save_schema: 2
+- simulation_seed: actual saved seed (default 184726)
+- simulation_tick: actual integer minute tick
+- clock_mode: command-driven; one tick = one minute
+- next_command / next_event_id: persisted continuation cursors
+- rng_draws / last_test_draw: actual test-stream state
+- state_hash: full canonical authoritative checkpoint/content fingerprint
+- cash_cents / elapsed_minutes / completed_actions: current domain values
+- unsaved_session: comparison of the FULL checkpoint with the last Save/Load
+- last_storage_error: last storage result
 
-```text
-SIM-DURTY DEBUG REPORT
-======================
-game_version: ...
-build_id: ...
-build_channel: ...
-commit_sha: ...
-source_sha: ...
-ref_name: ...
-build_number: ...
-workflow_run_id: ...
-pull_request: ...
-built_at_utc: ...
-godot_version: ...
-platform: ...
-reference_viewport: 2560x1440
-
-RUNTIME STATE
--------------
-milestone: ...
-save_schema: ...
-simulation_seed: ...
-simulation_tick: ...
-```
-
-Infrastructure 2 has no gameplay simulation yet, so save schema, seed, and tick explicitly report `none`.
-
-Those fields become real when the relevant infrastructure exists.
-
-## Rules
-
-- Never guess a commit/build ID at runtime.
-- Never report a fake seed or tick when no simulation exists.
-- Build identity comes from `BuildInfo`.
-- Runtime systems contribute only state they actually own.
-- New diagnostic fields should be stable, short, and useful for reproduction.
-- Sensitive local information should not be included by default.
+Build metadata is not simulation authority. The hash excludes build timestamp,
+UI selection/layout and transient event journal. It is not an anti-cheat signature.
+Do not expose local personal paths, environment variables or secrets in reports.
+Do not guess fields when their owner is unavailable. See ADR 0007.

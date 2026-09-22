@@ -83,7 +83,7 @@ func _test_save() -> void:
 	for bad_text: String in ["{", "null", "[]", fixture.replace("2500", "-1"), fixture.replace("skeleton_errand", "unknown")]:
 		_check(SkeletonSave.decode(bad_text)["error"] != OK, "malformed or incompatible save rejected")
 	var future: Dictionary = SkeletonSave.envelope(updated)
-	future["schema_version"] = 2
+	future["schema_version"] = SkeletonSave.SCHEMA_VERSION + 1
 	var future_text: String = JSON.stringify(future)
 	_write_fixture(future_text)
 	_check(store.read_state()["error"] == ERR_UNAVAILABLE, "newer schema is distinguished from corruption")
