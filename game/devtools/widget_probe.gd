@@ -1,37 +1,27 @@
-extends SceneTree
+extends RefCounted
 
-# This entry point is exported only as a debug acceptance tool. It uses isolated slots.
-const MAIN: PackedScene = preload("res://game/app/main.tscn")
+# Reached through Main's debug-only argument router, never an export path override.
 const SLOT: String = "user://_ci_widgets/slot.json"
 const ORACLE: String = "user://_ci_widgets/oracle.json"
 var _failed: bool = false
+var _tree: SceneTree
 
 
-func _init() -> void:
-	call_deferred("_run")
-
-
-func _run() -> void:
-	var mode: String = ""
-	for argument: String in OS.get_cmdline_user_args():
-		if argument.begins_with("--widget-mode="): mode = argument.trim_prefix("--widget-mode=")
-	if not OS.is_debug_build() or mode not in ["write", "read", "capture", "capture-preview", "capture-invalid", "capture-major", "capture-right"]:
-		_fail("unsupported widget probe mode")
-		quit(1)
+func run(app: Control, mode: String) -> void:
+	_tree = app.get_tree()
+	if not OS.is_debug_build() or app.get("save_path") != SLOT or mode not in ["write", "read", "capture", "capture-preview", "capture-invalid", "capture-major", "capture-right"]:
+		_fail("unsupported or non-isolated widget probe")
+		_tree.quit(1)
 		return
 	if mode != "read":
 		for path: String in [SLOT, ORACLE, WorkspacePreferences.path_for_slot(SLOT), WidgetWorkspace.profile_path(SLOT)]:
 			for suffix: String in ["", ".tmp", ".bak"]:
 				if FileAccess.file_exists(path + suffix): DirAccess.remove_absolute(ProjectSettings.globalize_path(path + suffix))
-	if mode in ["write", "read"]: root.size = Vector2i(2560, 1440)
-	var app: Control = MAIN.instantiate() as Control
-	app.set("save_path", SLOT)
-	app.set("auto_load", mode == "read")
-	root.add_child(app)
-	await _frames()
+	if mode in ["write", "read"]: app.get_window().size = Vector2i(2560, 1440)
 	var view: SkeletonView = app.get("view") as SkeletonView
 	var session: SkeletonSession = app.get("session") as SkeletonSession
 	view.configure_workspace(SLOT, true)
+	if mode != "read": session.reset()
 	await _frames()
 	var widgets: WidgetWorkspace = view.widget_workspace
 	var work: WidgetView = widgets.widgets["work_scan"]
@@ -49,6 +39,7 @@ func _run() -> void:
 			_check(work.effective_form == "tall", "restored semantic form is applied to real components")
 	elif mode == "write":
 		view.save_button.pressed.emit()
+		_check(int(app.get("last_storage_error")) == OK, "isolated gameplay save succeeds")
 		var save_hash: String = FileAccess.get_sha256(SLOT)
 		var start: Vector2 = work.drag_handle.get_global_rect().get_center()
 		var destination: Vector2 = recent.get_parent().get_parent().get_global_rect().position + Vector2(90, 15)
@@ -91,19 +82,20 @@ func _run() -> void:
 		else:
 			await RenderingServer.frame_post_draw
 			var path: String = OS.get_environment("SIM_DURTY_CAPTURE_PATH")
-			_check(not path.is_empty() and root.get_texture().get_image().save_png(path) == OK, "real widget capture written")
+			_check(not path.is_empty() and app.get_viewport().get_texture().get_image().save_png(path) == OK, "real widget capture written")
 			for widget: WidgetView in widgets.widgets.values():
 				if not widget.is_visible_in_tree(): continue
 				for control: Control in [widget.drag_handle, widget.resize_handle, widget.menu_button, widget.inspect_button]:
 					_check(widget.get_global_rect().grow(1).encloses(control.get_global_rect()), "widget owns the bounds of its interactive controls")
 	print("[widget-probe] %s %s" % ["FAIL" if _failed else "PASS", mode])
-	print("widget_profile_sha256: " + FileAccess.get_sha256(WidgetWorkspace.profile_path(SLOT)))
+	var profile_path: String = WidgetWorkspace.profile_path(SLOT)
+	print("widget_profile_sha256: " + (FileAccess.get_sha256(profile_path) if FileAccess.file_exists(profile_path) else "none"))
 	print(app.call("debug_report"))
-	quit(1 if _failed else 0)
+	_tree.quit(1 if _failed else 0)
 
 
 func _frames() -> void:
-	for index: int in range(6): await process_frame
+	for index: int in range(6): await _tree.process_frame
 
 
 func _mouse(point: Vector2, pressed: bool) -> void:
@@ -112,7 +104,7 @@ func _mouse(point: Vector2, pressed: bool) -> void:
 	event.position = point
 	event.global_position = point
 	event.pressed = pressed
-	root.push_input(event)
+	_tree.root.push_input(event)
 
 
 func _motion(point: Vector2) -> void:
@@ -120,7 +112,7 @@ func _motion(point: Vector2) -> void:
 	event.position = point
 	event.global_position = point
 	event.button_mask = MOUSE_BUTTON_MASK_LEFT
-	root.push_input(event)
+	_tree.root.push_input(event)
 
 
 func _put(path: String, text: String) -> void:

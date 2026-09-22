@@ -292,8 +292,15 @@ func _key_action(id: String, kind: String, direction: int, transfer: bool) -> vo
 	elif kind == "move":
 		move_widget(id, entry["region"], int(entry["order"]) + direction)
 	else:
-		var form_index: int = WidgetLayout.FORMS.find((widgets[id] as WidgetView).effective_form)
-		resize_widget(id, WidgetLayout.FORMS[clampi(form_index + direction, 0, WidgetLayout.FORMS.size() - 1)])
+		var form_index: int = WidgetLayout.FORMS.find((widgets[id] as WidgetView).effective_form) + direction
+		# Skip forms unavailable in this host so keyboard resizing never gets trapped.
+		while form_index >= 0 and form_index < WidgetLayout.FORMS.size():
+			var candidate: Dictionary = WidgetLayout.propose_form(_preferred, _capacities(true), id, WidgetLayout.FORMS[form_index])
+			if not candidate.is_empty():
+				cancel_manipulation()
+				_commit(candidate)
+				return
+			form_index += direction
 
 
 func _option_action(id: String, option: int) -> void:

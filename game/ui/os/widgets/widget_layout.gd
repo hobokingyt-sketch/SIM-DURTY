@@ -75,7 +75,7 @@ static func placement(layout: Dictionary, id: String) -> Dictionary:
 
 
 static func minimum(form: String, region: String) -> Vector2:
-	var narrow: float = 272.0 if region == "bottom" else 232.0
+	var narrow: float = 272.0 if region == "bottom" else 224.0
 	match form:
 		"wide": return Vector2(420, 128)
 		"tall": return Vector2(narrow, 240)

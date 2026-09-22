@@ -17,7 +17,7 @@ foreach ($mode in @('write', 'read')) {
         $process.StartInfo.UseShellExecute = $false
         $process.StartInfo.RedirectStandardOutput = $true
         $process.StartInfo.RedirectStandardError = $true
-        foreach ($arg in @('--headless', '--script', 'res://game/devtools/widget_probe.gd', '--', "--widget-mode=$mode")) {
+        foreach ($arg in @('--headless', '--', "--widget-probe=$mode")) {
             $process.StartInfo.ArgumentList.Add($arg)
         }
         $started = $process.Start()

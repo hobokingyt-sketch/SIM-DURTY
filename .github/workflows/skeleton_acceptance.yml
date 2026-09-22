@@ -70,7 +70,7 @@ jobs:
               check "$probe-$mode" godot --headless --path . -- "--$probe-probe=$mode"
               grep -q "^\[$probe-probe\] PASS $mode" "$reports/$probe-$mode.log"
             done
-            check "widgets-$mode" godot --headless --path . --script game/devtools/widget_probe.gd -- "--widget-mode=$mode"
+            check "widgets-$mode" godot --headless --path . -- "--widget-probe=$mode"
             grep -q "^\[widget-probe\] PASS $mode" "$reports/widgets-$mode.log"
           done
           check os-verify godot --headless --path . -- --os-probe=verify
@@ -97,7 +97,7 @@ jobs:
             export SIM_DURTY_CAPTURE_PATH="$reports/widgets-$mode-$size.png"
             check "widgets-$mode-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
               godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
-              --script game/devtools/widget_probe.gd -- "--widget-mode=$mode"
+              -- "--widget-probe=$mode"
             test -s "$SIM_DURTY_CAPTURE_PATH"
           done
 
