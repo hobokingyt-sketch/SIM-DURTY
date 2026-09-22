@@ -111,7 +111,10 @@ func _test_shell(tree: SceneTree) -> void:
 	view.glance_toggle.button_pressed = false
 	await tree.process_frame
 	await tree.process_frame
-	_check(view.city.size.x >= 820 and view.city.size.y >= 520, "city retains its minimum working region")
+	# ADR 0011 replaces the old fixed 820x520 surface with an available-size reservation.
+	var required: Vector2 = WorkspaceLayout.city_minimum(view.workspace.size)
+	print("[os-layout-test] workspace=%s city=%s required=%s" % [view.workspace.size, view.city.size, required])
+	_check(view.city.size.x >= required.x and view.city.size.y >= required.y, "city retains its declared adaptive minimum working region")
 	_check(str(app.call("debug_report")).contains("presentation:"), "debug report includes current presentation route")
 	app.queue_free()
 	await tree.process_frame

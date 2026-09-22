@@ -107,6 +107,8 @@ func _test_storage() -> void:
 
 
 func _test_input(tree: SceneTree) -> void:
+	var original_window_size: Vector2i = tree.root.size
+	tree.root.size = Vector2i(1600, 900)
 	var profile: String = WorkspacePreferences.path_for_slot(SLOT)
 	_cleanup(profile)
 	var app: Control = MAIN.instantiate() as Control
@@ -143,6 +145,7 @@ func _test_input(tree: SceneTree) -> void:
 	key.pressed = true
 	tree.root.push_input(key)
 	_check(view.workspace.model.snapshot()["rails"]["left"]["extent"] == 360, "focused splitter keyboard input uses same step")
+	await tree.process_frame
 	point = handle.get_global_rect().get_center()
 	_push_button(tree, point, true)
 	_push_motion(tree, point + Vector2(80, 0))
@@ -177,6 +180,7 @@ func _test_input(tree: SceneTree) -> void:
 	app.queue_free()
 	await tree.process_frame
 	_cleanup(profile)
+	tree.root.size = original_window_size
 
 
 func _push_button(tree: SceneTree, point: Vector2, pressed: bool) -> void:
@@ -207,3 +211,12 @@ func _cleanup(path: String) -> void:
 	for suffix: String in ["", ".tmp"]:
 		if FileAccess.file_exists(path + suffix):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path + suffix))
+
+
+func _check(condition: bool, label: String) -> void:
+	checks += 1
+	if condition:
+		print("[workspace-tests] PASS: " + label)
+	else:
+		failures += 1
+		push_error("[workspace-tests] FAIL: " + label)
