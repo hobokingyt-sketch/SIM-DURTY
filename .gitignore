@@ -2,6 +2,10 @@
 .godot/
 .import/
 
+# Generated build identity and build output
+game/core/build/generated/
+build/
+
 # Export settings and credentials
 export.cfg
 export_credentials.cfg
