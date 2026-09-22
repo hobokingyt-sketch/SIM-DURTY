@@ -8,6 +8,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not $IsWindows) { throw 'Packaged persistence acceptance requires Windows.' }
 New-Item -ItemType Directory -Force -Path $ReportDirectory | Out-Null
+$observedSchemas = @{}
+$savedHashes = @{}
+$continuationHash = ''
 foreach ($mode in @('write', 'read')) {
     $process = [Diagnostics.Process]::new()
     $started = $false
@@ -36,20 +39,41 @@ foreach ($mode in @('write', 'read')) {
         if ($text -notmatch "(?m)^\[skeleton-probe\] PASS $mode cash_cents=2500 elapsed_minutes=45 completed_actions=3\r?$") {
             throw "Skeleton $mode did not prove the expected button/state/save/load result."
         }
+        $schemas = @([regex]::Matches($text, '(?m)^save_schema: ([0-9]+)\r?$') |
+            ForEach-Object { [int]$_.Groups[1].Value } | Select-Object -Unique)
+        if ($schemas.Count -ne 1 -or $schemas[0] -ne 2) {
+            throw "Skeleton $mode did not report the current schema-two contract."
+        }
+        $observedSchemas[$mode] = $schemas[0]
+        $hashes = [regex]::Matches($text, '(?m)^state_hash: ([a-f0-9]{64})\r?$')
+        if ($hashes.Count -lt 1) { throw "Skeleton $mode omitted its full state identity." }
+        # The probe restores the saved checkpoint before its final report.
+        $savedHashes[$mode] = $hashes[$hashes.Count - 1].Groups[1].Value
+        if ($mode -eq 'read') {
+            $continuation = [regex]::Matches($text, '(?m)^\[spine-probe\] PASS continuation state_hash=([a-f0-9]{64})\r?$')
+            if ($continuation.Count -ne 1) { throw 'The second process did not verify future RNG/work continuation.' }
+            $continuationHash = $continuation[0].Groups[1].Value
+        }
     }
     finally {
         if ($started -and -not $process.HasExited) { $process.Kill($true); $process.WaitForExit() }
         $process.Dispose()
     }
 }
+if ($observedSchemas['write'] -ne $observedSchemas['read'] -or $savedHashes['write'] -ne $savedHashes['read']) {
+    throw 'Separate Windows processes did not restore the same complete checkpoint.'
+}
 [ordered]@{
-    test = 'windows-packaged-two-process-save-load'
+    test = 'windows-packaged-two-process-save-load-and-continuation'
     status = 'passed'
     cash_cents = 2500
     elapsed_minutes = 45
     completed_actions = 3
-    save_schema = 1
+    save_schema = $observedSchemas['read']
+    saved_state_hash = $savedHashes['read']
+    continuation_state_hash = $continuationHash
+    continuation = 'next RNG draw and work command match the first-process oracle'
     input_path = 'native Button signals through application command handlers'
     physical_mouse_playtest = 'not_run'
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $ReportDirectory 'skeleton-verification.json') -Encoding utf8
-Write-Host '[skeleton-gate] PASS: packaged Windows processes saved and reloaded the same state.'
+Write-Host '[skeleton-gate] PASS: packaged Windows processes preserved schema, checkpoint and future continuation.'
