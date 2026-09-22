@@ -23,7 +23,7 @@ reactive-engineering phase, not a vague “polish” pass.
 
 ## Phase 6D: Reactive Product UI + Locked Visual System — CURRENT
 
-### 6D.1 — Material foundation — CURRENT IMPLEMENTATION
+### 6D.1 — Material foundation — COMPLETE
 
 Build the shared charcoal material kit before styling individual screens.
 
@@ -37,7 +37,7 @@ Deliver:
 
 Do not yet redesign every component. The implementation uses one shared low-contrast shader-backed material on chassis, rails, app wells and widget bodies while leaving interaction geometry unchanged.
 
-### 6D.2 — Engineered frame system — NEXT
+### 6D.2 — Engineered frame system — CURRENT IMPLEMENTATION
 
 Translate the concept's strongest signature into reusable primitives.
 
@@ -49,9 +49,9 @@ Deliver:
 - scalable implementation that does not distort when rails/widgets resize,
 - no border proliferation around individual values.
 
-This pass should make the OS read as a connected machine before fine detail.
+This pass should make the OS read as a connected machine before fine detail. The implementation uses generated nine-patch frame textures so chamfers and border layers survive rail/widget resizing, plus non-interactive seam overlays for restrained structural ticks.
 
-### 6D.3 — Control and icon kit
+### 6D.3 — Control and icon kit — NEXT
 
 Polish reusable interaction assets:
 - launcher plates,

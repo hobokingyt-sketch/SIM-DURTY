@@ -35,7 +35,7 @@ var city_button: Button
 var operations_button: Button
 var record_app_button: Button
 var glance_toggle: Button
-var chassis_surface: ColorRect
+var chassis_surface: Panel
 var center_stage: Control
 var center_app_surface: OsAppSurface
 var right_app_surface: OsAppSurface
@@ -93,10 +93,10 @@ var _storage_alert: bool = false
 
 func _ready() -> void:
 	theme = OsTokens.make_theme()
-	chassis_surface = ColorRect.new()
+	chassis_surface = Panel.new()
 	chassis_surface.name = "ChassisSurface"
-	chassis_surface.color = OsTokens.CHASSIS
 	chassis_surface.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chassis_surface.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_SHELL, OsTokens.CHASSIS, 0, OsTokens.frame_palette()))
 	add_child(chassis_surface)
 	chassis_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	OsMaterials.apply_diffuse(chassis_surface, OsMaterials.ROLE_CHASSIS, "shell-chassis")
@@ -135,6 +135,7 @@ func _ready() -> void:
 	_fit_workspace()
 	_apply_navigation()
 	_choose_page("work")
+	OsFrames.attach_overlay(self, OsFrames.ROLE_SHELL, OsTokens.frame_palette(), true)
 
 
 func configure_workspace(slot: String, force_persistence: bool = false) -> void:
@@ -177,8 +178,9 @@ func _surface(side: String) -> Panel:
 	panel.clip_contents = true
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.mouse_force_pass_scroll_events = false
-	panel.add_theme_stylebox_override("panel", OsTokens.box(OsTokens.SURFACE, 0))
+	panel.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_SURFACE, OsTokens.SURFACE, 0, OsTokens.frame_palette()))
 	OsMaterials.apply_diffuse(panel, OsMaterials.ROLE_SURFACE, "rail-" + side)
+	OsFrames.attach_overlay(panel, OsFrames.ROLE_SURFACE, OsTokens.frame_palette())
 	workspace.register_region(side, panel)
 	return panel
 
@@ -289,8 +291,9 @@ func _build_right() -> void:
 	right_app_surface.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	full.add_child(right_app_surface)
 	right_app_surface.setup("record", OsAppManifest.HOST_RIGHT)
-	right_app_surface.add_theme_stylebox_override("panel", OsTokens.box(OsTokens.WELL, 0))
+	right_app_surface.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_APP, OsTokens.WELL, 0, OsTokens.frame_palette()))
 	OsMaterials.apply_diffuse(right_app_surface, OsMaterials.ROLE_WELL, "app-record")
+	OsFrames.attach_overlay(right_app_surface, OsFrames.ROLE_APP, OsTokens.frame_palette())
 	_build_right_record_views()
 	_right_widget_dock = WidgetDock.new()
 	_right_widget_dock.region = "right"
@@ -307,8 +310,9 @@ func _build_center_apps() -> void:
 	center_stage.add_child(center_app_surface)
 	center_app_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center_app_surface.setup("operations", OsAppManifest.HOST_CENTER)
-	center_app_surface.add_theme_stylebox_override("panel", OsTokens.box(OsTokens.WELL, 0))
+	center_app_surface.add_theme_stylebox_override("panel", OsFrames.frame_style(OsFrames.ROLE_APP, OsTokens.WELL, 0, OsTokens.frame_palette()))
 	OsMaterials.apply_diffuse(center_app_surface, OsMaterials.ROLE_WELL, "app-operations")
+	OsFrames.attach_overlay(center_app_surface, OsFrames.ROLE_APP, OsTokens.frame_palette())
 	var work_view: MarginContainer = MarginContainer.new()
 	var work_stack: VBoxContainer = _app_inset(work_view, 28)
 	var work_header: HBoxContainer = _app_header(work_stack, "Operations")
@@ -323,7 +327,7 @@ func _build_center_apps() -> void:
 	_operation_terms = OsTokens.wrapped(_operations, "", 20, OsTokens.ACCENT)
 	OsTokens.wrapped(_operations, "Operations owns execution. City camera and selection stay mounted behind this focused view.", 17)
 	work_button = OsTokens.button(_operations, "Run an errand", func() -> void: work_requested.emit())
-	work_button.add_theme_stylebox_override("normal", OsTokens.box(OsTokens.ACCENT_RECESS, 12))
+	work_button.add_theme_stylebox_override("normal", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.ACCENT_RECESS, 12, OsTokens.frame_palette()))
 	work_button.custom_minimum_size.y = 64
 	OsTokens.wrapped(_operations, "Test activity only. Crew, travel and risk are not active.", 15)
 	center_app_surface.register_view("work", work_view)
