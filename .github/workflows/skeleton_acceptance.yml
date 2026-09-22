@@ -67,11 +67,12 @@ jobs:
             check "$mode" godot --headless --path . -- --skeleton-probe="$mode"
             grep -q "^\[skeleton-probe\] PASS $mode" "$reports/$mode.log"
           done
+          # These captures validate rendering only; CI has no physical sound device.
           for size in 2560x1440 1600x900; do
             export SIM_DURTY_CAPTURE_PATH="$reports/skeleton-$size.png"
             check "render-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
               godot --path . --resolution "$size" --rendering-method gl_compatibility \
-              -- --skeleton-probe=capture
+              --audio-driver Dummy -- --skeleton-probe=capture
             test -s "$SIM_DURTY_CAPTURE_PATH"
           done
           git rev-parse HEAD > "$reports/source-sha.txt"
