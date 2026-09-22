@@ -54,7 +54,7 @@ static func spec(role: String) -> Dictionary:
 		OsControls.ROLE_PRIMARY:
 			return {"chamfer": 4, "face_inset": 4, "face_bevel": 2, "patch": 8}
 		OsControls.ROLE_LAUNCHER:
-			return {"chamfer": 4, "face_inset": 4, "patch": 8}
+			return {"chamfer": 4, "face_inset": 4, "face_bevel": 2, "patch": 8}
 		OsControls.ROLE_TAB:
 			return {"chamfer": 4, "face_inset": 3, "face_bevel": 2, "patch": 7}
 		OsControls.ROLE_NAV:
@@ -62,8 +62,8 @@ static func spec(role: String) -> Dictionary:
 		OsControls.ROLE_HANDLE, OsControls.ROLE_COMPACT:
 			return {"chamfer": 3, "face_inset": 3, "face_bevel": 1, "patch": 6}
 		OsControls.ROLE_FOLD:
-			return {"chamfer": 3, "face_inset": 3, "patch": 6}
-	return {"chamfer": 4, "face_inset": 3, "patch": 7}
+			return {"chamfer": 3, "face_inset": 3, "face_bevel": 1, "patch": 6}
+	return {"chamfer": 4, "face_inset": 3, "face_bevel": 2, "patch": 7}
 
 
 static func contract() -> Dictionary:
