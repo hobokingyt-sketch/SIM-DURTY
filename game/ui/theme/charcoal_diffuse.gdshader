@@ -28,9 +28,11 @@ void fragment() {
 	float broad = value_noise(pixel / 132.0 + seed_offset);
 	float middle = value_noise(pixel / 52.0 + seed_offset * 1.7);
 	float grain = hash21(floor(pixel) + seed_offset * 13.0);
+	// Add rather than multiply: on very dark charcoal, a 1–3% multiplicative
+	// shift is sub-pixel in 8-bit output and disappears completely.
 	float variation =
-		(broad - 0.5) * mottle_strength * 1.35 +
-		(middle - 0.5) * mottle_strength * 0.45 +
+		(broad - 0.5) * mottle_strength +
+		(middle - 0.5) * mottle_strength * 0.35 +
 		(grain - 0.5) * grain_strength;
-	COLOR.rgb *= 1.0 + variation;
+	COLOR.rgb = clamp(COLOR.rgb + vec3(variation), vec3(0.0), vec3(1.0));
 }
