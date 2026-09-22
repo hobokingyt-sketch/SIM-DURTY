@@ -1,34 +1,48 @@
 # Project Health Contract
 
-Project health is a set of machine-verifiable and documented guarantees, not a vague feeling that the game launched once.
+Project health is machine-verifiable behavior, not the comforting sensation that something launched once.
 
-## Current required gates
+## Current required health workflow
 
-Every meaningful slice should pass:
+Every meaningful slice must pass:
 
-1. **Architecture guard**
-   - required project-memory files exist,
-   - initial dependency shortcuts are rejected.
-
-2. **Godot import**
-   - resources/scripts can be imported by the pinned engine.
-
+1. **Godot import**
+2. **Architecture guard**
 3. **Automated tests**
-   - current behavioral smoke tests pass.
-
 4. **Main-scene boot**
-   - the project can start the configured main scene headlessly.
+5. **Repository-truth review**
 
-5. **Repository truth**
-   - `docs/state.md` accurately describes implemented capability,
-   - architecture/canon docs are updated when their truth changes.
+## Current owner-facing preview workflow
 
-## Health gates that arrive with real systems
+Every pull request also attempts a **Windows Preview** build:
+
+1. install pinned Godot,
+2. install matching official export templates,
+3. generate explicit build metadata,
+4. verify the metadata,
+5. export the Windows preview,
+6. package EXE/PCK/build receipt,
+7. upload a short-lived artifact.
+
+A gameplay/UI slice is not ready for owner playtesting until its preview artifact succeeds.
+
+## Build identity health
+
+Generated preview builds must expose:
+- build ID,
+- commit/source SHA,
+- ref,
+- CI run identity,
+- game/Godot versions.
+
+Development without generated metadata must identify itself as local rather than fabricating Git identity.
+
+## Gates that arrive with real systems
 
 ### Walking Skeleton
 Add:
 - unit tests for state mutation,
-- integration test for state → presentation flow,
+- integration test for state -> presentation flow,
 - save/load roundtrip.
 
 ### Simulation Spine
@@ -36,65 +50,30 @@ Add:
 - deterministic RNG tests,
 - clock tests,
 - stable-ID tests,
-- same-seed/same-command replay test,
+- same-seed/same-command replay,
 - state hash comparison.
 
 ### Persistent schemas
 Add:
 - schema-version validation,
-- historical fixture saves,
+- fixture saves,
 - migration tests,
-- old-save compatibility checks.
+- old-save compatibility.
 
 ### Content scale
-Add:
-- duplicate content-ID detection,
-- missing reference validation,
-- Resource-schema/content validation.
+Add content-ID/reference/resource validation.
 
 ### OS/UI shell
-Add:
-- reference-layout smoke scenes,
-- UI ownership checks where practical,
-- screenshot/visual review artifacts when tooling supports them.
+Add reference-layout smoke coverage and visual-review artifacts where useful.
 
 ### Meaningful simulation scale
-Add:
-- scenario regression suite,
-- performance budgets,
-- long-running simulation/soak test,
-- orphan/reference integrity checks.
+Add scenario regressions, performance budgets, soak tests, and orphan/reference integrity checks.
 
 ### Production
-Add:
-- Windows export validation,
-- preview artifact generation,
-- tagged release workflow,
-- build metadata,
-- release smoke test,
-- nightly deeper health workflow where runtime cost justifies it.
+Add signed/tagged release workflow, durable release artifacts, release smoke tests, and deeper scheduled health checks.
 
 ## Failure policy
 
-Do not:
-- disable a health gate simply because it found a real problem,
-- convert errors into warnings to get a PR green,
-- update expected results without understanding why they changed,
-- merge known architecture damage as "temporary" without an explicit tracked decision.
+Do not disable or weaken a gate merely because it found a real problem.
 
-A gate may be changed when the underlying contract intentionally changes. The code, test, docs, and ADR should then move together.
-
-## Health debt
-
-Examples:
-- warnings,
-- broken references,
-- duplicate authoritative state,
-- unused critical Resources,
-- nondeterministic simulation outcomes,
-- save migration gaps,
-- architecture exceptions,
-- failing/disabled tests,
-- unbounded system cost.
-
-Health debt should be recorded and deliberately resolved rather than buried in unrelated feature work.
+A contract may change deliberately, but code, tests, docs, and ADRs must move together.
