@@ -12,7 +12,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_force_pass_scroll_events = false
 	mouse_default_cursor_shape = Control.CURSOR_MOVE if kind == "move" else Control.CURSOR_FDIAGSIZE
-	text = "≡" if kind == "move" else "↘"
+	text = ""
+	OsControls.set_icon(self, "move" if kind == "move" else "resize", 16)
 	tooltip_text = "Move widget. Arrows reorder; Enter changes rail." if kind == "move" else "Resize widget. Arrows choose form."
 	accessibility_name = str(WidgetLayout.TITLES.get(widget_id, widget_id)) + ": " + tooltip_text
 

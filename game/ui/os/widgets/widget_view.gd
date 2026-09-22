@@ -48,8 +48,9 @@ func _ready() -> void:
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	resize_handle = _handle(header, "resize")
 	menu_button = MenuButton.new()
-	menu_button.text = "⋯"
+	menu_button.text = ""
 	_small_button(menu_button)
+	OsControls.set_icon(menu_button, "menu", 16)
 	header.add_child(menu_button)
 	menu_button.tooltip_text = "Widget position and size"
 	menu_button.accessibility_name = str(WidgetLayout.TITLES[widget_id]) + " options"
@@ -93,6 +94,7 @@ func _handle(parent: Node, kind: String) -> WidgetHandle:
 	handle.widget_id = widget_id
 	handle.kind = kind
 	_small_button(handle)
+	OsControls.apply(handle, OsControls.ROLE_HANDLE, OsTokens.control_palette())
 	parent.add_child(handle)
 	handle.manipulation_requested.connect(func(id: String, type: String, point: Vector2) -> void: manipulation_requested.emit(id, type, point))
 	handle.key_requested.connect(func(id: String, type: String, direction: int, transfer: bool) -> void: key_requested.emit(id, type, direction, transfer))
@@ -102,11 +104,7 @@ func _handle(parent: Node, kind: String) -> WidgetHandle:
 static func _small_button(button: Button) -> void:
 	button.custom_minimum_size = Vector2(28, 28)
 	button.add_theme_font_size_override("font_size", 15)
-	button.add_theme_stylebox_override("normal", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.RAISED, 5, OsTokens.frame_palette()))
-	button.add_theme_stylebox_override("hover", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.RAISED_HOVER, 5, OsTokens.frame_palette()))
-	button.add_theme_stylebox_override("pressed", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.RAISED_PRESSED, 5, OsTokens.frame_palette()))
-	button.add_theme_stylebox_override("disabled", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.DISABLED, 5, OsTokens.frame_palette()))
-	button.mouse_force_pass_scroll_events = false
+	OsControls.apply(button, OsControls.ROLE_COMPACT, OsTokens.control_palette())
 
 
 func bind_work(definition: SkeletonWorkDefinition) -> void:

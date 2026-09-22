@@ -46,6 +46,10 @@ var operations_record_tab: Button
 var operations_record_work_button: Button
 var record_activity_tab: Button
 var record_storage_tab: Button
+var record_storage_activity_button: Button
+var record_storage_storage_button: Button
+var bottom_work_tab: Button
+var bottom_layout_tab: Button
 var record_toggle: Button
 var record_scroll: ScrollContainer
 var record_label: Label
@@ -206,13 +210,17 @@ func _scroll(parent: Node) -> ScrollContainer:
 
 func _icon(parent: Node, kind: String, title: String, action: Callable) -> Button:
 	var button: Button = OsTokens.button(parent, "", action)
-	button.icon = WorkspaceIcons.texture(kind)
-	button.expand_icon = true
-	button.add_theme_constant_override("icon_max_width", 24)
+	OsControls.apply(button, OsControls.ROLE_LAUNCHER, OsTokens.control_palette())
+	OsControls.set_icon(button, kind, 22)
 	button.custom_minimum_size = Vector2(44, 44)
 	button.tooltip_text = title
 	button.accessibility_name = title
-	button.flat = true
+	return button
+
+
+func _control_icon(button: Button, kind: String, role: String = OsControls.ROLE_COMPACT, max_width: int = 16) -> Button:
+	OsControls.apply(button, role, OsTokens.control_palette())
+	OsControls.set_icon(button, kind, max_width)
 	return button
 
 
@@ -232,6 +240,7 @@ func _build_left() -> void:
 	record_app_button = _icon(launcher, "report", "Session Record", func() -> void: open_record_app())
 	record_app_button.toggle_mode = true
 	layout_toggle = _icon(launcher, "layout", "Workspace layout", func() -> void: _choose_page("layout"))
+	layout_toggle.toggle_mode = true
 	glance_toggle = _icon(launcher, "rail", "Show or fold the left rail", Callable())
 	glance_toggle.toggle_mode = true
 	glance_toggle.toggled.connect(func(opened: bool) -> void: workspace.model.set_collapsed("left", not opened))
@@ -271,7 +280,9 @@ func _build_right() -> void:
 	var heading: HBoxContainer = OsTokens.row(full, 8)
 	OsTokens.label(heading, "CONTEXT", 13, OsTokens.ACCENT)
 	OsTokens.spacer(heading)
-	OsTokens.button(heading, "›", func() -> void: workspace.model.set_collapsed("right", true)).tooltip_text = "Fold right rail"
+	var fold_right: Button = OsTokens.button(heading, "", func() -> void: workspace.model.set_collapsed("right", true))
+	_control_icon(fold_right, "fold_right", OsControls.ROLE_FOLD)
+	fold_right.tooltip_text = "Fold right rail"
 	var scroll: ScrollContainer = _scroll(full)
 	_context_scroll = scroll
 	var stack: VBoxContainer = OsTokens.column(scroll, 20)
@@ -285,6 +296,7 @@ func _build_right() -> void:
 	_context_terms = OsTokens.wrapped(_context, "", 18, OsTokens.ACCENT)
 	_context_body = OsTokens.wrapped(_context, "Choose work from a widget or its city location.", 17)
 	open_operations_button = OsTokens.button(_context, "Open Operations", open_operations_for_selection)
+	OsControls.apply(open_operations_button, OsControls.ROLE_PRIMARY, OsTokens.control_palette())
 	OsTokens.button(_context, "Clear selection", clear_selection)
 	right_app_surface = OsAppSurface.new()
 	right_app_surface.name = "RightAppSurface"
@@ -301,7 +313,9 @@ func _build_right() -> void:
 	full.add_child(_right_widget_dock)
 	var folded: VBoxContainer = _inset(rail, 8)
 	_folded["right"] = folded.get_parent()
-	OsTokens.button(folded, "‹", func() -> void: workspace.model.set_collapsed("right", false)).tooltip_text = "Expand right rail"
+	var expand_right: Button = OsTokens.button(folded, "", func() -> void: workspace.model.set_collapsed("right", false))
+	_control_icon(expand_right, "fold_left", OsControls.ROLE_FOLD)
+	expand_right.tooltip_text = "Expand right rail"
 
 
 func _build_center_apps() -> void:
@@ -317,17 +331,23 @@ func _build_center_apps() -> void:
 	var work_stack: VBoxContainer = _app_inset(work_view, 28)
 	var work_header: HBoxContainer = _app_header(work_stack, "Operations")
 	var work_back: Button = OsTokens.button(work_header, "Back", func() -> void: _model.back())
+	_control_icon(work_back, "back", OsControls.ROLE_NAV)
 	center_back_buttons.append(work_back)
 	close_operations_button = OsTokens.button(work_header, "City", func() -> void: _model.return_to_city())
+	_control_icon(close_operations_button, "city", OsControls.ROLE_NAV)
 	operations_work_tab = OsTokens.button(work_header, "Work", func() -> void: _model.navigate_view("work"))
+	operations_work_tab.toggle_mode = true
+	OsControls.apply(operations_work_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
 	operations_record_tab = OsTokens.button(work_header, "Record", func() -> void: _model.navigate_view("record"))
+	operations_record_tab.toggle_mode = true
+	OsControls.apply(operations_record_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
 	OsTokens.label(work_stack, "SELECTED WORK", 13, OsTokens.ACCENT)
 	_operations = OsTokens.column(work_stack, 18)
 	_operation_title = OsTokens.wrapped(_operations, "", 36, OsTokens.TEXT)
 	_operation_terms = OsTokens.wrapped(_operations, "", 20, OsTokens.ACCENT)
 	OsTokens.wrapped(_operations, "Operations owns execution. City camera and selection stay mounted behind this focused view.", 17)
 	work_button = OsTokens.button(_operations, "Run an errand", func() -> void: work_requested.emit())
-	work_button.add_theme_stylebox_override("normal", OsFrames.frame_style(OsFrames.ROLE_CONTROL, OsTokens.ACCENT_RECESS, 12, OsTokens.frame_palette()))
+	OsControls.apply(work_button, OsControls.ROLE_PRIMARY, OsTokens.control_palette())
 	work_button.custom_minimum_size.y = 64
 	OsTokens.wrapped(_operations, "Test activity only. Crew, travel and risk are not active.", 15)
 	center_app_surface.register_view("work", work_view)
@@ -335,10 +355,17 @@ func _build_center_apps() -> void:
 	var record_stack: VBoxContainer = _app_inset(record_view, 28)
 	var record_header: HBoxContainer = _app_header(record_stack, "Operations")
 	var record_back: Button = OsTokens.button(record_header, "Back", func() -> void: _model.back())
+	_control_icon(record_back, "back", OsControls.ROLE_NAV)
 	center_back_buttons.append(record_back)
-	OsTokens.button(record_header, "City", func() -> void: _model.return_to_city())
+	var record_city: Button = OsTokens.button(record_header, "City", func() -> void: _model.return_to_city())
+	_control_icon(record_city, "city", OsControls.ROLE_NAV)
 	operations_record_work_button = OsTokens.button(record_header, "Work", func() -> void: _model.navigate_view("work"))
-	OsTokens.button(record_header, "Record", func() -> void: _model.navigate_view("record"))
+	operations_record_work_button.toggle_mode = true
+	OsControls.apply(operations_record_work_button, OsControls.ROLE_TAB, OsTokens.control_palette())
+	var operations_record_selected: Button = OsTokens.button(record_header, "Record", func() -> void: _model.navigate_view("record"))
+	operations_record_selected.toggle_mode = true
+	OsControls.apply(operations_record_selected, OsControls.ROLE_TAB, OsTokens.control_palette())
+	operations_record_selected.set_meta("os_app_view", "operations_record_selected")
 	OsTokens.label(record_stack, "CURRENT SESSION RECORD", 13, OsTokens.ACCENT)
 	var record_scroll_view: ScrollContainer = _scroll(record_stack)
 	var record_content: VBoxContainer = OsTokens.column(record_scroll_view, 10)
@@ -353,13 +380,17 @@ func _build_right_record_views() -> void:
 	OsTokens.label(activity_stack, "Session Record", 22)
 	var activity_nav: HBoxContainer = OsTokens.row(activity_stack, 6)
 	var activity_back: Button = OsTokens.button(activity_nav, "Back", func() -> void: _model.back())
+	_control_icon(activity_back, "back", OsControls.ROLE_NAV)
 	var activity_city: Button = OsTokens.button(activity_nav, "City", func() -> void: _model.return_to_city())
+	_control_icon(activity_city, "city", OsControls.ROLE_NAV)
 	right_back_buttons.append(activity_back)
 	var activity_tabs: HBoxContainer = OsTokens.row(activity_stack, 6)
 	record_activity_tab = OsTokens.button(activity_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
+	record_activity_tab.toggle_mode = true
+	OsControls.apply(record_activity_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
 	record_storage_tab = OsTokens.button(activity_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
-	for button: Button in [activity_back, activity_city, record_activity_tab, record_storage_tab]:
-		WidgetView._small_button(button)
+	record_storage_tab.toggle_mode = true
+	OsControls.apply(record_storage_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
 	OsTokens.label(activity_stack, "CURRENT SESSION", 13, OsTokens.ACCENT)
 	var activity_scroll: ScrollContainer = _scroll(activity_stack)
 	var activity_content: VBoxContainer = OsTokens.column(activity_scroll, 8)
@@ -372,13 +403,17 @@ func _build_right_record_views() -> void:
 	OsTokens.label(storage_stack, "Session Record", 22)
 	var storage_nav: HBoxContainer = OsTokens.row(storage_stack, 6)
 	var storage_back: Button = OsTokens.button(storage_nav, "Back", func() -> void: _model.back())
+	_control_icon(storage_back, "back", OsControls.ROLE_NAV)
 	var storage_city: Button = OsTokens.button(storage_nav, "City", func() -> void: _model.return_to_city())
+	_control_icon(storage_city, "city", OsControls.ROLE_NAV)
 	right_back_buttons.append(storage_back)
 	var storage_tabs: HBoxContainer = OsTokens.row(storage_stack, 6)
-	var storage_activity: Button = OsTokens.button(storage_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
-	var storage_storage: Button = OsTokens.button(storage_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
-	for button: Button in [storage_back, storage_city, storage_activity, storage_storage]:
-		WidgetView._small_button(button)
+	record_storage_activity_button = OsTokens.button(storage_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
+	record_storage_activity_button.toggle_mode = true
+	OsControls.apply(record_storage_activity_button, OsControls.ROLE_TAB, OsTokens.control_palette())
+	record_storage_storage_button = OsTokens.button(storage_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
+	record_storage_storage_button.toggle_mode = true
+	OsControls.apply(record_storage_storage_button, OsControls.ROLE_TAB, OsTokens.control_palette())
 	OsTokens.label(storage_stack, "SAVE SLOT", 13, OsTokens.ACCENT)
 	_rail_storage_label = OsTokens.wrapped(storage_stack, "No saved slot yet.", 17, OsTokens.TEXT)
 	OsTokens.wrapped(storage_stack, "Read-only inspection here. Saving and recovery stay explicit.", 14)
@@ -403,16 +438,18 @@ func _build_top() -> void:
 	var head: HBoxContainer = OsTokens.row(stack, 12)
 	OsTokens.label(head, "CITY WORKSPACE", 15, OsTokens.MUTED)
 	OsTokens.spacer(head)
-	var zoom_out: Button = OsTokens.button(head, "−", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5))
-	var zoom_in: Button = OsTokens.button(head, "+", func() -> void: city.zoom_at(1.2, city.size * 0.5))
-	var reset_view: Button = OsTokens.button(head, "↺", func() -> void: city.reset_camera())
-	for button: Button in [zoom_out, zoom_in, reset_view]:
-		WidgetView._small_button(button)
+	var zoom_out: Button = OsTokens.button(head, "", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5))
+	var zoom_in: Button = OsTokens.button(head, "", func() -> void: city.zoom_at(1.2, city.size * 0.5))
+	var reset_view: Button = OsTokens.button(head, "", func() -> void: city.reset_camera())
+	_control_icon(zoom_out, "zoom_out", OsControls.ROLE_COMPACT)
+	_control_icon(zoom_in, "zoom_in", OsControls.ROLE_COMPACT)
+	_control_icon(reset_view, "reset", OsControls.ROLE_COMPACT)
 	zoom_out.tooltip_text = "Zoom out"
 	zoom_in.tooltip_text = "Zoom in"
 	reset_view.tooltip_text = "Reset city view"
 	time_label = OsTokens.label(head, "Day 1 · 08:00", 23)
-	var fold: Button = OsTokens.button(head, "⌃", func() -> void: workspace.toggle_rail("top"))
+	var fold: Button = OsTokens.button(head, "", func() -> void: workspace.toggle_rail("top"))
+	_control_icon(fold, "fold_up", OsControls.ROLE_FOLD)
 	fold.custom_minimum_size.y = 30
 	fold.tooltip_text = "Fold or expand top rail"
 	var status: HBoxContainer = OsTokens.row(stack, 12)
@@ -430,16 +467,18 @@ func _build_bottom() -> void:
 	var tabs: HBoxContainer = OsTokens.row(stack, 10)
 	OsTokens.label(tabs, "WORKBENCH", 13, OsTokens.MUTED)
 	OsTokens.spacer(tabs)
-	var work_tab: Button = OsTokens.button(tabs, "Work", func() -> void: _choose_page("work"))
-	work_tab.custom_minimum_size.y = 30
+	bottom_work_tab = OsTokens.button(tabs, "Work", func() -> void: _choose_page("work"))
+	bottom_work_tab.toggle_mode = true
+	OsControls.apply(bottom_work_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
 	record_toggle = OsTokens.button(tabs, "Activity", Callable())
-	record_toggle.custom_minimum_size.y = 30
 	record_toggle.toggle_mode = true
+	OsControls.apply(record_toggle, OsControls.ROLE_TAB, OsTokens.control_palette())
 	record_toggle.toggled.connect(_toggle_record)
-	var layout_tab: Button = OsTokens.button(tabs, "Layout", func() -> void: _choose_page("layout"))
-	layout_tab.custom_minimum_size.y = 30
-	var fold: Button = OsTokens.button(tabs, "⌄", func() -> void: workspace.toggle_rail("bottom"))
-	fold.custom_minimum_size.y = 30
+	bottom_layout_tab = OsTokens.button(tabs, "Layout", func() -> void: _choose_page("layout"))
+	bottom_layout_tab.toggle_mode = true
+	OsControls.apply(bottom_layout_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
+	var fold: Button = OsTokens.button(tabs, "", func() -> void: workspace.toggle_rail("bottom"))
+	_control_icon(fold, "fold_down", OsControls.ROLE_FOLD)
 	fold.tooltip_text = "Fold or expand bottom rail"
 	var pages: VBoxContainer = OsTokens.column(stack, 0)
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -489,6 +528,7 @@ func _build_layout_controls(parent: Node) -> void:
 	var options: HBoxContainer = OsTokens.row(stack, 12)
 	OsTokens.label(options, "Interface size", 16)
 	scale_picker = OptionButton.new()
+	OsControls.apply(scale_picker, OsControls.ROLE_STANDARD, OsTokens.control_palette())
 	scale_picker.add_item("100%", 100)
 	scale_picker.add_item("125%", 125)
 	options.add_child(scale_picker)
@@ -502,7 +542,7 @@ func _apply_geometry(result: Dictionary) -> void:
 	for side: String in _expanded: (_expanded[side] as Control).visible = not bool(result["collapsed"][side])
 	for side: String in _folded: (_folded[side] as Control).visible = bool(result["collapsed"][side])
 	_brand_label.visible = not bool(result["collapsed"]["left"])
-	glance_toggle.set_pressed_no_signal(not bool(result["collapsed"]["left"]))
+	OsControls.set_selected(glance_toggle, not bool(result["collapsed"]["left"]))
 	var preferred: Dictionary = workspace.model.snapshot()
 	for side: String in rail_controls:
 		var controls: Dictionary = rail_controls[side]
@@ -529,8 +569,11 @@ func _choose_page(page: String) -> void:
 	record_scroll.visible = page == "record"
 	developer_scroll.visible = page == "tools"
 	layout_scroll.visible = page == "layout"
-	record_toggle.set_pressed_no_signal(page == "record")
-	developer_toggle.set_pressed_no_signal(page == "tools")
+	OsControls.set_selected(bottom_work_tab, page == "work")
+	OsControls.set_selected(record_toggle, page == "record")
+	OsControls.set_selected(bottom_layout_tab, page == "layout")
+	OsControls.set_selected(layout_toggle, page == "layout")
+	OsControls.set_selected(developer_toggle, page == "tools")
 	workspace.model.set_collapsed("bottom", false)
 	if page == "tools": inspection_requested.emit()
 
@@ -617,17 +660,23 @@ func _apply_navigation() -> void:
 		right_app_surface.suspend()
 		_context_scroll.show()
 		_right_widget_dock.show()
-	city_button.set_pressed_no_signal(active_app == "city")
-	operations_button.set_pressed_no_signal(center_active)
-	record_app_button.set_pressed_no_signal(rail_active)
+	OsControls.set_selected(city_button, active_app == "city")
+	OsControls.set_selected(operations_button, center_active)
+	OsControls.set_selected(record_app_button, rail_active)
 	for button: Button in center_back_buttons:
 		button.disabled = not center_active or int(state["back_depth"]) == 0
 	for button: Button in right_back_buttons:
 		button.disabled = not rail_active or int(state["back_depth"]) == 0
-	operations_work_tab.disabled = center_active and active_view == "work"
-	operations_record_tab.disabled = center_active and active_view == "record"
-	record_activity_tab.disabled = rail_active and active_view == "activity"
-	record_storage_tab.disabled = rail_active and active_view == "storage"
+	OsControls.set_selected(operations_work_tab, center_active and active_view == "work")
+	OsControls.set_selected(operations_record_tab, center_active and active_view == "record")
+	OsControls.set_selected(operations_record_work_button, center_active and active_view == "work")
+	var record_selected: Array[Node] = center_app_surface.find_children("*", "Button", true, false).filter(func(node: Node) -> bool: return str(node.get_meta("os_app_view", "")) == "operations_record_selected")
+	for node: Node in record_selected:
+		OsControls.set_selected(node as Button, center_active and active_view == "record")
+	OsControls.set_selected(record_activity_tab, rail_active and active_view == "activity")
+	OsControls.set_selected(record_storage_tab, rail_active and active_view == "storage")
+	OsControls.set_selected(record_storage_activity_button, rail_active and active_view == "activity")
+	OsControls.set_selected(record_storage_storage_button, rail_active and active_view == "storage")
 	city.set_selected(selected)
 	context_title.text = _work_name if selected else "Select work"
 	_context_terms.text = _terms if selected else ""
