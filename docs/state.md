@@ -3,63 +3,68 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2 stable, unchanged
 Language: typed GDScript
-Game version: 0.0.5
+Game version: 0.0.6
 Reference viewport: 2560x1440
 
-## Current milestone: Persistence & Developer Tools
+## Current milestone: OS + City Skeleton
 
-This revision implements the bounded Phase 5 slice below. Acceptance and merge
-status belong to the matching PR and exact-revision CI evidence.
+This revision implements the bounded Phase 6 shell. Acceptance/merge status
+belongs to matching PR and exact-source CI evidence, not a prospective checkbox.
 
 ## Implemented
 
-Foundation 0, Infrastructure 1/2, Walking Skeleton and Simulation Spine remain
-in place: owned integer state, fixed errand, explicit commands, controlled clock,
-seeded continuation, stable per-timeline IDs, bounded journal, full fingerprint,
-schema 2 with schema 1 migration and verified packaged Windows delivery.
+The existing owned session, command-driven clock, seeded RNG continuation,
+stable IDs, manual saves, schema 2/v1 reader, recovery and debug report remain.
+No simulation or persistence rules are changed.
 
-This slice adds:
-- Automatic read-only inspection of the current and backup save.
-- One contextual recovery action only for a damaged/missing primary with a
-  compatible, valid backup. No silent fallback from a newer/incompatible save.
-- Staged recovery, exact backup preservation and a separate retained copy of
-  the damaged original. Stale file changes stop recovery.
-- Developer controls hidden by default; optional bounded storage/state/event
-  inspector. No fake historical records or new simulation owners.
-- Current storage/recovery details in Copy debug report.
-- Recovery/migration/refusal/UI scenarios in the existing automated suite.
-- Actual packaged Windows recovery followed by fresh-process auto-load and
-  future RNG/work verification, using an isolated CI-only slot.
-- Normal and expanded-tools reference captures through existing acceptance CI.
-- Hands-off engineering handoff rules in root AGENTS.md.
+- Native OS framing: top navigation/time, left glance widgets, central city,
+  right context/Operations and bottom status/storage with optional drawers.
+- Shared typography/surface/spacing Theme through OsTokens.
+- Work Scan reads the existing activity. It selects work but does not execute it.
+- One labeled city blockout and one native selectable marker for that activity.
+- One presentation selection owner shared by marker, widget and context.
+- Operations executes the existing command in an authored dock beside the city.
+- Closing/reopening Operations retains city camera and selected work.
+- Bounded pan/zoom, reset framing and a collapsible glance region.
+- Routine updates versus attention/recovery; real bounded journal records only.
+- Developer instrumentation remains hidden by default; recovery stays contextual.
+- Debug reports add current presentation route and camera, not local file paths.
 
-## User workflow
+## Compatibility and ownership
 
-Open the build, play, Save, and continue in the next build. Existing v1/v2 saves
-are read without moving files. Manual saving remains intentional. Developer
-tools are optional, not required for play or development approval. A recovery
-action appears only when it is applicable and preserves prior files.
+SkeletonSession remains the sole gameplay authority. SkeletonSave is unchanged.
+Main composes the existing session/save adapter and the new presentation.
+OsPresentationState owns selected activity/app and glance visibility;
+CityBlockout owns its camera. Both are session-local, outside save/state hashes.
+SkeletonView is a small compatibility seam, not a duplicate running interface.
 
-## Ownership and compatibility
+Same slot: user://walking_skeleton/slot_v1.json. Format sim-durty.walking-skeleton,
+schema 2 with schema 1 read migration. No save copying or new schema is required.
+Autoloads: none. External Godot addons: none. Additional CI workflows: none.
 
-SkeletonSave owns inspection and disk repair of the established slot.
-Main owns orchestration and presentation cache. SkeletonSession still owns all
-simulation state. The inspector reads detached state/journal snapshots.
-Format: sim-durty.walking-skeleton; schema 2 (reads 1).
-Slot: user://walking_skeleton/slot_v1.json, unchanged.
-Autoloads: none. External Godot addons: none. New CI workflows: none.
+## Validation
+
+Keep all previous assertions. Add OS selection, command isolation, application
+lifecycle, camera bounds/retention, drawer and update/record tests. Existing
+Windows delivery additionally runs the packaged OS navigation probe. Existing
+Linux acceptance captures normal city, Operations and developer drawer at both
+reference sizes. Exact run evidence reports what passed.
 
 ## Limits
 
-Still no automatic simulation scheduler, offline progress, city, crew, pressure
-or expanded economy. The errand is still a fixture, not economy balance.
-One process should write a slot. No multi-writer lock or power-loss durability
-is promised. At most 32 rejected-original copies are retained without automatic
-deletion. Oversized originals and incompatible formats require deliberate
-engineering attention; they are not silently replaced.
+This is an authored static city blockout, not a living world simulation. There
+are no citizens, businesses, crew, pressure, travel cost, offline progress or
+new economy here. The fixed errand remains a test fixture.
+
+Rails are authored regions in this pass. Rail resizing, arbitrary widget dragging,
+grid reflow and persistent UI layouts are not implemented. UI/camera survive
+navigation, not restarts. Records are local journal entries, not saved history.
+The existing single-writer and no-power-loss-durability limitations still apply.
+Physical mouse, clipboard and Windows GPU testing are separate from headless CI.
 
 ## Next milestone
 
-OS + City Skeleton. Phase 5 does not expand into another infrastructure framework.
-Entity inspection and general content/scenario editors wait for real domains.
-See ADR 0008 for recovery details and the hands-off development constraint.
+First systemic vertical slice: make an actual city-connected opportunity produce
+meaningful cross-system consequences, adding only the required domain owners.
+Do not turn this shell phase into another infrastructure framework.
+See ADR 0009 for the interaction boundary and deferred layout features.

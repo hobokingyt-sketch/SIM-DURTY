@@ -1,24 +1,24 @@
-SIM-DURTY 0.0.5 - Persistence & Developer Tools
+SIM-DURTY / OS + CITY SKELETON / 0.0.6
 
-Extract the whole ZIP into a folder and open SIM-DURTY.exe.
-Keep SIM-DURTY.pck beside the executable. Godot and Git are not needed.
+Extract the entire ZIP, then open SIM-DURTY.exe.
+Keep SIM-DURTY.pck beside it. No Godot or Git installation is needed.
 
-Existing saves load automatically from the same user data location.
-Saving remains manual. Save before closing to keep your latest progress.
-There is no need to copy a save into each new build folder.
+Inspect the errand in Work Scan or click its city location. Open Operations to
+carry it out. The city stays visible. Wheel zooms; right-drag pans; Reset view
+restores framing. City and Operations share one selection.
 
-The errand, payout and clock are still prototype test values.
-Developer tools are hidden behind the optional Developer tools button.
-They are not needed to play or to approve routine development work.
+The city is an authored spatial blockout, not a running city simulation.
+The existing errand is still the only working activity. Its $5 / 15-minute
+terms are test values. Time remains command-driven; there is no offline progress.
 
-When the primary save is damaged or missing and a valid backup exists,
-Recover previous save appears. It loads the previous saved state, not
-unsaved progress. The damaged original and backup are kept separately.
-Newer/incompatible saves are never silently rolled backward.
+Save is manual. Load and restart use your existing slot in the same location.
+No save copying or conversion step is needed between builds. Schema 2 and the
+schema 1 reader are unchanged. Use one game instance per slot.
 
-Copy debug report gathers the current build, session and recovery context.
-These are unsigned development previews. Do not disable security software.
+Developer tools and Recent activity are optional. Recovery is shown only when
+applicable. Navigation and camera state are session-local and are not saved.
+Advanced widget dragging, saved layouts, adjustable rails and autonomous city
+behavior are not part of this first shell pass.
 
-Engineering verification covers packaged Windows startup, separate-process
-save/load and safe recovery/continuation. It does not certify physical mouse,
-clipboard or GPU performance on every machine. Source-render captures use Linux.
+Copy report includes the build, current simulation state and presentation route.
+This is an unsigned preview. Do not disable security software to run it.

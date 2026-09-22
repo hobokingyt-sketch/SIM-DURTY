@@ -76,5 +76,5 @@ if ($observedSchemas['write'] -ne $observedSchemas['read'] -or $savedHashes['wri
     physical_mouse_playtest = 'not_run'
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $ReportDirectory 'skeleton-verification.json') -Encoding utf8
 Write-Host '[skeleton-gate] PASS: packaged Windows processes preserved schema, checkpoint and future continuation.'
-# Reuse the delivery gate; no additional owner-operated tool or separate workflow.
 & (Join-Path $PSScriptRoot 'verify_recovery_roundtrip.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory
+& (Join-Path $PSScriptRoot 'verify_os_shell.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory

@@ -45,7 +45,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y xvfb libgl1-mesa-dri
 
-      - name: Test persistence, recovery and real UI
+      - name: Test persistence, recovery and OS navigation
         shell: bash
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
@@ -69,17 +69,16 @@ jobs:
             check "recovery-$mode" godot --headless --path . -- --recovery-probe="$mode"
             grep -q "^\[recovery-probe\] PASS $mode" "$reports/recovery-$mode.log"
           done
+          check os-verify godot --headless --path . -- --os-probe=verify
+          grep -q '^\[os-probe\] PASS selection navigation command isolation' "$reports/os-verify.log"
           for size in 2560x1440 1600x900; do
-            export SIM_DURTY_CAPTURE_PATH="$reports/skeleton-$size.png"
-            check "render-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
-              godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
-              -- --skeleton-probe=capture
-            test -s "$SIM_DURTY_CAPTURE_PATH"
-            export SIM_DURTY_CAPTURE_PATH="$reports/developer-tools-$size.png"
-            check "tools-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
-              godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
-              -- --recovery-probe=capture-tools
-            test -s "$SIM_DURTY_CAPTURE_PATH"
+            for mode in city operations tools; do
+              export SIM_DURTY_CAPTURE_PATH="$reports/os-$mode-$size.png"
+              check "render-$mode-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
+                godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
+                -- --os-probe="$mode"
+              test -s "$SIM_DURTY_CAPTURE_PATH"
+            done
           done
           git rev-parse HEAD > "$reports/source-sha.txt"
 
