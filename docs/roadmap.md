@@ -116,7 +116,7 @@ restrained material contract, quiets normal icons, and slightly reduces brass
 brightness while keeping the R1–R3 hierarchy and every existing geometry
 contract intact.
 
-### 6D.4 — Typography, spacing and information rhythm — CURRENT IMPLEMENTATION
+### 6D.4 — Typography, spacing and information rhythm — COMPLETE
 
 Apply the concept's visual hierarchy:
 - large app/task titles,
@@ -137,7 +137,26 @@ navigation structure is unchanged.
 Acceptance covers the 2560×1440 reference and 1280×800 supported minimum without
 shrinking persistent text into microtype.
 
-### 6D.5 — Work Scan product pass — NEXT AFTER 6D.4 ACCEPTANCE
+### Visual Refinement R5 — Precision Component Craft — CURRENT IMPLEMENTATION
+
+Refine only the small authored elements already on screen. No new panels,
+information, decorative marks or gameplay.
+
+Deliver:
+- one-pixel deeper selected/pressed face seating inside the existing control
+  housing system,
+- joined control assemblies with outer chamfers and square internal seams,
+- one shared icon-mounting rule for centering, spacing and compact optical size,
+- Operations, Session Record, Workbench and city-view controls grouped by real
+  function instead of reading as unrelated neighboring buttons,
+- widget resize/menu controls fitted together as one header tool pair,
+- no fake screws, serials, vents, targeting marks or other placeholder chrome.
+
+The implementation keeps all existing control roles, external dimensions,
+navigation behavior, widget geometry and persistence ownership. Visual
+engineering comes from construction and adjacency, not added ornament.
+
+### 6D.5 — Work Scan product pass — NEXT AFTER R5 ACCEPTANCE
 
 Work Scan becomes the first fully authored premium widget.
 

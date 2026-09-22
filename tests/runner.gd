@@ -18,6 +18,7 @@ const BorderCraftTests = preload("res://tests/border_craft_tests.gd")
 const ControlCraftTests = preload("res://tests/control_craft_tests.gd")
 const VisualCalibrationTests = preload("res://tests/visual_calibration_tests.gd")
 const TypographyRhythmTests = preload("res://tests/typography_rhythm_tests.gd")
+const PrecisionComponentTests = preload("res://tests/precision_component_tests.gd")
 var failures: int = 0
 
 
@@ -26,7 +27,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Phase 6D.4 Typography Rhythm")
+	print("[tests] SIM-DURTY Visual Refinement R5 Precision Component Craft")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
@@ -61,6 +62,8 @@ func _run() -> void:
 	failures += await calibration_suite.run(self)
 	var typography_suite: RefCounted = TypographyRhythmTests.new()
 	failures += await typography_suite.run(self)
+	var precision_suite: RefCounted = PrecisionComponentTests.new()
+	failures += await precision_suite.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)

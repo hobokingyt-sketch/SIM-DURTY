@@ -13,8 +13,9 @@ const ROLE_FOLD: String = "fold"
 const STATES: PackedStringArray = ["normal", "hover", "pressed", "hover_pressed", "disabled"]
 
 
-static func apply(button: Button, role: String, palette: Dictionary, height_override: float = -1.0, padding_override: int = -1) -> void:
+static func apply(button: Button, role: String, palette: Dictionary, height_override: float = -1.0, padding_override: int = -1, join: String = OsControlSurface.JOIN_SINGLE) -> void:
 	button.set_meta("os_control_role", role)
+	button.set_meta("os_control_join", join)
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	button.mouse_force_pass_scroll_events = false
@@ -25,8 +26,8 @@ static func apply(button: Button, role: String, palette: Dictionary, height_over
 	if role == ROLE_LAUNCHER:
 		button.custom_minimum_size.x = maxf(button.custom_minimum_size.x, 44.0)
 	for state: String in STATES:
-		button.add_theme_stylebox_override(state, style_for(role, state, palette, padding_override))
-	button.add_theme_stylebox_override("focus", focus_style(role, palette))
+		button.add_theme_stylebox_override(state, style_for(role, state, palette, padding_override, join))
+	button.add_theme_stylebox_override("focus", focus_style(role, palette, join))
 	var text_normal: Color = palette["text"]
 	var text_selected: Color = palette["accent_text"] if role in [ROLE_TAB, ROLE_LAUNCHER] else palette["text"]
 	button.add_theme_color_override("font_color", text_normal)
@@ -52,13 +53,13 @@ static func install_default_theme(theme: Theme, palette: Dictionary) -> void:
 	theme.set_color("font_disabled_color", "Button", palette["muted"].darkened(0.25))
 
 
-static func style_for(role: String, state: String, palette: Dictionary, padding_override: int = -1) -> StyleBoxTexture:
+static func style_for(role: String, state: String, palette: Dictionary, padding_override: int = -1, join: String = OsControlSurface.JOIN_SINGLE) -> StyleBoxTexture:
 	var padding: int = padding_override if padding_override >= 0 else int(_metrics(role)["padding"])
-	return OsControlSurface.style(role, state, palette, padding)
+	return OsControlSurface.style(role, state, palette, padding, join)
 
 
-static func focus_style(role: String, palette: Dictionary) -> StyleBoxTexture:
-	return OsControlSurface.focus_style(role, palette)
+static func focus_style(role: String, palette: Dictionary, join: String = OsControlSurface.JOIN_SINGLE) -> StyleBoxTexture:
+	return OsControlSurface.focus_style(role, palette, join)
 
 
 static func set_selected(button: Button, selected: bool) -> void:
@@ -68,13 +69,22 @@ static func set_selected(button: Button, selected: bool) -> void:
 
 
 static func set_icon(button: Button, kind: String, max_width: int = 18) -> void:
+	button.set_meta("os_icon_kind", kind)
 	button.icon = WorkspaceIcons.texture(kind)
 	button.expand_icon = true
-	button.add_theme_constant_override("icon_max_width", max_width)
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER if button.text.is_empty() else HORIZONTAL_ALIGNMENT_LEFT
+	button.add_theme_constant_override("h_separation", 0 if button.text.is_empty() else 6)
+	button.add_theme_constant_override("icon_max_width", WorkspaceIcons.optical_width(kind, max_width))
 
 
 static func role_of(button: Button) -> String:
 	return str(button.get_meta("os_control_role", ""))
+
+
+static func join_of(button: Button) -> String:
+	return str(button.get_meta("os_control_join", OsControlSurface.JOIN_SINGLE))
 
 
 static func contract() -> Dictionary:
