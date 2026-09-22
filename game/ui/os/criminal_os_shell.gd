@@ -11,7 +11,7 @@ signal sample_requested
 signal inspection_requested
 signal recovery_requested
 
-# Existing app/probe boundary. Widgets are not new gameplay authorities.
+# Existing app/probe boundary. Presentation never owns gameplay authority.
 var cash_label: Label
 var time_label: Label
 var count_label: Label
@@ -40,6 +40,7 @@ var record_label: Label
 var context_title: Label
 var status_kind: Label
 var workspace: WorkspaceContainer
+var widget_workspace: WidgetWorkspace
 var layout_toggle: Button
 var layout_scroll: ScrollContainer
 var reset_layout_button: Button
@@ -56,15 +57,14 @@ var _operations: VBoxContainer
 var _recovery_row: VBoxContainer
 var _context_terms: Label
 var _context_body: Label
-var _scan_title: Label
-var _scan_terms: Label
-var _availability: Label
 var _operation_title: Label
 var _operation_terms: Label
 var _build_label: Label
 var _brand_label: Label
 var _work_scroll: ScrollContainer
 var _layout_note: Label
+var _bottom_widget_dock: WidgetDock
+var _right_widget_dock: WidgetDock
 var _page: String = "work"
 var _work_id: String = ""
 var _work_name: String = ""
@@ -84,10 +84,17 @@ func _ready() -> void:
 	_build_bottom()
 	city = CityBlockout.new()
 	workspace.register_region("city", city)
-	# The layout solver, not an old test-surface minimum, owns available city geometry.
 	city.custom_minimum_size = Vector2.ZERO
 	city.work_selected.connect(select_work)
 	city.selection_cleared.connect(clear_selection)
+	widget_workspace = WidgetWorkspace.new()
+	add_child(widget_workspace)
+	widget_workspace.setup(self, workspace, _bottom_widget_dock, _right_widget_dock)
+	widget_workspace.inspect_requested.connect(select_work)
+	widget_workspace.record_requested.connect(func() -> void: _choose_page("record"))
+	widget_workspace.status_changed.connect(_widget_status)
+	inspect_button = (widget_workspace.widgets["work_scan"] as WidgetView).inspect_button
+	reset_layout_button.pressed.connect(widget_workspace.reset_widgets)
 	workspace.layout_applied.connect(_apply_geometry)
 	workspace.model.changed.connect(_fit_workspace)
 	workspace.model.committed.connect(_persist_layout)
@@ -99,30 +106,32 @@ func _ready() -> void:
 
 
 func configure_workspace(slot: String, force_persistence: bool = false) -> void:
-	# Existing probes/tests never inherit owner preferences; the workspace probe opts in.
-	if not force_persistence and (slot.contains("/_tests") or slot.contains("/_ci_")):
+	var enabled: bool = force_persistence or not (slot.contains("/_tests") or slot.contains("/_ci_"))
+	widget_workspace.configure_profile(slot, enabled)
+	if not enabled:
 		_preferences = null
 		workspace.model.restore(WorkspaceLayout.defaults())
 		return
 	_preferences = WorkspacePreferences.new(WorkspacePreferences.path_for_slot(slot))
 	var result: Dictionary = _preferences.read_layout()
 	layout_storage_error = int(result["error"]) as Error
-	if layout_storage_error == OK:
-		workspace.model.restore(result["layout"])
-	elif layout_storage_error == ERR_FILE_NOT_FOUND:
-		layout_storage_error = OK
+	if layout_storage_error == OK: workspace.model.restore(result["layout"])
+	elif layout_storage_error == ERR_FILE_NOT_FOUND: layout_storage_error = OK
 	_fit_workspace()
 
 
 func _persist_layout() -> void:
-	if _preferences != null:
-		layout_storage_error = _preferences.write_layout(workspace.model.snapshot())
+	if _preferences != null: layout_storage_error = _preferences.write_layout(workspace.model.snapshot())
+	_update_layout_note()
+
+
+func _widget_status(message: String, failed: bool) -> void:
+	show_status(message, failed)
 	_update_layout_note()
 
 
 func _fit_workspace() -> void:
-	if not is_instance_valid(workspace):
-		return
+	if not is_instance_valid(workspace): return
 	var factor: float = workspace.model.scale_for(size)
 	workspace.scale = Vector2.ONE * factor
 	workspace.position = Vector2.ZERO
@@ -189,8 +198,7 @@ func _build_left() -> void:
 	glance_toggle = _icon(launcher, "rail", "Show or fold the left rail", Callable())
 	glance_toggle.toggle_mode = true
 	glance_toggle.toggled.connect(func(opened: bool) -> void: workspace.model.set_collapsed("left", not opened))
-	var divider: HSeparator = HSeparator.new()
-	launcher.add_child(divider)
+	launcher.add_child(HSeparator.new())
 	save_button = _icon(launcher, "save", "Save game", func() -> void: save_requested.emit())
 	load_button = _icon(launcher, "load", "Load game", func() -> void: load_requested.emit())
 	developer_toggle = _icon(launcher, "tools", "Developer tools", Callable())
@@ -237,7 +245,7 @@ func _build_right() -> void:
 	_context = OsTokens.column(stack, 18)
 	context_title = OsTokens.wrapped(_context, "Select work", 26, OsTokens.TEXT)
 	_context_terms = OsTokens.wrapped(_context, "", 18, OsTokens.ACCENT)
-	_context_body = OsTokens.wrapped(_context, "Choose work from the workbench or its city location.", 17)
+	_context_body = OsTokens.wrapped(_context, "Choose work from a widget or its city location.", 17)
 	open_operations_button = OsTokens.button(_context, "Open Operations", open_operations)
 	OsTokens.button(_context, "Clear selection", clear_selection)
 	_operations = OsTokens.column(stack, 18)
@@ -248,6 +256,10 @@ func _build_right() -> void:
 	work_button.add_theme_stylebox_override("normal", OsTokens.box(Color("4c4637"), 12))
 	close_operations_button = OsTokens.button(_operations, "Back to city", func() -> void: _model.open_app("city"))
 	OsTokens.wrapped(_operations, "Test activity. Crew, travel and risk are not active.", 15)
+	_right_widget_dock = WidgetDock.new()
+	_right_widget_dock.region = "right"
+	_right_widget_dock.name = "RightWidgets"
+	full.add_child(_right_widget_dock)
 	var folded: VBoxContainer = _inset(rail, 8)
 	_folded["right"] = folded.get_parent()
 	OsTokens.button(folded, "‹", func() -> void: workspace.model.set_collapsed("right", false)).tooltip_text = "Expand right rail"
@@ -260,6 +272,14 @@ func _build_top() -> void:
 	var head: HBoxContainer = OsTokens.row(stack, 12)
 	OsTokens.label(head, "CITY WORKSPACE", 15, OsTokens.MUTED)
 	OsTokens.spacer(head)
+	var zoom_out: Button = OsTokens.button(head, "−", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5))
+	var zoom_in: Button = OsTokens.button(head, "+", func() -> void: city.zoom_at(1.2, city.size * 0.5))
+	var reset_view: Button = OsTokens.button(head, "↺", func() -> void: city.reset_camera())
+	for button: Button in [zoom_out, zoom_in, reset_view]:
+		WidgetView._small_button(button)
+	zoom_out.tooltip_text = "Zoom out"
+	zoom_in.tooltip_text = "Zoom in"
+	reset_view.tooltip_text = "Reset city view"
 	time_label = OsTokens.label(head, "Day 1 · 08:00", 23)
 	var fold: Button = OsTokens.button(head, "⌃", func() -> void: workspace.toggle_rail("top"))
 	fold.custom_minimum_size.y = 30
@@ -293,21 +313,11 @@ func _build_bottom() -> void:
 	var pages: VBoxContainer = OsTokens.column(stack, 0)
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_expanded["bottom"] = pages
-	_work_scroll = _scroll(pages)
-	var work_row: HBoxContainer = OsTokens.row(_work_scroll, 28)
-	work_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var work: VBoxContainer = OsTokens.column(work_row, 6)
-	work.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	OsTokens.label(work, "Work Scan", 22)
-	_scan_title = OsTokens.wrapped(work, "", 18, OsTokens.TEXT)
-	_scan_terms = OsTokens.label(work, "", 16, OsTokens.ACCENT)
-	_availability = OsTokens.label(work, "", 14, OsTokens.MUTED)
-	var actions: VBoxContainer = OsTokens.column(work_row, 8)
-	inspect_button = OsTokens.button(actions, "Inspect work", func() -> void: select_work(_work_id))
-	var camera_row: HBoxContainer = OsTokens.row(actions, 8)
-	OsTokens.button(camera_row, "−", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5)).tooltip_text = "Zoom out"
-	OsTokens.button(camera_row, "+", func() -> void: city.zoom_at(1.2, city.size * 0.5)).tooltip_text = "Zoom in"
-	OsTokens.button(camera_row, "Reset view", func() -> void: city.reset_camera())
+	_bottom_widget_dock = WidgetDock.new()
+	_bottom_widget_dock.region = "bottom"
+	_bottom_widget_dock.name = "WorkbenchWidgets"
+	pages.add_child(_bottom_widget_dock)
+	_work_scroll = _bottom_widget_dock
 	record_scroll = _scroll(pages)
 	var records: VBoxContainer = OsTokens.column(record_scroll, 8)
 	records.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -343,8 +353,7 @@ func _build_layout_controls(parent: Node) -> void:
 		var smaller: Button = OsTokens.button(row, "−20", func() -> void: workspace.step(side, -20))
 		var larger: Button = OsTokens.button(row, "+20", func() -> void: workspace.step(side, 20))
 		var fold: Button = OsTokens.button(row, "Fold", func() -> void: workspace.toggle_rail(side))
-		for control: Button in [smaller, larger, fold]:
-			control.custom_minimum_size.y = 34
+		for control: Button in [smaller, larger, fold]: control.custom_minimum_size.y = 34
 		rail_controls[side] = {"value": value, "smaller": smaller, "larger": larger, "fold": fold}
 	var options: HBoxContainer = OsTokens.row(stack, 12)
 	OsTokens.label(options, "Interface size", 16)
@@ -354,14 +363,13 @@ func _build_layout_controls(parent: Node) -> void:
 	options.add_child(scale_picker)
 	scale_picker.item_selected.connect(func(index: int) -> void: workspace.model.set_scale_percent(scale_picker.get_item_id(index)))
 	reset_layout_button = OsTokens.button(options, "Reset layout", func() -> void: workspace.model.reset_layout())
-	reset_layout_button.tooltip_text = "Restore workspace defaults only. Does not reset gameplay, camera or save."
+	reset_layout_button.tooltip_text = "Restore rails and widget defaults only. Does not reset gameplay, camera or save."
+	OsTokens.wrapped(stack, "Widget headers: drag ≡ to move, ↘ to resize, or use ⋯ for clickable position and size controls.", 15)
 
 
 func _apply_geometry(result: Dictionary) -> void:
-	for side: String in _expanded:
-		(_expanded[side] as Control).visible = not bool(result["collapsed"][side])
-	for side: String in _folded:
-		(_folded[side] as Control).visible = bool(result["collapsed"][side])
+	for side: String in _expanded: (_expanded[side] as Control).visible = not bool(result["collapsed"][side])
+	for side: String in _folded: (_folded[side] as Control).visible = bool(result["collapsed"][side])
 	_brand_label.visible = not bool(result["collapsed"]["left"])
 	glance_toggle.set_pressed_no_signal(not bool(result["collapsed"]["left"]))
 	var preferred: Dictionary = workspace.model.snapshot()
@@ -374,16 +382,17 @@ func _apply_geometry(result: Dictionary) -> void:
 
 
 func _update_layout_note() -> void:
-	if not is_instance_valid(_layout_note):
-		return
-	_layout_note.text = "Drag seams or use the controls below. Changes save automatically; gameplay is untouched."
-	if layout_storage_error != OK:
-		_layout_note.text = "Using a temporary layout. The existing profile was preserved (error %d). Copy report for details." % int(layout_storage_error)
+	if not is_instance_valid(_layout_note): return
+	_layout_note.text = "Drag seams or use these controls. Committed UI changes save separately from gameplay."
+	var widget_error: int = int(widget_workspace.storage_error) if is_instance_valid(widget_workspace) else 0
+	if layout_storage_error != OK or widget_error != OK:
+		_layout_note.text = "Some layout choices are temporary. Saved profiles were preserved; copy report for details."
 	elif workspace.model.scale_for(size) * 100 < float(workspace.model.snapshot()["scale_percent"]):
 		_layout_note.text = "125% needs a 1600×1000 window. Using 100% here; your larger-size preference is kept."
 
 
 func _choose_page(page: String) -> void:
+	if is_instance_valid(widget_workspace): widget_workspace.cancel_manipulation()
 	_page = page
 	_work_scroll.visible = page == "work"
 	record_scroll.visible = page == "record"
@@ -392,8 +401,7 @@ func _choose_page(page: String) -> void:
 	record_toggle.set_pressed_no_signal(page == "record")
 	developer_toggle.set_pressed_no_signal(page == "tools")
 	workspace.model.set_collapsed("bottom", false)
-	if page == "tools":
-		inspection_requested.emit()
+	if page == "tools": inspection_requested.emit()
 
 
 func _toggle_tools(opened: bool) -> void:
@@ -408,8 +416,7 @@ func configure_work(definition: SkeletonWorkDefinition) -> void:
 	_work_id = String(definition.activity_id)
 	_work_name = definition.display_name
 	_terms = "+%s  /  %d minutes" % [money_text(definition.payout_cents), definition.duration_minutes]
-	_scan_title.text = _work_name
-	_scan_terms.text = _terms
+	widget_workspace.configure_work(definition)
 	_operation_title.text = _work_name
 	_operation_terms.text = _terms
 	work_button.text = _work_name
@@ -419,8 +426,7 @@ func configure_work(definition: SkeletonWorkDefinition) -> void:
 
 func select_work(work_id: String) -> Error:
 	var error: Error = _model.select_work(work_id)
-	if error == OK:
-		workspace.model.set_collapsed("right", false)
+	if error == OK: workspace.model.set_collapsed("right", false)
 	return error
 
 
@@ -444,8 +450,9 @@ func _apply_navigation() -> void:
 	city.set_selected(selected)
 	context_title.text = _work_name if selected else "Select work"
 	_context_terms.text = _terms if selected else ""
-	_context_body.text = "Ready to open in Operations." if selected else "Choose work from the workbench or its city location."
+	_context_body.text = "Ready to open in Operations." if selected else "Choose work from a widget or its city location."
 	open_operations_button.disabled = not selected
+	widget_workspace.set_selected(str(state["selected_id"]))
 
 
 func show_state(state: Dictionary, work_available: bool, dirty: bool) -> void:
@@ -454,8 +461,8 @@ func show_state(state: Dictionary, work_available: bool, dirty: bool) -> void:
 	time_label.text = time_text(int(state["elapsed_minutes"]))
 	count_label.text = str(state["completed_actions"])
 	work_button.disabled = not work_available
-	_availability.text = "1 available · test activity" if work_available else "Unavailable at this session limit"
 	dirty_label.text = "Unsaved session" if dirty else "Matches saved slot"
+	widget_workspace.show_state(state, work_available)
 
 
 func show_storage(info: Dictionary) -> void:
@@ -492,12 +499,11 @@ func show_events(events: Array[Dictionary]) -> void:
 	for index: int in range(maxi(0, events.size() - 6), events.size()):
 		var event: Dictionary = events[index]
 		var title: String = "Errand completed"
-		if event["type"] == "advance":
-			title = "Time advanced"
-		elif event["type"] == "rng_probe":
-			title = "Diagnostic random draw"
+		if event["type"] == "advance": title = "Time advanced"
+		elif event["type"] == "rng_probe": title = "Diagnostic random draw"
 		lines.append("%s   ·   %s   ·   #%d" % [time_text(int(event["tick"])), title, int(event["sequence"])])
 	record_label.text = "\n".join(lines) if not lines.is_empty() else "No events since this session was loaded or reset."
+	widget_workspace.show_events(events)
 
 
 func ui_snapshot() -> Dictionary:
@@ -510,6 +516,9 @@ func ui_snapshot() -> Dictionary:
 	state["layout_storage_error"] = int(layout_storage_error)
 	state["effective_ui_scale"] = workspace.scale.x
 	state["layout_editing"] = workspace.model.active_side()
+	state["widgets"] = widget_workspace.snapshot()
+	state["widget_storage_error"] = int(widget_workspace.storage_error)
+	state["widget_manipulation"] = widget_workspace.manipulation_snapshot()
 	return state
 
 
