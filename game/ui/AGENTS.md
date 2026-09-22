@@ -7,6 +7,7 @@ The UI implements the Criminal OS presentation architecture.
 Read:
 - `docs/design/canon.md`
 - `docs/design/ui_principles.md`
+- `docs/design/visual_north_star.md`
 - `docs/architecture/ui_runtime.md`
 
 ## Hard rules
@@ -20,6 +21,8 @@ Read:
 - Do not solve layout pressure by shrinking text into microtext.
 - Prefer container-driven layout/reflow over piles of manual offsets.
 - Avoid generic futuristic HUD/vector decoration as a fallback.
+- The locked material goal is charcoal/graphite, diffused matte texture, layered engineered borders, restrained brass accents and machined/chamfered geometry.
+- Centralize visual primitives in the shared Theme/material/frame system; avoid one-off per-screen styling when a shared primitive should own it.
 - Motion communicates state/continuity.
 - Widgets summarize; apps manage.
 - Selection should update existing contextual surfaces before spawning arbitrary new panels.

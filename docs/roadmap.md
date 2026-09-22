@@ -3,9 +3,11 @@
 ## Governing priority: functional UI first
 
 The Criminal OS is a core game system. Gameplay expansion remains blocked by
-ADR 0010 until the bounded functional OS is accepted. Recovered desktop research
-is in docs/design/ui_os_research.md. Engineering acceptance does not substitute
-for owner acceptance of interaction and visual direction.
+ADR 0010 until the bounded functional OS is accepted.
+
+The visual target is now explicitly locked by ADR 0014 and
+`docs/design/visual_north_star.md`. Phase 6D is therefore a product-design and
+reactive-engineering phase, not a vague “polish” pass.
 
 ## Implemented foundation
 
@@ -13,43 +15,137 @@ for owner acceptance of interaction and visual direction.
 1. Infrastructure 1: project memory and architecture rules.
 2. Infrastructure 2: traceable Windows previews and packaged startup gate.
 3. Walking Skeleton: action -> state -> UI -> manual save/load.
-4. Simulation Spine: time, restorable RNG, IDs, ordered commands and fingerprints.
+4. Simulation Spine: deterministic time/RNG/IDs/commands and fingerprints.
 5. Persistence & Developer Tools: inspection, recovery and hands-off delivery.
 6A. Four-rail workspace geometry and independent layout memory (PR #14).
 6B. Movable widgets, deterministic packing and semantic forms (PR #15).
+6C. Center/rail app lifecycle, remembered navigation and continuity (PR #16).
 
-## Phase 6C: App lifecycle, selection and navigation — CURRENT IMPLEMENTATION
+## Phase 6D: Reactive Product UI + Locked Visual System — NEXT
 
-- Stable launcher and City/Home root.
-- Operations as an explicit center-focus app; Session Record as a right-rail app.
-- App-local Back, remembered views and contextual identity handoff.
-- City camera/selection/focus continuity across center-focus transitions.
-- Mounted app views retain scroll/focus identity while inactive views suspend.
-- Recent Activity demonstrates widget-to-app deep linking with real existing data.
-- No arbitrary overlapping desktop windows and no placeholder future-domain apps.
+### 6D.1 — Material foundation
 
-See ADR 0013 and docs/state.md for implementation boundaries.
+Build the shared charcoal material kit before styling individual screens.
 
-## Phase 6D: Reactive product components and integrated acceptance — NEXT
+Deliver:
+- new charcoal/graphite palette tokens,
+- subtle diffused surface texture system,
+- shared depth levels: chassis / surface / well / raised / active,
+- one reusable method for material application,
+- reference captures proving the texture remains subtle at 2560×1440 and the
+  1280×800 supported minimum.
 
-- Fully author Work Scan's hierarchy, semantic forms and visual treatment.
-- Reconcile changing data by stable IDs without losing focus, scroll or pointer
-  intent; coalesce updates rather than rebuilding the shell.
-- Functional transitions and reduced-motion behavior.
-- Explicit empty/loading/error/unavailable states using isolated labeled fixtures
-  only where the current simulation cannot naturally provide one.
-- Apply the same reactive contract to a second existing readout without forcing
-  identical visuals or generic cards.
-- Exercise rail resizing, widget manipulation, app navigation, state changes,
-  focus restoration, profile restore and save integrity together.
-- Profile actual update/manipulation cost rather than assert performance.
+Do not yet redesign every component.
 
-### Exit to gameplay expansion
+### 6D.2 — Engineered frame system
 
-Exit when the integrated OS rearranges/restores its workspace, keeps widgets
-useful, resumes apps, reacts without losing interaction state, preserves game
-integrity, and the owner accepts the direction and feel. This does not require
-every future app, gameplay domain or final art asset.
+Translate the concept's strongest signature into reusable primitives.
+
+Deliver:
+- layered shell/app/widget/control frame grammar,
+- dark outer edge + graphite structure + inner highlight,
+- chamfered/clipped corner treatment,
+- structural seams/notches only where boundaries/affordances justify them,
+- scalable implementation that does not distort when rails/widgets resize,
+- no border proliferation around individual values.
+
+This pass should make the OS read as a connected machine before fine detail.
+
+### 6D.3 — Control and icon kit
+
+Polish reusable interaction assets:
+- launcher plates,
+- ordinary buttons,
+- primary action,
+- tabs,
+- fold/back controls,
+- widget move/resize/menu handles,
+- focus states,
+- disabled states,
+- selected/active states,
+- consistent outlined icon treatment.
+
+Interaction states must change material/edge depth, not add neon glow.
+
+### 6D.4 — Typography, spacing and information rhythm
+
+Apply the concept's visual hierarchy:
+- large app/task titles,
+- medium region titles,
+- small uppercase system labels,
+- restrained warm numeric emphasis,
+- clean body copy and stable numerals,
+- unified spacing/baseline system,
+- remove temporary explanatory text that the UI no longer needs.
+
+Test real text at reference and minimum supported sizes.
+
+### 6D.5 — Work Scan product pass
+
+Work Scan becomes the first fully authored premium widget.
+
+Each semantic form must have genuinely different useful composition:
+- Compact: immediate opportunity + key terms + action.
+- Wide: comparison/readability across workbench width.
+- Tall: scannable list/deeper state.
+- Major: selected context and richer decision support without duplicating
+  Operations.
+
+Add:
+- keyed/stable row identity,
+- reactive value updates without component rebuild,
+- explicit empty/unavailable/error/loading fixtures,
+- pointer/focus/scroll preservation during changes,
+- restrained state transition treatment.
+
+No fake live opportunities or invented history.
+
+### 6D.6 — Second-surface proof
+
+Apply the same material/reactive system to a substantially different existing
+surface: Session Record and/or Operations.
+
+Goal: prove the design system is reusable **without making every system look like
+the same card**.
+
+Retain center-focus versus rail-hosted anatomy from 6C.
+
+### 6D.7 — Motion and continuity
+
+Add the motion grammar only after static material/hierarchy is correct:
+- hover/press/select,
+- widget reflow/form changes,
+- app enter/return,
+- value changes,
+- attention states.
+
+Implement reduced-motion behavior. Motion never becomes simulation authority.
+
+### 6D.8 — Integrated OS acceptance
+
+Run the real combination:
+- rail resize/collapse,
+- widget drag/resize/reflow,
+- app navigation/Back/Home/deep links,
+- state updates while views remain mounted,
+- focus/scroll/pointer-intent preservation,
+- profile restoration,
+- save integrity,
+- supported window sizes and 125% interface preference,
+- visual captures against the locked north star,
+- measured update/manipulation performance.
+
+### Phase 6 exit
+
+Exit only when:
+1. 6A–6C functional contracts remain intact,
+2. 6D material language is coherent across shell/widgets/apps,
+3. Work Scan and a second surface prove reactive product quality,
+4. no critical clipping/legibility/state-continuity defects remain,
+5. automated regression/build gates are green,
+6. **the project owner accepts the actual UI direction and feel.**
+
+This does not require every future app or final game content.
 
 ## Phase 7: First systemic vertical slice — BLOCKED BY PHASE 6 ACCEPTANCE
 
@@ -64,10 +160,10 @@ one at a time with explicit ownership, APIs, tests and persistence.
 ## Phase 9: Scale and production
 
 Content tools, asset policy, compatibility, measured profiling/soak tests and
-release packaging follow actual scale. Reuse existing delivery workflows.
+release packaging follow actual scale.
 
 ## Workflow
 
 Approved slices authorize engineering to handle implementation, validation,
-fixes, builds and eligible merges. Human input is for product direction and
-experience, not routine scripts or save repair.
+fixes, builds and eligible merges. Human input is for meaningful product
+judgment, not routine testing or code operations.

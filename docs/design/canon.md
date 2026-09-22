@@ -119,6 +119,12 @@ Not every simulation event deserves an alert.
 
 ## UI product direction
 
+**Locked visual north star:** `docs/design/visual_north_star.md`.
+
+The approved visual identity is a charcoal/graphite engineered operating system:
+diffused matte material texture, layered structural borders, machined/chamfered
+panel geometry, clean typography and restrained warm brass/sand emphasis.
+
 Treat the interface as a coherent contemporary product, not a futuristic HUD.
 
 Quality should come primarily from:

@@ -62,12 +62,22 @@ probe through the normal executable entry point.
 
 Actual pass/fail evidence belongs to the matching exact-source PR run.
 
+## Locked visual goal
+
+The project owner accepted the charcoal engineered-OS concept as the visual
+north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
+
+This is a design lock, not a claim that v0.0.9 already matches it. The current
+flat theme remains functional scaffolding.
+
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
-runtime presentation state, not a new persistent preference. Full responsive
-product treatment, stable-ID reactive updates, reduced-motion behavior and
-explicit empty/loading/error/unavailable component states remain Phase 6D.
+runtime presentation state, not a new persistent preference.
 
-Next: Phase 6D reactive product components and integrated OS acceptance.
-Gameplay expansion remains blocked until the owner accepts the functional OS.
+Next: Phase 6D.1 material foundation, followed by engineered frames, control
+assets, typography, reactive Work Scan, second-surface proof, motion and final
+integrated OS acceptance.
+
+Gameplay expansion remains blocked until the owner accepts the functional and
+visual OS.
