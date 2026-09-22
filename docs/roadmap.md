@@ -1,44 +1,50 @@
 # Roadmap
 
-Build order is separate from product ambition. The matching PR/CI records
-establish whether a revision passed validation and merged.
+Build order is separate from product ambition. Actual acceptance/merge status
+comes from matching PRs and exact-revision tests.
 
-## 0. Foundation 0: COMPLETE
-Bootable, tested Godot repository.
+## Completed baseline
 
-## 1. Project Memory & Guardrails: COMPLETE
-Recovery entry point, vision/canon/state separation, scoped contracts, dependency rules.
+0. Foundation 0: bootable typed-GDScript repository and initial health checks.
+1. Infrastructure 1: project memory, scoped AGENTS and architecture guardrails.
+2. Infrastructure 2: traceable exported Windows previews and packaged startup gate.
+3. Walking Skeleton: authored action -> state -> UI -> explicit save/load.
 
-## 2. Build & Recovery Pipeline: COMPLETE
-Traceable Windows packages, native packaged-startup checks, checksums and debug reports.
+## Phase 4: Simulation Spine
 
-## 3. Walking Skeleton: IMPLEMENTED IN THIS REVISION
-One authored action -> one state owner -> UI -> explicit save -> reload.
-Test surface and payouts are not final game design or economy balance.
-Exit evidence: state/persistence/UI tests, native Windows two-process save/load,
-rendered reference screenshots, and successful preview delivery. See ADR 0006.
+Controlled integer clock, seeded/restorable RNG, stable ID cursor, explicit
+command ordering, detached bounded event records and state fingerprint. Integrate
+these into the existing session rather than building an unused parallel framework.
+Schema 2 preserves schema 1 progress. See ADR 0007 for exact scope and limits.
 
-## 4. Simulation Spine: NEXT
-Controlled clock, seeded RNG, stable IDs, ordered commands/events and deterministic scenarios.
-Add one narrow primitive at a time. Avoid replacing the working skeleton wholesale.
+## Phase 5: Persistence & Developer Tools — NEXT
 
-## 5. Persistence & Developer Tools
-Migrations/fixtures, safer recovery UX, state/entity inspection, scenario runner,
-simulation stepping and richer debug reports. Extend v1 with explicit compatibility.
+Backup recovery, save inspection, migration fixtures, reusable scenario tools,
+state/entity inspection and developer controls as actual systems need them.
+The schema, manual stepping and debug report introduced earlier are reused.
 
-## 6. OS + City Skeleton
-Native shell, live city workspace, rails/widgets/apps/context/alerts, shared Theme/tokens.
+## Phase 6: OS + City Skeleton
 
-## 7. First Real Systemic Vertical Slice
-One actual opportunity connects city, management, time/resources, consequences and persistence.
+Native Godot OS shell and city workspace; rail/widget/app/context/alert contracts;
+shared Theme/tokens and readable responsive reference geometry. No fake data.
 
-## 8. Simulation Expansion
-Major domains enter with one owner, explicit API, persistence, tests and diagnostics before UI.
+## Phase 7: First systemic vertical slice
 
-## 9. Scale & Production
-Content/asset tooling, save compatibility, scenario/performance/soak tests and durable releases.
+One city-connected opportunity flows through glance, management, consequences,
+persistence and deterministic replay. Add only the domain prerequisites it needs.
+
+## Phase 8: Simulation expansion
+
+People/crew, economy, pressure, relationships, neighborhoods and property enter
+one domain at a time with one owner, public API, tests, diagnostics and persistence.
+
+## Phase 9: Scale and production
+
+Content validation/tools, binary-asset policy, historical save compatibility,
+profiling and measured budgets, soak tests and durable release packaging.
 
 ## Rules
-Vision does not authorize out-of-order implementation. Pull forward only narrow prerequisites.
-No speculative empty frameworks. Update state/ownership when truth changes. Project-wide
-architecture changes require ADRs. Engineering acceptance is not design acceptance.
+
+Vision does not authorize out-of-order systems. Pull forward only narrow
+prerequisites. Document architecture changes with ADRs. Keep state/roadmap truthful;
+engineering acceptance and owner game-feel approval are separate.

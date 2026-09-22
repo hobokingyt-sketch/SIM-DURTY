@@ -1,63 +1,62 @@
 # Project State
 
-## Canonical project
-
 Repository: hobokingyt-sketch/SIM-DURTY
-Engine: Godot 4.7.2 stable (unchanged)
+Engine: Godot 4.7.2 stable, unchanged
 Language: typed GDScript
-Reference UI viewport: 2560x1440
-Game version: 0.0.3
+Game version: 0.0.4
+Reference viewport: 2560x1440
 
-## Current milestone
+## Current milestone: Simulation Spine
 
-**Walking Skeleton**
+This revision implements the slice below. Merge/test completion belongs to its
+actual PR and exact-revision CI evidence, not a prospective checkbox here.
 
-This revision implements the slice below. Completion/merge and test results must
-be read from the matching PR and exact-revision CI runs, not inferred from this file.
-Foundation 0 and Infrastructure 1/2 remain the underlying baseline.
+## Implemented
 
-## Implemented runtime
+- Retains the Walking Skeleton errand, native UI, explicit Save/Load/reset and
+  existing Windows artifact verification.
+- Integer GameClock: one tick = one minute; no competing elapsed-time authority.
+- Seeded SimulationRng with full state/draw-count restoration and an engine contract.
+- Stable per-timeline event ID allocation and persisted next-ID cursor.
+- Explicit monotonic command ordering; rejects duplicates, out-of-order commands,
+  invalid payloads and reentrant mutations before consuming any state.
+- Detached bounded diagnostic event journal, not a fake historical data set.
+- Canonical authoritative-state SHA-256 fingerprint including authored work inputs.
+- Schema 2 saving and schema 1 in-memory migration. Original path retained;
+  explicit Save upgrades it and preserves the previous primary as .bak.
+- Test surface adds Step 1 minute, Step 15 minutes and Test random draw, with
+  seed/tick/command/hash readout. Random draws are diagnostics, not game rewards.
+- Current debug report includes real simulation identity and full state hash.
 
-- One authored placeholder errand: +500 cents and +15 minutes per accepted action.
-- One headless session owner: cash, elapsed minutes, completed actions.
-- Fresh session: 1000 cents, zero elapsed minutes, zero completed actions.
-- Native Godot test surface displaying real values, activity, Save, Load,
-  Reset session, unsaved-state feedback, and a fresh Copy debug report.
-- Explicit save slot with schema 1; startup loads a saved slot automatically.
-- Reset changes only the live session. Unsaved changes are not saved on quit.
-- Strict save validation, staged/read-back-checked replacement, previous-save
-  backup, and preservation of corrupt/newer-format primary files.
+## Validation contracts
 
-## Validation implemented
+Retain all previous infrastructure and Walking Skeleton cases. Add primitive
+bounds, RNG serialization/continuation, command rejection, detached state,
+reentrancy, bounded journals, 1000-command replay and mid-replay restoration,
+v1-to-v2 disk migration, and UI full-spine Save/Load checks.
 
-- Retained infrastructure tests plus session, malformed data, bounds, disk
-  roundtrip/replacement, v1 fixture, and UI integration tests.
-- Two-process Windows EXE save/load acceptance before publishing the preview.
-- Linux source/render acceptance at 2560x1440 and 1600x900.
-- Isolated test/probe save locations, separate from the normal player slot.
+The existing two-process packaged Windows probe also verifies full saved-state
+hash and next random draw/work continuation. Linux acceptance captures the real
+updated UI at 2560x1440 and 1600x900. Read the matching runs for actual results.
 
-## Limits
+## Limits and compatibility
 
-No live clock, RNG/seed, simulation tick, offline progress, city, crew, pressure,
-real economy, or full Criminal OS. The screen is a test surface, not the final UI.
-The payout/duration are test fixtures, not balance decisions.
+Time is command-driven. No live/automatic clock driver, offline progress,
+per-tick world scheduler, city/crew/pressure or expanded economy is added.
+The 500-cent payout and 15-minute errand remain test values.
 
-The save slot is user://walking_skeleton/slot_v1.json. Backup recovery tools,
-power-loss durability, file locking across concurrent game instances, and future
-migrations are not implemented. Failed loads/writes report errors without silently
-resetting the slot. Only one game instance should write to a slot.
-
-## Identity
-
-Save schema: 1 (sim-durty.walking-skeleton)
-Simulation seed/tick: none; elapsed_minutes is real but is not a running clock.
+Save format: sim-durty.walking-skeleton, schema 2; reads schema 1.
+Slot: user://walking_skeleton/slot_v1.json (legacy filename, not schema authority).
+Migration seed: 184726; old saves had no seed to recover. No history is invented.
 Autoloads: none. External Godot addons: none.
+RNG continuation is bound to the saved engine contract. Engine upgrades require
+an explicit compatibility decision. No global-UUID guarantee, full event sourcing,
+backup recovery UI, power-loss durability or concurrent-writer locking is claimed.
 
 ## Next milestone
 
-**Simulation Spine**: controlled clock, seeded RNG, stable IDs, and explicit
-command ordering, added incrementally on top of this proven vertical path.
+Persistence & Developer Tools: recovery of retained backups, save inspection,
+scenario tooling and clearer developer controls, before the OS + City Skeleton.
+Preserve the manual-save contract and avoid adding gameplay systems out of order.
 
-See ADR 0006 and docs/architecture/state_ownership.md. Tests and preview evidence
-belong to the exact source SHA they exercised. Owner graphical/game-feel approval
-remains distinct from automated engineering acceptance.
+See ADR 0007 and docs/architecture/state_ownership.md.

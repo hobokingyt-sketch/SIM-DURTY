@@ -2,15 +2,15 @@ extends Control
 
 const WORK: SkeletonWorkDefinition = preload("res://game/content/work/skeleton_errand.tres")
 
+# Keep the established slot path. Schema version comes from the file, not its name.
 @export var save_path: String = "user://walking_skeleton/slot_v1.json"
 @export var auto_load: bool = true
-
 @onready var view: SkeletonView = %SkeletonView
 
 var session: SkeletonSession
 var save_slot: SkeletonSave
 var last_storage_error: Error = OK
-var _saved_snapshot: Dictionary = {}
+var _saved_checkpoint: Dictionary = {}
 
 
 func _ready() -> void:
@@ -29,6 +29,8 @@ func _ready() -> void:
 	view.load_requested.connect(_load)
 	view.reset_requested.connect(_reset)
 	view.debug_report_requested.connect(_copy_debug_report)
+	view.advance_requested.connect(_advance)
+	view.sample_requested.connect(_sample)
 	view.configure_work(WORK)
 	view.show_build(BuildInfo.snapshot())
 	_refresh()
@@ -36,7 +38,7 @@ func _ready() -> void:
 		_load()
 	else:
 		view.show_status("No save yet. Save when you want to keep this session.")
-	print("[SIM-DURTY] Walking Skeleton boot OK | build=%s" % BuildInfo.build_id())
+	print("[SIM-DURTY] Simulation Spine boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
 	if not probe_mode.is_empty():
 		var probe: Script = load("res://game/devtools/skeleton_probe.gd") as Script
@@ -45,18 +47,27 @@ func _ready() -> void:
 
 func _work() -> void:
 	var error: Error = session.perform_work()
-	view.show_status(
-		"Errand complete. +%s; %d minutes passed." % [
-			SkeletonView.money_text(WORK.payout_cents), WORK.duration_minutes,
-		] if error == OK else "This test session has reached its supported limit.",
-		error != OK
-	)
+	view.show_status("Errand complete. +%s; %d minutes passed." % [
+		SkeletonView.money_text(WORK.payout_cents), WORK.duration_minutes,
+	] if error == OK else "This test session has reached its supported limit.", error != OK)
+
+
+func _advance(minutes: int) -> void:
+	var error: Error = session.advance_minutes(minutes)
+	view.show_status("Advanced %d minutes. Cash and completed work are unchanged." % minutes \
+		if error == OK else "That clock step was rejected.", error != OK)
+
+
+func _sample() -> void:
+	var error: Error = session.sample_random()
+	view.show_status("Test RNG advanced. Save and Load preserve its exact continuation." \
+		if error == OK else "Random test rejected at this session's limit.", error != OK)
 
 
 func _save() -> void:
-	last_storage_error = save_slot.write_state(session.snapshot())
+	last_storage_error = save_slot.write_state(session.snapshot(), session.spine_snapshot())
 	if last_storage_error == OK:
-		_saved_snapshot = session.snapshot()
+		_saved_checkpoint = session.checkpoint()
 		_refresh()
 		view.show_status("Saved. This slot will load automatically when you reopen the game.")
 	else:
@@ -69,36 +80,40 @@ func _load() -> void:
 	if last_storage_error != OK:
 		view.show_status(_storage_message(last_storage_error, "load"), true)
 		return
-	last_storage_error = session.restore(result["state"])
+	last_storage_error = session.restore(result["state"], result["spine"])
 	if last_storage_error == OK:
-		_saved_snapshot = session.snapshot()
+		_saved_checkpoint = session.checkpoint()
 		_refresh()
-		view.show_status("Loaded your saved session.")
+		view.show_status("Loaded your saved session." if int(result["source_schema"]) == 2 else \
+			"Loaded your v1 save. Next Save upgrades it; the original becomes the backup.")
 	else:
 		view.show_status("Save rejected. Your current session has not changed.", true)
 
 
 func _reset() -> void:
 	session.reset()
-	view.show_status("Session reset. Your saved slot is untouched; Load brings it back.")
+	view.show_status("Session reset with the same seed. Your saved slot is untouched.")
 
 
 func _refresh() -> void:
 	var state: Dictionary = session.snapshot()
-	view.show_state(state, session.can_work(), state != _saved_snapshot)
+	view.show_state(state, session.can_work(), session.checkpoint() != _saved_checkpoint)
+	view.spine_panel.show_spine(session.spine_snapshot(), session.state_hash(), GameClock.MAX_TICK, IdFactory.MAX_ID, SimulationRng.MAX_DRAWS)
 
 
 func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
+	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "Walking Skeleton",
-		"save_schema": SkeletonSave.SCHEMA_VERSION,
-		"simulation_seed": "none",
-		"simulation_tick": "none",
-		"cash_cents": state["cash_cents"],
-		"elapsed_minutes": state["elapsed_minutes"],
+		"milestone": "Simulation Spine", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
+		"clock_mode": "command-driven; one tick = one minute",
+		"next_command": spine["next_command"], "next_event_id": spine["next_id"],
+		"rng_draws": spine["rng"]["draws"], "last_test_draw": spine["last_roll"],
+		"state_hash": session.state_hash(),
+		"cash_cents": state["cash_cents"], "elapsed_minutes": state["elapsed_minutes"],
 		"completed_actions": state["completed_actions"],
-		"unsaved_session": state != _saved_snapshot,
+		"unsaved_session": session.checkpoint() != _saved_checkpoint,
 		"last_storage_error": int(last_storage_error),
 	})
 
@@ -115,9 +130,7 @@ func _storage_message(error: Error, operation: String) -> String:
 	if error == ERR_FILE_NOT_FOUND:
 		return "No saved slot yet. Your current session is unchanged."
 	if error == ERR_UNAVAILABLE:
-		return "This slot uses another save version. It was not loaded or overwritten."
+		return "Save or RNG version is incompatible. The slot was not loaded or overwritten."
 	if error == ERR_FILE_CORRUPT:
 		return "Save file rejected. Session and saved slot are unchanged. Copy the debug report."
-	return "Could not %s (error %d). Your session is unchanged. Copy the debug report." % [
-		operation, int(error),
-	]
+	return "Could not %s (error %d). Your session is unchanged. Copy the debug report." % [operation, int(error)]

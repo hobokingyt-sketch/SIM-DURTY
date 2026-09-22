@@ -1,35 +1,34 @@
-# State Ownership
+# State ownership
 
-Every authoritative field has one owner. Other systems read detached snapshots
-or request changes through an explicit API; they do not keep competing mutable copies.
+## Current runtime
 
-## Implemented ownership
+| State | Single owner | Mutation boundary |
+| --- | --- | --- |
+| Cash cents / completed errands | SkeletonSession | Validated work command |
+| Integer simulation tick | GameClock owned by session | Work or explicit advance command |
+| elapsed_minutes | Derived session read model | Never independently stored at runtime |
+| Seed / RNG state / draw count | SimulationRng owned by session | Explicit RNG command; restore |
+| Event ID cursor | IdFactory owned by session | One allocation per accepted command |
+| Next command sequence | SkeletonSession | Successful ordered commit |
+| Last diagnostic random draw | SkeletonSession | rng_probe command |
+| Last 32 diagnostic events | SkeletonSession | Post-commit append; clear on restore/reset |
+| Authored work definition | Session-owned copy of Resource | Construction, not UI editing |
+| Saved checkpoint comparison | Main | Successful Save/Load |
+| Formatting / control state | SkeletonView and SpinePanel | Read-only projections and request signals |
+| Disk format/migration | SkeletonSave | Validate, stage, verify, back up, replace |
+| Build identity | BuildInfo | Explicit build pipeline only |
 
-| State | Owner | Mutation API | Persistent? |
-| --- | --- | --- | --- |
-| cash_cents | SkeletonSession | perform_work / restore / reset | Yes, v1 |
-| elapsed_minutes | SkeletonSession | perform_work / restore / reset | Yes, v1 |
-| completed_actions | SkeletonSession | perform_work / restore / reset | Yes, v1 |
-| authored payout/duration | skeleton_errand.tres | authoring; session copies on creation | Content, not mutable save state |
-| save envelope and disk slot | SkeletonSave | write_state / read_state | v1 format |
-| last successful saved snapshot | Main | after successful save/load | No; comparison baseline only |
-| status text, button state | SkeletonView | show_state / show_status | No |
-| build identity | BuildInfo / generated manifest | build pipeline | Build metadata only |
+Snapshots are detached copies. Main wires dependencies; UI never mutates clock,
+RNG or money. A journal notification occurs after the whole command commits.
+Reentrant writes are rejected while notifying subscribers. Availability queries
+remain valid during notification so buttons do not become permanently disabled.
 
-Main composes these objects. SkeletonSession imports no UI or filesystem code.
-SkeletonSave validates data but cannot mutate a session. Main restores only a
-successful validated read. UI owns no money, outcome, or authoritative time.
+## Persistence boundary
 
-## Categories
+Runtime saves pass snapshot AND spine_snapshot. Schema 2 must never be restored
+from the three-value read model alone. Schema 1 conversion is the deliberate
+exception, documented in ADR 0007. The tick and compatibility elapsed_minutes
+fields must agree on read; a mismatch is rejected before changing live state.
 
-Authoritative state determines outcomes. Presentation state controls how state
-is viewed. Derived state (including the unsaved indicator) must identify its
-source inputs and must never become another authority.
-
-## When adding fields
-
-Record precise meaning, one owner, mutation API, readers, persistence/schema
-implications, determinism inputs/order, and whether the field is derived.
-
-Future crew, pressure, city, inventory, RNG, and tick ownership is not implemented.
-Do not infer it from the master vision. See ADR 0006 for this limited slice.
+Only one writer may operate a slot. Backup recovery and file locking remain
+future work, not guarantees provided by this slice.
