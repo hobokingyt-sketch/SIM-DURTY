@@ -42,6 +42,7 @@ var center_back_buttons: Array[Button] = []
 var right_back_buttons: Array[Button] = []
 var operations_work_tab: Button
 var operations_record_tab: Button
+var operations_record_work_button: Button
 var record_activity_tab: Button
 var record_storage_tab: Button
 var record_toggle: Button
@@ -320,7 +321,7 @@ func _build_center_apps() -> void:
 	var record_back: Button = OsTokens.button(record_header, "Back", func() -> void: _model.back())
 	center_back_buttons.append(record_back)
 	OsTokens.button(record_header, "City", func() -> void: _model.return_to_city())
-	OsTokens.button(record_header, "Work", func() -> void: _model.navigate_view("work"))
+	operations_record_work_button = OsTokens.button(record_header, "Work", func() -> void: _model.navigate_view("work"))
 	OsTokens.button(record_header, "Record", func() -> void: _model.navigate_view("record"))
 	OsTokens.label(record_stack, "CURRENT SESSION RECORD", 13, OsTokens.ACCENT)
 	var record_scroll_view: ScrollContainer = _scroll(record_stack)

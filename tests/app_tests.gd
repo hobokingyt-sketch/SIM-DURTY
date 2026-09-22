@@ -44,8 +44,9 @@ func _test_shell_lifecycle(tree: SceneTree) -> void:
 	_check(view.ui_snapshot()["selected_id"] == "skeleton_errand" and session.checkpoint() == initial, "center focus preserves selection and gameplay")
 	view.operations_record_tab.pressed.emit(); await _frames(tree)
 	_check(view.ui_snapshot()["active_view"] == "record" and not view.work_button.is_visible_in_tree(), "Operations switches local view")
-	view.operations_record_tab.grab_focus(); view.operations_work_tab.pressed.emit(); view.operations_record_tab.pressed.emit(); await _frames(tree)
-	_check(tree.root.gui_get_focus_owner() == view.operations_record_tab, "view focus restores")
+	var record_focus: Button = view.center_back_buttons[1]
+	record_focus.grab_focus(); view.operations_record_work_button.pressed.emit(); view.operations_record_tab.pressed.emit(); await _frames(tree)
+	_check(tree.root.gui_get_focus_owner() == record_focus, "view focus restores")
 	view.close_operations_button.pressed.emit(); await _frames(tree)
 	_check(view.city.visible and view.city.camera_snapshot() == camera, "City returns with same camera")
 	_check(view.ui_snapshot()["selected_id"] == "skeleton_errand", "City return preserves selection")
