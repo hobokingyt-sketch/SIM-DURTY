@@ -45,7 +45,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y xvfb libgl1-mesa-dri
 
-      - name: Test persistence, recovery, workspace input and rendering
+      - name: Test state, recovery, workspace and widget interaction
         shell: bash
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
@@ -53,6 +53,8 @@ jobs:
           set -euo pipefail
           reports="$RUNNER_TEMP/skeleton-acceptance"
           mkdir -p "$reports"
+          git rev-parse HEAD > "$reports/source-sha.txt"
+          git archive --format=tar.gz -o "$reports/tested-source.tar.gz" HEAD
           check() {
             name="$1"; shift
             timeout 90s "$@" 2>&1 | tee "$reports/$name.log"
@@ -68,6 +70,8 @@ jobs:
               check "$probe-$mode" godot --headless --path . -- "--$probe-probe=$mode"
               grep -q "^\[$probe-probe\] PASS $mode" "$reports/$probe-$mode.log"
             done
+            check "widgets-$mode" godot --headless --path . -- "--widget-probe=$mode"
+            grep -q "^\[widget-probe\] PASS $mode" "$reports/widgets-$mode.log"
           done
           check os-verify godot --headless --path . -- --os-probe=verify
           grep -q '^\[os-probe\] PASS selection navigation command isolation' "$reports/os-verify.log"
@@ -88,7 +92,14 @@ jobs:
               -- --workspace-probe="$mode"
             test -s "$SIM_DURTY_CAPTURE_PATH"
           done
-          git rev-parse HEAD > "$reports/source-sha.txt"
+          for case in '1280x800:capture' '1600x900:capture' '2560x1440:capture' '1600x900:capture-preview' '1600x900:capture-invalid' '2560x1440:capture-major' '1600x900:capture-right'; do
+            size="${case%%:*}"; mode="${case#*:}"
+            export SIM_DURTY_CAPTURE_PATH="$reports/widgets-$mode-$size.png"
+            check "widgets-$mode-$size" xvfb-run -a -s '-screen 0 3000x1800x24' \
+              godot --path . --resolution "$size" --rendering-method gl_compatibility --audio-driver Dummy \
+              -- "--widget-probe=$mode"
+            test -s "$SIM_DURTY_CAPTURE_PATH"
+          done
 
       - name: Preserve acceptance evidence
         if: always()

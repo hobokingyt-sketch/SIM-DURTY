@@ -12,6 +12,7 @@ var last_storage_error: Error = OK
 var _saved_checkpoint: Dictionary = {}
 var _storage_info: Dictionary = {}
 var _recovery_note: String = "none"
+var _widget_probe: RefCounted
 
 
 func _ready() -> void:
@@ -19,6 +20,7 @@ func _ready() -> void:
 	var recovery_mode: String = ""
 	var os_mode: String = ""
 	var workspace_mode: String = ""
+	var widget_mode: String = ""
 	get_window().min_size = Vector2i(1280, 800)
 	if OS.is_debug_build():
 		for argument: String in OS.get_cmdline_user_args():
@@ -28,6 +30,8 @@ func _ready() -> void:
 				recovery_mode = argument.trim_prefix("--recovery-probe=")
 			if argument.begins_with("--os-probe="):
 				os_mode = argument.trim_prefix("--os-probe=")
+			if argument.begins_with("--widget-probe="):
+				widget_mode = argument.trim_prefix("--widget-probe=")
 			if argument.begins_with("--workspace-probe="):
 				workspace_mode = argument.trim_prefix("--workspace-probe=")
 		if not probe_mode.is_empty():
@@ -42,6 +46,9 @@ func _ready() -> void:
 		if not workspace_mode.is_empty():
 			save_path = "user://_ci_workspace/slot_v1.json"
 			auto_load = workspace_mode == "read"
+		if not widget_mode.is_empty():
+			save_path = "user://_ci_widgets/slot.json"
+			auto_load = widget_mode == "read"
 	session = SkeletonSession.new(WORK)
 	save_slot = SkeletonSave.new(save_path)
 	session.changed.connect(_refresh)
@@ -55,7 +62,7 @@ func _ready() -> void:
 	view.inspection_requested.connect(_inspect_storage)
 	view.recovery_requested.connect(_recover)
 	view.configure_work(WORK)
-	view.configure_workspace(save_path, not workspace_mode.is_empty())
+	view.configure_workspace(save_path, not workspace_mode.is_empty() or not widget_mode.is_empty())
 	view.show_build(BuildInfo.snapshot())
 	_refresh()
 	_inspect_storage()
@@ -65,9 +72,13 @@ func _ready() -> void:
 		view.show_status("Saved slot is missing. A previous save is available in the right rail.", true)
 	else:
 		view.show_status("Save when you want to keep this session.")
-	print("[SIM-DURTY] Workspace 6A boot OK | build=%s" % BuildInfo.build_id())
+	print("[SIM-DURTY] Widgets 6B boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
-	if not workspace_mode.is_empty():
+	if not widget_mode.is_empty():
+		var probe_script: Script = load("res://game/devtools/widget_probe.gd") as Script
+		_widget_probe = probe_script.new()
+		_widget_probe.call_deferred("run", self, widget_mode)
+	elif not workspace_mode.is_empty():
 		var probe: Script = load("res://game/devtools/workspace_probe.gd") as Script
 		probe.call_deferred("run", self, workspace_mode)
 	elif not os_mode.is_empty():
@@ -168,7 +179,7 @@ func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
 	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "6A Workspace geometry & layout memory", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"milestone": "6B Widget manipulation & responsive forms", "save_schema": SkeletonSave.SCHEMA_VERSION,
 		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
 		"clock_mode": "command-driven; one tick = one minute",
 		"next_command": spine["next_command"], "next_event_id": spine["next_id"],

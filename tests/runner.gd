@@ -8,6 +8,7 @@ const SpineTests = preload("res://tests/spine_tests.gd")
 const RecoveryTests = preload("res://tests/recovery_tests.gd")
 const OsTests = preload("res://tests/os_shell_tests.gd")
 const WorkspaceTests = preload("res://tests/workspace_tests.gd")
+const WidgetTests = preload("res://tests/widget_tests.gd")
 var failures: int = 0
 
 
@@ -16,7 +17,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Workspace 6A")
+	print("[tests] SIM-DURTY Widgets 6B")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
@@ -31,6 +32,8 @@ func _run() -> void:
 	failures += await os_suite.run(self)
 	var workspace_suite: RefCounted = WorkspaceTests.new()
 	failures += await workspace_suite.run(self)
+	var widget_suite: RefCounted = WidgetTests.new()
+	failures += await widget_suite.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)
@@ -53,7 +56,7 @@ func _test_build_info_contract() -> void:
 
 
 func _test_debug_report_contract() -> void:
-	var report: String = DebugReportScript.compose({"milestone": "Workspace 6A"})
+	var report: String = DebugReportScript.compose({"milestone": "Widgets 6B"})
 	_assert_true(report.contains("SIM-DURTY DEBUG REPORT"), "debug report has stable header")
 	_assert_true(report.contains("build_id:"), "debug report contains build identity")
 	_assert_true(report.contains("simulation_tick: none"), "missing supplied simulation identity is not fabricated")
@@ -65,13 +68,11 @@ func _test_main_scene_loads() -> void:
 	if scene != null:
 		var instance: Node = scene.instantiate()
 		_assert_true(instance != null, "main scene instantiates")
-		if instance != null:
-			instance.free()
+		if instance != null: instance.free()
 
 
 func _assert_true(condition: bool, label: String) -> void:
-	if condition:
-		print("[tests] PASS: %s" % label)
+	if condition: print("[tests] PASS: %s" % label)
 	else:
 		failures += 1
 		push_error("[tests] FAIL: %s" % label)

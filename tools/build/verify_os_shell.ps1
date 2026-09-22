@@ -15,9 +15,7 @@ try {
     $process.StartInfo.UseShellExecute = $false
     $process.StartInfo.RedirectStandardOutput = $true
     $process.StartInfo.RedirectStandardError = $true
-    foreach ($arg in @('--headless', '--', '--os-probe=verify')) {
-        $process.StartInfo.ArgumentList.Add($arg)
-    }
+    foreach ($arg in @('--headless', '--', '--os-probe=verify')) { $process.StartInfo.ArgumentList.Add($arg) }
     $started = $process.Start()
     if (-not $started) { throw 'OS probe could not start.' }
     $stdoutTask = $process.StandardOutput.ReadToEndAsync()
@@ -28,9 +26,7 @@ try {
     $text | Set-Content -LiteralPath (Join-Path $ReportDirectory 'os-shell.log') -Encoding utf8
     if ($timedOut -or $process.ExitCode -ne 0) { throw 'OS navigation probe failed or timed out.' }
     if ($text -match '(?im)^\s*(SCRIPT ERROR:|ERROR:|FATAL:|Parse Error:)') { throw 'OS probe reported a runtime error.' }
-    if ($text -notmatch '(?m)^\[os-probe\] PASS selection navigation command isolation\r?$') {
-        throw 'OS probe did not verify the expected native UI handoff.'
-    }
+    if ($text -notmatch '(?m)^\[os-probe\] PASS selection navigation command isolation\r?$') { throw 'OS probe did not verify the expected native UI handoff.' }
     [ordered]@{
         test = 'windows-packaged-os-navigation-and-command-isolation'; status = 'passed'
         input_path = 'native Button signals through the OS presentation boundary'
@@ -43,3 +39,4 @@ finally {
     $process.Dispose()
 }
 & (Join-Path $PSScriptRoot 'verify_workspace.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory
+& (Join-Path $PSScriptRoot 'verify_widgets.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory
