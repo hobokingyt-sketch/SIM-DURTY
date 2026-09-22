@@ -3,16 +3,16 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.16
+Game version: 0.0.17
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Visual Refinement R4 — Unified Visual Calibration
+## Current milestone: Functional Criminal OS, Phase 6D.4 — Typography, Spacing & Information Rhythm
 
-This revision applies one stateful interaction kit across launcher plates,
-ordinary controls, primary actions, tabs, navigation, fold controls and widget
-handles without changing the 6A–6C ownership contracts. Exact acceptance/merge
-status belongs to the matching PR and exact-revision CI evidence. Gameplay
-expansion remains blocked until full Phase 6 visual/product acceptance.
+This revision applies one semantic typography and spacing system across the
+existing shell, apps, widgets and controls without changing the 6A–6C ownership
+or geometry contracts. Exact acceptance/merge status belongs to the matching PR
+and exact-revision CI evidence. Gameplay expansion remains blocked until full
+Phase 6 visual/product acceptance.
 
 ## Implemented
 
@@ -68,21 +68,18 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-R1–R3 establish depth, border craft and control construction. Visual Refinement
-R4 calibrates the complete existing screen against the locked north star:
-near-black wells move into a readable charcoal range, rails/widgets brighten
-slightly while preserving depth order, edge/shadow strength is softened, normal
-icons are quieter than primary text, brass remains scarce, and diffuse texture
-is slightly more visible without becoming grainy. No UI structure, dimensions,
-information hierarchy or interaction contract changes.
+R1–R4 establish and calibrate the material, depth, frame and control system.
+Phase 6D.4 now makes information hierarchy equally systematic: large app/task
+titles, medium region titles, readable uppercase system labels, clear body/meta
+copy, stable numeric readouts and a shared 4 px-based spacing rhythm. Temporary
+architecture/testing explanations are removed from player-facing surfaces.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Phase 6D.4 — Typography, spacing and information rhythm. The focused
-R1–R4 visual-refinement series is complete once R4 is accepted.
+Next after 6D.4 acceptance: Phase 6D.5 — Work Scan product pass.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.

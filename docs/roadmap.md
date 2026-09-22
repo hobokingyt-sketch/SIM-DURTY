@@ -102,7 +102,7 @@ inward, selected tabs/launcher plates keep dark faces with brass structural
 edges, and primary actions use dark bronze faces with brass edge emphasis rather
 than large solid-brass fills.
 
-### Visual Refinement R4 — Unified Visual Calibration — CURRENT IMPLEMENTATION
+### Visual Refinement R4 — Unified Visual Calibration — COMPLETE
 
 Compare the whole existing screen against the locked reference and normalize
 material brightness, recess depth, border strength, accent economy, icon
@@ -116,7 +116,7 @@ restrained material contract, quiets normal icons, and slightly reduces brass
 brightness while keeping the R1–R3 hierarchy and every existing geometry
 contract intact.
 
-### 6D.4 — Typography, spacing and information rhythm — NEXT AFTER R4 ACCEPTANCE
+### 6D.4 — Typography, spacing and information rhythm — CURRENT IMPLEMENTATION
 
 Apply the concept's visual hierarchy:
 - large app/task titles,
@@ -127,9 +127,17 @@ Apply the concept's visual hierarchy:
 - unified spacing/baseline system,
 - remove temporary explanatory text that the UI no longer needs.
 
-Test real text at reference and minimum supported sizes.
+The implementation centralizes semantic type roles in one shared typography
+primitive, gives every control role a consistent text size, replaces local
+6/10/18/28-unit spacing with a small 4 px-based rhythm, stabilizes the primary
+cash/count/time readouts, and removes temporary architecture/testing copy from
+Operations, Session Record and Work Scan. Existing rail, app, widget and
+navigation structure is unchanged.
 
-### 6D.5 — Work Scan product pass
+Acceptance covers the 2560×1440 reference and 1280×800 supported minimum without
+shrinking persistent text into microtype.
+
+### 6D.5 — Work Scan product pass — NEXT AFTER 6D.4 ACCEPTANCE
 
 Work Scan becomes the first fully authored premium widget.
 

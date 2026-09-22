@@ -19,6 +19,7 @@ static func apply(button: Button, role: String, palette: Dictionary, height_over
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	button.mouse_force_pass_scroll_events = false
 	button.flat = false
+	button.add_theme_font_size_override("font_size", OsTypography.button_font_size(role))
 	var metrics: Dictionary = _metrics(role)
 	button.custom_minimum_size.y = height_override if height_override > 0.0 else float(metrics["height"])
 	if role == ROLE_LAUNCHER:

@@ -40,11 +40,11 @@ func _ready() -> void:
 	add_child(inset)
 	inset.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side: String in ["left", "right", "top", "bottom"]:
-		inset.add_theme_constant_override("margin_" + side, 10)
-	var stack: VBoxContainer = OsTokens.column(inset, 8)
-	var header: HBoxContainer = OsTokens.row(stack, 6)
+		inset.add_theme_constant_override("margin_" + side, OsTokens.SPACE_SM)
+	var stack: VBoxContainer = OsTokens.column(inset, OsTokens.SPACE_XS)
+	var header: HBoxContainer = OsTokens.row(stack, OsTokens.SPACE_XS)
 	drag_handle = _handle(header, "move")
-	var title: Label = OsTokens.label(header, str(WidgetLayout.TITLES[widget_id]), 15, OsTokens.MUTED)
+	var title: Label = OsTokens.type_label(header, str(WidgetLayout.TITLES[widget_id]), OsTypography.ROLE_SYSTEM_LABEL, OsTokens.MUTED)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	resize_handle = _handle(header, "resize")
@@ -66,16 +66,16 @@ func _ready() -> void:
 	menu.about_to_popup.connect(func() -> void: menu_requested.emit(widget_id))
 	menu.id_pressed.connect(func(option: int) -> void: option_requested.emit(widget_id, option))
 	_body = BoxContainer.new()
-	_body.add_theme_constant_override("separation", 12)
+	_body.add_theme_constant_override("separation", OsTokens.SPACE_SM)
 	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stack.add_child(_body)
-	_identity = OsTokens.column(_body, 6)
+	_identity = OsTokens.column(_body, OsTokens.SPACE_XS)
 	_identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	primary = OsTokens.label(_identity, "", 18)
+	primary = OsTokens.type_label(_identity, "", OsTypography.ROLE_WIDGET_PRIMARY)
 	primary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	secondary = OsTokens.label(_identity, "", 15, OsTokens.ACCENT)
+	secondary = OsTokens.type_label(_identity, "", OsTypography.ROLE_DATA_COMPACT, OsTokens.ACCENT)
 	secondary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	details = OsTokens.wrapped(_identity, "", 16, OsTokens.MUTED)
+	details = OsTokens.type_wrapped(_identity, "", OsTypography.ROLE_META, OsTokens.MUTED)
 	details.max_lines_visible = 6
 	details.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	inspect_button = Button.new()
@@ -104,7 +104,6 @@ func _handle(parent: Node, kind: String) -> WidgetHandle:
 
 static func _small_button(button: Button) -> void:
 	button.custom_minimum_size = Vector2(28, 28)
-	button.add_theme_font_size_override("font_size", 15)
 	OsControls.apply(button, OsControls.ROLE_COMPACT, OsTokens.control_palette())
 
 
@@ -136,7 +135,7 @@ func apply_form(form: String) -> void:
 	effective_form = form
 	_body.vertical = form == "tall"
 	details.visible = form in ["tall", "major"]
-	primary.add_theme_font_size_override("font_size", 22 if form == "major" else 18)
+	primary.add_theme_font_size_override("font_size", OsTypography.font_size(OsTypography.ROLE_REGION_TITLE) if form == "major" else OsTypography.font_size(OsTypography.ROLE_WIDGET_PRIMARY))
 	primary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if form in ["tall", "major"] else TextServer.AUTOWRAP_OFF
 	primary.max_lines_visible = 2 if form in ["tall", "major"] else 1
 	_render()
@@ -148,7 +147,7 @@ func _render() -> void:
 		primary.text = _work_name
 		primary.tooltip_text = _work_name
 		secondary.text = "$%d.%02d · %d min" % [_payout / 100, _payout % 100, _minutes]
-		details.text = "%s\n%d completed this save\nOpens Operations" % ["Selected work" if _selected else ("Available" if _available else "Unavailable"), _completed]
+		details.text = "%s\n%d completed this save" % ["Selected work" if _selected else ("Available" if _available else "Unavailable"), _completed]
 		inspect_button.disabled = _work_id.is_empty()
 	else:
 		primary.text = "No recent activity" if _events.is_empty() else _event_title(_events.back())
