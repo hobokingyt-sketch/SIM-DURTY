@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout preview source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -92,7 +92,7 @@ jobs:
           mkdir -p build/artifacts
           (
             cd build/windows
-            zip -q -r "../../artifacts/${artifact_name}.zip" .
+            zip -q -r "../artifacts/${artifact_name}.zip" .
           )
           echo "artifact_name=${artifact_name}" >> "$GITHUB_OUTPUT"
           echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
