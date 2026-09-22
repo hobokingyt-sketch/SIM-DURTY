@@ -32,10 +32,16 @@ func _test_state_styles() -> void:
 			_check(style.texture != null, role + " " + state + " has an engineered frame")
 	var tab_normal: Color = _center(OsControls.style_for(OsControls.ROLE_TAB, "normal", palette))
 	var tab_selected: Color = _center(OsControls.style_for(OsControls.ROLE_TAB, "pressed", palette))
-	_check(not tab_normal.is_equal_approx(tab_selected), "selected tab has a distinct seated material")
+	_check(not tab_normal.is_equal_approx(tab_selected), "selected tab has a distinct seated face")
+	_check(tab_selected.get_luminance() < OsTokens.ACCENT.get_luminance() * 0.55, "selected tab keeps brass on the edge instead of filling the whole face")
 	var primary_normal: Color = _center(OsControls.style_for(OsControls.ROLE_PRIMARY, "normal", palette))
 	var standard_normal: Color = _center(OsControls.style_for(OsControls.ROLE_STANDARD, "normal", palette))
-	_check(not primary_normal.is_equal_approx(standard_normal), "primary action is materially distinct from ordinary controls")
+	_check(not primary_normal.is_equal_approx(standard_normal), "primary action uses a distinct dark bronze face")
+	_check(primary_normal.get_luminance() < OsTokens.ACCENT.get_luminance() * 0.6, "primary action uses brass economically rather than as a solid fill")
+	var pressed: StyleBoxTexture = OsControls.style_for(OsControls.ROLE_STANDARD, "pressed", palette)
+	var normal: StyleBoxTexture = OsControls.style_for(OsControls.ROLE_STANDARD, "normal", palette)
+	_check(_top_face(normal).get_luminance() > _bottom_face(normal).get_luminance(), "normal control face is subtly raised")
+	_check(_top_face(pressed).get_luminance() < _bottom_face(pressed).get_luminance(), "pressed control face seats inward")
 	var focus: StyleBoxTexture = OsControls.focus_style(OsControls.ROLE_STANDARD, palette)
 	_check(_center(focus).a < 0.05, "focus treatment is an outline rather than a filled glow")
 
@@ -89,6 +95,18 @@ func _test_live_controls(tree: SceneTree) -> void:
 func _center(style: StyleBoxTexture) -> Color:
 	var image: Image = style.texture.get_image()
 	return image.get_pixel(image.get_width() / 2, image.get_height() / 2)
+
+
+func _top_face(style: StyleBoxTexture) -> Color:
+	var image: Image = style.texture.get_image()
+	var center_x: int = image.get_width() / 2
+	return image.get_pixel(center_x, 4)
+
+
+func _bottom_face(style: StyleBoxTexture) -> Color:
+	var image: Image = style.texture.get_image()
+	var center_x: int = image.get_width() / 2
+	return image.get_pixel(center_x, image.get_height() - 5)
 
 
 func _cleanup() -> void:
