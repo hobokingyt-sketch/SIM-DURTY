@@ -5,6 +5,7 @@ const BuildInfoScript = preload("res://game/core/build/build_info.gd")
 const DebugReportScript = preload("res://game/core/debug/debug_report.gd")
 const SkeletonTests = preload("res://tests/skeleton_tests.gd")
 const SpineTests = preload("res://tests/spine_tests.gd")
+const RecoveryTests = preload("res://tests/recovery_tests.gd")
 var failures: int = 0
 
 
@@ -13,7 +14,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Simulation Spine")
+	print("[tests] SIM-DURTY Persistence & Developer Tools")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
@@ -22,6 +23,8 @@ func _run() -> void:
 	failures += await skeleton.run(self)
 	var spine: RefCounted = SpineTests.new()
 	failures += await spine.run(self)
+	var recovery: RefCounted = RecoveryTests.new()
+	failures += await recovery.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)
@@ -44,7 +47,7 @@ func _test_build_info_contract() -> void:
 
 
 func _test_debug_report_contract() -> void:
-	var report: String = DebugReportScript.compose({"milestone": "Simulation Spine"})
+	var report: String = DebugReportScript.compose({"milestone": "Persistence & Developer Tools"})
 	_assert_true(report.contains("SIM-DURTY DEBUG REPORT"), "debug report has stable header")
 	_assert_true(report.contains("build_id:"), "debug report contains build identity")
 	_assert_true(report.contains("simulation_tick: none"), "missing supplied simulation identity is not fabricated")

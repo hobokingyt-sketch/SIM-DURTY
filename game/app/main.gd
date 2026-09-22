@@ -2,7 +2,7 @@ extends Control
 
 const WORK: SkeletonWorkDefinition = preload("res://game/content/work/skeleton_errand.tres")
 
-# Keep the established slot path. Schema version comes from the file, not its name.
+# File schema, not the legacy filename, controls compatibility.
 @export var save_path: String = "user://walking_skeleton/slot_v1.json"
 @export var auto_load: bool = true
 @onready var view: SkeletonView = %SkeletonView
@@ -11,16 +11,25 @@ var session: SkeletonSession
 var save_slot: SkeletonSave
 var last_storage_error: Error = OK
 var _saved_checkpoint: Dictionary = {}
+var _storage_info: Dictionary = {}
+var _recovery_note: String = "none"
 
 
 func _ready() -> void:
 	var probe_mode: String = ""
+	var recovery_mode: String = ""
 	if OS.is_debug_build():
 		for argument: String in OS.get_cmdline_user_args():
 			if argument.begins_with("--skeleton-probe="):
 				probe_mode = argument.trim_prefix("--skeleton-probe=")
-				save_path = "user://_ci_walking_skeleton/probe_slot_v1.json"
-				auto_load = false
+			if argument.begins_with("--recovery-probe="):
+				recovery_mode = argument.trim_prefix("--recovery-probe=")
+		if not probe_mode.is_empty():
+			save_path = "user://_ci_walking_skeleton/probe_slot_v1.json"
+			auto_load = false
+		if not recovery_mode.is_empty():
+			save_path = "user://_ci_recovery/probe_slot_v1.json"
+			auto_load = recovery_mode == "read"
 	session = SkeletonSession.new(WORK)
 	save_slot = SkeletonSave.new(save_path)
 	session.changed.connect(_refresh)
@@ -31,16 +40,24 @@ func _ready() -> void:
 	view.debug_report_requested.connect(_copy_debug_report)
 	view.advance_requested.connect(_advance)
 	view.sample_requested.connect(_sample)
+	view.inspection_requested.connect(_inspect_storage)
+	view.recovery_requested.connect(_recover)
 	view.configure_work(WORK)
 	view.show_build(BuildInfo.snapshot())
 	_refresh()
-	if auto_load and FileAccess.file_exists(save_path):
+	_inspect_storage()
+	if auto_load and int(_storage_info["primary"]["error"]) != ERR_FILE_NOT_FOUND:
 		_load()
+	elif bool(_storage_info["can_recover"]):
+		view.show_status("Saved slot is missing. A previous save is available below.", true)
 	else:
-		view.show_status("No save yet. Save when you want to keep this session.")
-	print("[SIM-DURTY] Simulation Spine boot OK | build=%s" % BuildInfo.build_id())
+		view.show_status("Save when you want to keep this session.")
+	print("[SIM-DURTY] Persistence Tools boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
-	if not probe_mode.is_empty():
+	if not recovery_mode.is_empty():
+		var probe: Script = load("res://game/devtools/recovery_probe.gd") as Script
+		probe.call_deferred("run", self, recovery_mode)
+	elif not probe_mode.is_empty():
 		var probe: Script = load("res://game/devtools/skeleton_probe.gd") as Script
 		probe.call_deferred("run", self, probe_mode)
 
@@ -60,16 +77,23 @@ func _advance(minutes: int) -> void:
 
 func _sample() -> void:
 	var error: Error = session.sample_random()
-	view.show_status("Test RNG advanced. Save and Load preserve its exact continuation." \
+	view.show_status("Test draw updated. Save and Load preserve its continuation." \
 		if error == OK else "Random test rejected at this session's limit.", error != OK)
+
+
+func _inspect_storage() -> void:
+	_storage_info = save_slot.inspect_slot()
+	view.show_storage(_storage_info)
+	view.spine_panel.show_inspection(_storage_info, session.recent_events())
 
 
 func _save() -> void:
 	last_storage_error = save_slot.write_state(session.snapshot(), session.spine_snapshot())
+	_inspect_storage()
 	if last_storage_error == OK:
 		_saved_checkpoint = session.checkpoint()
 		_refresh()
-		view.show_status("Saved. This slot will load automatically when you reopen the game.")
+		view.show_status("Saved. Ready to continue next time.")
 	else:
 		view.show_status(_storage_message(last_storage_error, "save"), true)
 
@@ -77,6 +101,7 @@ func _save() -> void:
 func _load() -> void:
 	var result: Dictionary = save_slot.read_state()
 	last_storage_error = int(result["error"]) as Error
+	_inspect_storage()
 	if last_storage_error != OK:
 		view.show_status(_storage_message(last_storage_error, "load"), true)
 		return
@@ -85,27 +110,47 @@ func _load() -> void:
 		_saved_checkpoint = session.checkpoint()
 		_refresh()
 		view.show_status("Loaded your saved session." if int(result["source_schema"]) == 2 else \
-			"Loaded your v1 save. Next Save upgrades it; the original becomes the backup.")
+			"Loaded your earlier save. It will upgrade safely on your next Save.")
 	else:
 		view.show_status("Save rejected. Your current session has not changed.", true)
 
 
+func _recover() -> void:
+	# Use the inspected token so a changed file is not recovered behind the user's back.
+	var result: Dictionary = save_slot.recover_backup(str(_storage_info.get("recovery_token", "")))
+	last_storage_error = int(result["error"]) as Error
+	if last_storage_error == OK:
+		last_storage_error = session.restore(result["state"], result["spine"])
+		if last_storage_error == OK:
+			_saved_checkpoint = session.checkpoint()
+			_recovery_note = str(result.get("preserved_copy", ""))
+			if _recovery_note.is_empty():
+				_recovery_note = "missing primary restored"
+		_inspect_storage()
+		_refresh()
+		view.show_status("Previous save recovered. Original file and backup kept.", last_storage_error != OK)
+	else:
+		_inspect_storage()
+		view.show_status("Recovery stopped safely. Files may have changed; no session data was loaded.", true)
+
+
 func _reset() -> void:
 	session.reset()
-	view.show_status("Session reset with the same seed. Your saved slot is untouched.")
+	view.show_status("Session reset. Your saved slot is untouched.")
 
 
 func _refresh() -> void:
 	var state: Dictionary = session.snapshot()
 	view.show_state(state, session.can_work(), session.checkpoint() != _saved_checkpoint)
 	view.spine_panel.show_spine(session.spine_snapshot(), session.state_hash(), GameClock.MAX_TICK, IdFactory.MAX_ID, SimulationRng.MAX_DRAWS)
+	view.spine_panel.show_inspection(_storage_info, session.recent_events())
 
 
 func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
 	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "Simulation Spine", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"milestone": "Persistence & Developer Tools", "save_schema": SkeletonSave.SCHEMA_VERSION,
 		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
 		"clock_mode": "command-driven; one tick = one minute",
 		"next_command": spine["next_command"], "next_event_id": spine["next_id"],
@@ -115,22 +160,29 @@ func debug_report() -> String:
 		"completed_actions": state["completed_actions"],
 		"unsaved_session": session.checkpoint() != _saved_checkpoint,
 		"last_storage_error": int(last_storage_error),
+		"save_inspection": _storage_info.get("primary", {}),
+		"backup_inspection": _storage_info.get("backup", {}),
+		"recovery": _recovery_note,
+		"recent_events": session.recent_events(),
 	})
 
 
 func _copy_debug_report() -> void:
+	_inspect_storage()
 	if not DisplayServer.has_feature(DisplayServer.FEATURE_CLIPBOARD):
 		view.show_status("Clipboard is unavailable in this display session.", true)
 		return
 	DisplayServer.clipboard_set(debug_report())
-	view.show_status("Debug report copied. Paste it into chat with what went wrong.")
+	view.show_status("Debug report copied.")
 
 
 func _storage_message(error: Error, operation: String) -> String:
+	if bool(_storage_info.get("can_recover", false)):
+		return "Saved slot needs recovery. A verified previous save is available below."
 	if error == ERR_FILE_NOT_FOUND:
 		return "No saved slot yet. Your current session is unchanged."
 	if error == ERR_UNAVAILABLE:
-		return "Save or RNG version is incompatible. The slot was not loaded or overwritten."
+		return "Save or backup needs a compatible build. Nothing was overwritten."
 	if error == ERR_FILE_CORRUPT:
-		return "Save file rejected. Session and saved slot are unchanged. Copy the debug report."
-	return "Could not %s (error %d). Your session is unchanged. Copy the debug report." % [operation, int(error)]
+		return "Save file needs attention. Nothing was overwritten. Copy the debug report."
+	return "Could not %s (error %d). Copy the debug report." % [operation, int(error)]

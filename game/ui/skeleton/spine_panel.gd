@@ -9,12 +9,14 @@ var step_fifteen: Button
 var sample_button: Button
 var identity: Label
 var random_value: Label
+var storage_label: Label
+var events_label: Label
 
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 12)
 	var heading: Label = Label.new()
-	heading.text = "SIMULATION / TEST CONTROLS"
+	heading.text = "DEVELOPER TOOLS / OPTIONAL"
 	heading.add_theme_font_size_override("font_size", 22)
 	add_child(heading)
 	identity = Label.new()
@@ -36,6 +38,12 @@ func _ready() -> void:
 	random_value = Label.new()
 	random_value.add_theme_font_size_override("font_size", 22)
 	add_child(random_value)
+	storage_label = Label.new()
+	storage_label.add_theme_font_size_override("font_size", 22)
+	add_child(storage_label)
+	events_label = Label.new()
+	events_label.add_theme_font_size_override("font_size", 22)
+	add_child(events_label)
 	step_one.pressed.connect(func() -> void: advance_requested.emit(1))
 	step_fifteen.pressed.connect(func() -> void: advance_requested.emit(15))
 	sample_button.pressed.connect(func() -> void: sample_requested.emit())
@@ -53,3 +61,20 @@ func show_spine(data: Dictionary, fingerprint: String, max_tick: int, max_id: in
 	sample_button.disabled = exhausted or int(rng["draws"]) >= max_draws
 	random_value.text = "RNG ready. Errand payouts remain fixed." if int(rng["draws"]) == 0 else \
 		"Test draw %d: %d  ·  Saved with this session" % [int(rng["draws"]), int(data["last_roll"])]
+
+
+func show_inspection(storage: Dictionary, events: Array[Dictionary]) -> void:
+	if storage.is_empty():
+		storage_label.text = "Save inspection pending."
+	else:
+		storage_label.text = "Save: %s (v%d)  ·  Backup: %s (v%d)" % [
+			storage["primary"]["status"], storage["primary"]["schema"],
+			storage["backup"]["status"], storage["backup"]["schema"],
+		]
+	var lines: PackedStringArray = ["Recent local events (not saved history)"]
+	for index: int in range(maxi(0, events.size() - 4), events.size()):
+		var event: Dictionary = events[index]
+		lines.append("#%d  %s  ·  minute %d" % [event["sequence"], event["type"], event["tick"]])
+	if events.is_empty():
+		lines.append("No events since this session was loaded or reset.")
+	events_label.text = "\n".join(lines)

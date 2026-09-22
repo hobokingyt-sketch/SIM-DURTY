@@ -7,23 +7,20 @@ comes from matching PRs and exact-revision tests.
 
 0. Foundation 0: bootable typed-GDScript repository and initial health checks.
 1. Infrastructure 1: project memory, scoped AGENTS and architecture guardrails.
-2. Infrastructure 2: traceable exported Windows previews and packaged startup gate.
+2. Infrastructure 2: traceable Windows previews and packaged startup gate.
 3. Walking Skeleton: authored action -> state -> UI -> explicit save/load.
+4. Simulation Spine: clock, seeded continuation, stable IDs, ordered commands,
+   bounded journal, fingerprints and compatible schema-2 persistence (PR #10).
 
-## Phase 4: Simulation Spine
+## Phase 5: Persistence & Developer Tools
 
-Controlled integer clock, seeded/restorable RNG, stable ID cursor, explicit
-command ordering, detached bounded event records and state fingerprint. Integrate
-these into the existing session rather than building an unused parallel framework.
-Schema 2 preserves schema 1 progress. See ADR 0007 for exact scope and limits.
+Bounded final prerequisite: read-only save inspection, one-action safe backup
+recovery, quiet developer controls and recovery scenarios in the existing gates.
+Reuse schema migration, replay tests and Windows packaging rather than building
+parallel infrastructure. Hands-off development is not a change to autosave or
+idle gameplay. See ADR 0008. After validation, proceed to Phase 6.
 
-## Phase 5: Persistence & Developer Tools — NEXT
-
-Backup recovery, save inspection, migration fixtures, reusable scenario tools,
-state/entity inspection and developer controls as actual systems need them.
-The schema, manual stepping and debug report introduced earlier are reused.
-
-## Phase 6: OS + City Skeleton
+## Phase 6: OS + City Skeleton — NEXT
 
 Native Godot OS shell and city workspace; rail/widget/app/context/alert contracts;
 shared Theme/tokens and readable responsive reference geometry. No fake data.
@@ -46,5 +43,7 @@ profiling and measured budgets, soak tests and durable release packaging.
 ## Rules
 
 Vision does not authorize out-of-order systems. Pull forward only narrow
-prerequisites. Document architecture changes with ADRs. Keep state/roadmap truthful;
-engineering acceptance and owner game-feel approval are separate.
+prerequisites. Engineering handles routine validation and delivery; the owner
+provides game direction and experiential feedback. Do not invent infrastructure
+milestones that delay the next real capability. Engineering acceptance and owner
+game-feel approval are separate. Keep state and roadmap truthful.
