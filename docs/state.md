@@ -3,60 +3,63 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2 stable, unchanged
 Language: typed GDScript
-Game version: 0.0.4
+Game version: 0.0.5
 Reference viewport: 2560x1440
 
-## Current milestone: Simulation Spine
+## Current milestone: Persistence & Developer Tools
 
-This revision implements the slice below. Merge/test completion belongs to its
-actual PR and exact-revision CI evidence, not a prospective checkbox here.
+This revision implements the bounded Phase 5 slice below. Acceptance and merge
+status belong to the matching PR and exact-revision CI evidence.
 
 ## Implemented
 
-- Retains the Walking Skeleton errand, native UI, explicit Save/Load/reset and
-  existing Windows artifact verification.
-- Integer GameClock: one tick = one minute; no competing elapsed-time authority.
-- Seeded SimulationRng with full state/draw-count restoration and an engine contract.
-- Stable per-timeline event ID allocation and persisted next-ID cursor.
-- Explicit monotonic command ordering; rejects duplicates, out-of-order commands,
-  invalid payloads and reentrant mutations before consuming any state.
-- Detached bounded diagnostic event journal, not a fake historical data set.
-- Canonical authoritative-state SHA-256 fingerprint including authored work inputs.
-- Schema 2 saving and schema 1 in-memory migration. Original path retained;
-  explicit Save upgrades it and preserves the previous primary as .bak.
-- Test surface adds Step 1 minute, Step 15 minutes and Test random draw, with
-  seed/tick/command/hash readout. Random draws are diagnostics, not game rewards.
-- Current debug report includes real simulation identity and full state hash.
+Foundation 0, Infrastructure 1/2, Walking Skeleton and Simulation Spine remain
+in place: owned integer state, fixed errand, explicit commands, controlled clock,
+seeded continuation, stable per-timeline IDs, bounded journal, full fingerprint,
+schema 2 with schema 1 migration and verified packaged Windows delivery.
 
-## Validation contracts
+This slice adds:
+- Automatic read-only inspection of the current and backup save.
+- One contextual recovery action only for a damaged/missing primary with a
+  compatible, valid backup. No silent fallback from a newer/incompatible save.
+- Staged recovery, exact backup preservation and a separate retained copy of
+  the damaged original. Stale file changes stop recovery.
+- Developer controls hidden by default; optional bounded storage/state/event
+  inspector. No fake historical records or new simulation owners.
+- Current storage/recovery details in Copy debug report.
+- Recovery/migration/refusal/UI scenarios in the existing automated suite.
+- Actual packaged Windows recovery followed by fresh-process auto-load and
+  future RNG/work verification, using an isolated CI-only slot.
+- Normal and expanded-tools reference captures through existing acceptance CI.
+- Hands-off engineering handoff rules in root AGENTS.md.
 
-Retain all previous infrastructure and Walking Skeleton cases. Add primitive
-bounds, RNG serialization/continuation, command rejection, detached state,
-reentrancy, bounded journals, 1000-command replay and mid-replay restoration,
-v1-to-v2 disk migration, and UI full-spine Save/Load checks.
+## User workflow
 
-The existing two-process packaged Windows probe also verifies full saved-state
-hash and next random draw/work continuation. Linux acceptance captures the real
-updated UI at 2560x1440 and 1600x900. Read the matching runs for actual results.
+Open the build, play, Save, and continue in the next build. Existing v1/v2 saves
+are read without moving files. Manual saving remains intentional. Developer
+tools are optional, not required for play or development approval. A recovery
+action appears only when it is applicable and preserves prior files.
 
-## Limits and compatibility
+## Ownership and compatibility
 
-Time is command-driven. No live/automatic clock driver, offline progress,
-per-tick world scheduler, city/crew/pressure or expanded economy is added.
-The 500-cent payout and 15-minute errand remain test values.
+SkeletonSave owns inspection and disk repair of the established slot.
+Main owns orchestration and presentation cache. SkeletonSession still owns all
+simulation state. The inspector reads detached state/journal snapshots.
+Format: sim-durty.walking-skeleton; schema 2 (reads 1).
+Slot: user://walking_skeleton/slot_v1.json, unchanged.
+Autoloads: none. External Godot addons: none. New CI workflows: none.
 
-Save format: sim-durty.walking-skeleton, schema 2; reads schema 1.
-Slot: user://walking_skeleton/slot_v1.json (legacy filename, not schema authority).
-Migration seed: 184726; old saves had no seed to recover. No history is invented.
-Autoloads: none. External Godot addons: none.
-RNG continuation is bound to the saved engine contract. Engine upgrades require
-an explicit compatibility decision. No global-UUID guarantee, full event sourcing,
-backup recovery UI, power-loss durability or concurrent-writer locking is claimed.
+## Limits
+
+Still no automatic simulation scheduler, offline progress, city, crew, pressure
+or expanded economy. The errand is still a fixture, not economy balance.
+One process should write a slot. No multi-writer lock or power-loss durability
+is promised. At most 32 rejected-original copies are retained without automatic
+deletion. Oversized originals and incompatible formats require deliberate
+engineering attention; they are not silently replaced.
 
 ## Next milestone
 
-Persistence & Developer Tools: recovery of retained backups, save inspection,
-scenario tooling and clearer developer controls, before the OS + City Skeleton.
-Preserve the manual-save contract and avoid adding gameplay systems out of order.
-
-See ADR 0007 and docs/architecture/state_ownership.md.
+OS + City Skeleton. Phase 5 does not expand into another infrastructure framework.
+Entity inspection and general content/scenario editors wait for real domains.
+See ADR 0008 for recovery details and the hands-off development constraint.

@@ -47,7 +47,6 @@ foreach ($mode in @('write', 'read')) {
         $observedSchemas[$mode] = $schemas[0]
         $hashes = [regex]::Matches($text, '(?m)^state_hash: ([a-f0-9]{64})\r?$')
         if ($hashes.Count -lt 1) { throw "Skeleton $mode omitted its full state identity." }
-        # The probe restores the saved checkpoint before its final report.
         $savedHashes[$mode] = $hashes[$hashes.Count - 1].Groups[1].Value
         if ($mode -eq 'read') {
             $continuation = [regex]::Matches($text, '(?m)^\[spine-probe\] PASS continuation state_hash=([a-f0-9]{64})\r?$')
@@ -77,3 +76,5 @@ if ($observedSchemas['write'] -ne $observedSchemas['read'] -or $savedHashes['wri
     physical_mouse_playtest = 'not_run'
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $ReportDirectory 'skeleton-verification.json') -Encoding utf8
 Write-Host '[skeleton-gate] PASS: packaged Windows processes preserved schema, checkpoint and future continuation.'
+# Reuse the delivery gate; no additional owner-operated tool or separate workflow.
+& (Join-Path $PSScriptRoot 'verify_recovery_roundtrip.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory

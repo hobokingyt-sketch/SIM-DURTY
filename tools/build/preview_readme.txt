@@ -1,27 +1,24 @@
-SIM-DURTY 0.0.4 - SIMULATION SPINE
+SIM-DURTY 0.0.5 - Persistence & Developer Tools
 
-Extract the WHOLE ZIP to a folder, then open SIM-DURTY.exe.
-Keep SIM-DURTY.pck beside the EXE. No Godot or Git installation is needed.
-This is an unsigned development preview. Do not disable security software.
+Extract the whole ZIP into a folder and open SIM-DURTY.exe.
+Keep SIM-DURTY.pck beside the executable. Godot and Git are not needed.
 
-From a fresh session: run three errands -> $25.00 / Day 1 08:45 / 3 completed.
-Save -> Reset session -> Load restores the saved checkpoint.
-Close/reopen loads the saved slot. Unsaved changes are NOT saved on quit.
+Existing saves load automatically from the same user data location.
+Saving remains manual. Save before closing to keep your latest progress.
+There is no need to copy a save into each new build folder.
 
-Step 1 minute / Step 15 minutes advances only the simulation clock.
-Test random draw advances a saved diagnostic RNG stream; payouts stay fixed.
-Save -> draw -> note value -> Load -> draw should repeat the same next value.
-The state fingerprint identifies the complete simulation checkpoint.
+The errand, payout and clock are still prototype test values.
+Developer tools are hidden behind the optional Developer tools button.
+They are not needed to play or to approve routine development work.
 
-Existing Walking Skeleton v1 saves are read without rewriting them. The next
-explicit Save writes schema 2 and keeps the previous primary in its .bak file.
-The slot filename still says slot_v1.json intentionally; the file's schema is
-inside it. Use one game instance at a time. Backup recovery UI is not yet built.
+When the primary save is damaged or missing and a valid backup exists,
+Recover previous save appears. It loads the previous saved state, not
+unsaved progress. The damaged original and backup are kept separately.
+Newer/incompatible saves are never silently rolled backward.
 
-Copy debug report and paste it into chat with the steps that caused a problem.
-BUILD-METADATA.json identifies this build even if it cannot open.
+Copy debug report gathers the current build, session and recovery context.
+These are unsigned development previews. Do not disable security software.
 
-This is still a temporary test surface, not the final Criminal OS. The clock is
-command-driven: no automatic city simulation or offline progress is implemented.
-Automated Windows validation covers packaged startup and separate-process
-save/RNG/ID/clock continuation, not physical mouse, clipboard or GPU behavior.
+Engineering verification covers packaged Windows startup, separate-process
+save/load and safe recovery/continuation. It does not certify physical mouse,
+clipboard or GPU performance on every machine. Source-render captures use Linux.

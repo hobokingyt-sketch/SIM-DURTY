@@ -40,6 +40,23 @@ Never infer implementation from vision, roadmap, or old chat.
 19. Create folders/systems only for real needs.
 20. Favor boring, inspectable infrastructure.
 
+## Hands-off development contract
+
+The owner directs the game; engineering handles the pipeline.
+For an approved slice, handle branches, tests, debugging, safe migrations,
+preview packaging and eligible merges without asking for separate routine approvals.
+Do not ask the owner to run test scripts, inspect source files or repair saves.
+Human input is for meaningful design choices, destructive changes or actual
+play-feel feedback, not checking that a counter survived a save.
+
+Reuse existing gates and probes before adding new workflows or frameworks.
+Prefer one coherent change/PR over one commit per file or follow-up PRs just to
+mark checkboxes complete. Attach real test evidence to the matching PR.
+Normal UI hides developer instrumentation; show recovery only when relevant.
+Do not conflate hands-off development with changing gameplay to autosave/idle play.
+Finish a bounded infrastructure phase and return to the next gameplay milestone.
+These rules apply during authorized work; do not promise unattended work between messages.
+
 ## Repository ownership
 
 See `docs/repository_map.md`.
