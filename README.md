@@ -4,11 +4,7 @@ SIM-DURTY is a Godot crime-management simulation project built through a chat-to
 
 ## Start here
 
-For engineering/recovery context, read:
-
-**`docs/START_HERE.md`**
-
-That file defines the canonical reading order and prevents long-range design vision from being confused with implemented state.
+Read **`docs/START_HERE.md`** before engineering work.
 
 ## Project foundation
 
@@ -16,24 +12,33 @@ That file defines the canonical reading order and prevents long-range design vis
 - Language: typed GDScript
 - Reference UI viewport: 2560×1440
 - Main scene: `game/app/main.tscn`
-- Automated health: `.github/workflows/ci.yml`
+- Health workflow: `.github/workflows/ci.yml`
+- Windows preview workflow: `.github/workflows/preview_build.yml`
+- Windows export preset: `export_presets.cfg`
 - Engineering rules: `AGENTS.md`
-- Current implementation state: `docs/state.md`
-- Build order: `docs/roadmap.md`
-- Accepted design canon: `docs/design/canon.md`
+- Current state: `docs/state.md`
+- Roadmap: `docs/roadmap.md`
+- Build pipeline: `docs/architecture/build_pipeline.md`
+- Debug-report contract: `docs/debug_report.md`
 
 ## Local health check
-
-With Godot available as `godot` on Windows PowerShell:
 
 ```powershell
 ./tools/health_check.ps1
 ```
 
-GitHub Actions additionally runs the architecture guard.
+## Local Windows preview
+
+With matching Godot export templates installed:
+
+```powershell
+./tools/build/preview_build.ps1
+```
+
+Normal owner-facing development should use the automatically generated pull-request artifact rather than requiring local build tooling.
 
 ## Development model
 
-Meaningful work is developed in short-lived `slice/*` branches, validated, then merged to `main`.
+Meaningful work uses short-lived `slice/*` branches, health checks, a Windows preview when owner-facing, then merge to `main`.
 
-The repository is the canonical engineering record. Chat provides direction; durable project truth lives here.
+The repository is canonical engineering memory. Chat provides direction.

@@ -10,6 +10,9 @@ const REQUIRED_MEMORY_FILES: PackedStringArray = [
 	"res://docs/architecture/overview.md",
 	"res://docs/architecture/dependency_rules.md",
 	"res://docs/architecture/state_ownership.md",
+	"res://docs/architecture/build_pipeline.md",
+	"res://docs/debug_report.md",
+	"res://export_presets.cfg",
 ]
 
 const SIMULATION_FORBIDDEN: PackedStringArray = [

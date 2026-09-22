@@ -1,67 +1,41 @@
 # Roadmap
 
-This roadmap controls **build order**, not product ambition. The master vision may describe systems years before they are implemented.
-
-Each phase should make the next phase easier without speculatively building the whole game.
+This roadmap controls **build order**, not product ambition.
 
 ## Phase 0 — Foundation 0 — COMPLETE
 
-Purpose: prove that the repository can boot, test, and validate a minimal Godot project.
-
-Exit conditions:
-- Godot version pinned.
-- Typed GDScript baseline.
-- Main scene boots.
-- Automated tests run.
-- GitHub Actions verified.
-- Root engineering contract exists.
+Bootable, tested Godot repository.
 
 ## Phase 1 — Infrastructure 1: Project Memory & Guardrails — COMPLETE
 
-Purpose: make long-running chat-to-game development recoverable and resistant to architectural drift.
+Recoverable repository truth, scoped engineering contracts, architecture rules, and CI guardrails.
 
-Scope:
-- canonical reading/recovery order,
-- long-range master vision preserved separately from implementation state,
-- accepted design canon,
-- long-term roadmap,
-- scoped engineering contracts,
-- dependency rules,
-- state ownership rules,
-- Godot-native UI architecture decision,
-- 2560×1440 reference-layout decision,
-- architecture validation in CI,
-- PR change checklist.
-
-Exit conditions:
-- a fresh session can recover project direction and current state from the repository,
-- vision cannot reasonably be confused with implementation state,
-- subsystem-specific engineering rules are discoverable,
-- CI rejects initial high-risk dependency violations,
-- reference UI geometry is explicit.
-
-## Phase 2 — Infrastructure 2: Build & Recovery Pipeline — NEXT
+## Phase 2 — Infrastructure 2: Build & Recovery Pipeline — CURRENT
 
 Purpose: let the non-coding project owner test repository changes without operating Godot or Git.
 
-Planned scope:
-- deterministic build metadata,
+Scope:
+- explicit generated build metadata,
 - Windows debug/preview export preset,
-- PR preview build artifacts,
-- build ID / commit ID visible in diagnostics,
-- reproducible local and CI build commands,
-- release artifact naming and retention rules,
-- crash/debug report format.
+- PR preview artifacts,
+- visible build/ref identity,
+- copyable debug report,
+- reproducible local/CI build commands,
+- artifact naming and 14-day retention,
+- build pipeline ADR/health contracts.
 
 Exit conditions:
-- meaningful gameplay/UI PRs produce a runnable Windows artifact,
-- a pasted debug report can identify the exact build and simulation state.
+- pull requests can produce a runnable Windows artifact,
+- artifact identity maps to exact source/build inputs,
+- a pasted debug report identifies the exact build,
+- generated build output is not committed,
+- health and preview workflows are verified.
 
-## Phase 3 — Walking Skeleton
+## Phase 3 — Walking Skeleton — NEXT
 
-Purpose: prove the first complete gameplay path without pretending to build the real game yet.
+Purpose: prove the first complete gameplay path.
 
-Target path:
+Target:
 
 ```text
 authored data
@@ -74,109 +48,37 @@ authored data
   -> load
 ```
 
-The behavior may be deliberately trivial. Architectural correctness matters more than game depth here.
+The behavior may be deliberately trivial. Architectural correctness matters more than game depth.
 
 ## Phase 4 — Simulation Spine
 
-Purpose: establish foundations required by a systemic simulation before complexity grows.
-
-Planned capabilities:
-- game clock,
-- deterministic seeded RNG,
-- stable entity IDs,
-- authoritative state boundaries,
-- command/input ordering,
-- structured simulation events,
-- reproducible state hashing,
-- deterministic regression scenarios.
+Game clock, deterministic RNG, stable IDs, authoritative boundaries, ordered commands/events, state hashing, deterministic scenarios.
 
 ## Phase 5 — Persistence & Developer Tools
 
-Purpose: make state durable, inspectable, and debuggable without source-code access.
-
-Planned capabilities:
-- versioned save schema,
-- migrations,
-- historical fixture saves,
-- save/load roundtrip tests,
-- simulation pause/step,
-- state inspector,
-- entity inspector,
-- scenario runner,
-- recent event log,
-- copyable debug report.
+Versioned save schema, migrations, fixture saves, state/entity inspection, scenario runner, simulation stepping, richer debug reports.
 
 ## Phase 6 — OS + City Skeleton
 
-Purpose: establish the final interaction architecture without filling it with fake systems.
-
-Planned capabilities:
-- native Godot OS shell,
-- live city workspace placeholder,
-- persistent rails contract,
-- widget/app lifecycle,
-- single-selection context model,
-- alert/update/log semantics,
-- shared Theme/tokens,
-- responsive 2560×1440 reference layout,
-- UI state separated from simulation state.
+Native Godot OS shell, city workspace, rails/widgets/apps/context/alerts, Theme/tokens, responsive 2560×1440 layout.
 
 ## Phase 7 — First Real Systemic Vertical Slice
 
-Purpose: prove the actual game thesis.
-
-One real opportunity should:
-- exist in or connect to the city,
-- surface through a glance-level interface,
-- move into its management workflow,
-- consume time/resources,
-- produce consequences,
-- change more than one authoritative system,
-- persist through save/load,
-- remain deterministic under the same seed/commands.
+One real opportunity flows from city/glance through management, time/resources, consequences, persistence, and deterministic replay.
 
 ## Phase 8 — Simulation Expansion
 
-Add major domains one at a time when dependency needs are real.
-
-Likely domains include:
-- people / crew,
-- economy,
-- pressure,
-- relationships / contacts,
-- neighborhoods,
-- inventory / property,
-- deeper operations.
-
-Each domain must gain:
-- one authoritative owner,
-- explicit public API,
-- persistence rules,
-- tests,
-- diagnostics,
-- UI only after real state exists.
+Add major domains one at a time with one owner, explicit API, persistence, tests, diagnostics, then UI.
 
 ## Phase 9 — Scale & Production
 
-Purpose: make the mature project safe to expand and release.
-
-Likely capabilities:
-- content authoring tools,
-- content validation,
-- asset/LFS policy,
-- old-save compatibility suite,
-- scenario library,
-- performance budgets,
-- long simulation soak tests,
-- nightly deep health workflow,
-- stable Windows release pipeline,
-- release notes and tagged builds.
+Content tooling/validation, asset/LFS policy, save compatibility, scenario suite, performance/soak health, durable release pipeline.
 
 ## Roadmap rules
 
-1. Do not implement later-phase systems merely because the vision mentions them.
-2. A phase can pull forward a tiny prerequisite when clearly justified.
-3. Do not create empty framework folders for speculative systems.
+1. Vision does not authorize implementation out of order.
+2. Pull forward only narrow prerequisites.
+3. Do not create speculative empty frameworks.
 4. Every phase updates `docs/state.md`.
-5. Architecture changes that affect future work require an ADR.
-6. Game-feel/design approval and engineering completion are separate concepts.
+5. Project-wide architecture changes require ADRs.
+6. Design acceptance and engineering completion are separate.
