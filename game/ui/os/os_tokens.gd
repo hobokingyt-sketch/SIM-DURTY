@@ -23,7 +23,16 @@ const MUTED: Color = Color("a9afb1")
 const ACCENT: Color = Color("c59d57")
 const ACCENT_RECESS: Color = Color("55462f")
 const ERROR: Color = Color("d4927b")
-const GAP: int = 20
+
+# 6D.4: one spacing rhythm for product surfaces. All values sit on the 4 px
+# baseline; callers choose density by role instead of inventing local gaps.
+const SPACE_XXS: int = 4
+const SPACE_XS: int = 8
+const SPACE_SM: int = 12
+const SPACE_MD: int = 16
+const SPACE_LG: int = 24
+const SPACE_XL: int = 32
+const GAP: int = SPACE_MD
 
 
 static func frame_palette() -> Dictionary:
@@ -78,7 +87,7 @@ static func box(color: Color, padding: int = 12) -> StyleBoxFlat:
 
 static func make_theme() -> Theme:
 	var result: Theme = Theme.new()
-	result.default_font_size = 18
+	result.default_font_size = OsTypography.font_size(OsTypography.ROLE_BODY)
 	result.set_color("font_color", "Label", TEXT)
 	for name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
 		result.set_color(name, "Button", TEXT)
@@ -97,6 +106,33 @@ static func make_theme() -> Theme:
 	result.set_constant("separation", "VBoxContainer", GAP)
 	result.set_constant("separation", "HBoxContainer", GAP)
 	return result
+
+
+static func spacing_contract() -> Dictionary:
+	return {
+		"xxs": SPACE_XXS,
+		"xs": SPACE_XS,
+		"sm": SPACE_SM,
+		"md": SPACE_MD,
+		"lg": SPACE_LG,
+		"xl": SPACE_XL,
+	}
+
+
+static func type_label(parent: Node, text: String, role: String, color: Color = TEXT) -> Label:
+	var node: Label = Label.new()
+	node.text = text
+	OsTypography.apply(node, role, color)
+	node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(node)
+	return node
+
+
+static func type_wrapped(parent: Node, text: String, role: String = OsTypography.ROLE_BODY, color: Color = MUTED) -> Label:
+	var node: Label = type_label(parent, text, role, color)
+	node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return node
 
 
 static func label(parent: Node, text: String, font_size: int = 18, color: Color = TEXT) -> Label:
