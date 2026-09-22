@@ -6,10 +6,12 @@ Language: typed GDScript
 Game version: 0.0.6
 Reference viewport: 2560x1440
 
-## Current milestone: OS + City Skeleton
+## Current milestone: Functional Criminal OS — REOPENED
 
-This revision implements the bounded Phase 6 shell. Acceptance/merge status
-belongs to matching PR and exact-source CI evidence, not a prospective checkbox.
+PR #12 implements a bounded OS framing proof. It is NOT acceptance of the final
+OS interaction/visual architecture. On 2026-09-22 the owner reaffirmed UI-first
+functional development. ADR 0010 and the revised roadmap supersede the previous
+immediate move to gameplay expansion. This correction changes documentation only.
 
 ## Implemented
 
@@ -33,7 +35,7 @@ No simulation or persistence rules are changed.
 ## Compatibility and ownership
 
 SkeletonSession remains the sole gameplay authority. SkeletonSave is unchanged.
-Main composes the existing session/save adapter and the new presentation.
+Main composes the existing session/save adapter and the presentation.
 OsPresentationState owns selected activity/app and glance visibility;
 CityBlockout owns its camera. Both are session-local, outside save/state hashes.
 SkeletonView is a small compatibility seam, not a duplicate running interface.
@@ -42,29 +44,39 @@ Same slot: user://walking_skeleton/slot_v1.json. Format sim-durty.walking-skelet
 schema 2 with schema 1 read migration. No save copying or new schema is required.
 Autoloads: none. External Godot addons: none. Additional CI workflows: none.
 
-## Validation
+## Existing validation
 
-Keep all previous assertions. Add OS selection, command isolation, application
-lifecycle, camera bounds/retention, drawer and update/record tests. Existing
-Windows delivery additionally runs the packaged OS navigation probe. Existing
-Linux acceptance captures normal city, Operations and developer drawer at both
-reference sizes. Exact run evidence reports what passed.
+PR #12 retained previous assertions and added selection, command isolation,
+camera bounds/retention, drawer and update/record checks. Packaged Windows
+navigation and Linux reference captures were verified for that revision.
+Those checks do not establish drag/resize, full app lifecycle, layout persistence,
+accessibility or final product quality that the implementation does not provide.
 
 ## Limits
 
-This is an authored static city blockout, not a living world simulation. There
-are no citizens, businesses, crew, pressure, travel cost, offline progress or
-new economy here. The fixed errand remains a test fixture.
+This remains a static city blockout, not a living world simulation. There are no
+citizens, businesses, crew, pressure, travel cost, offline progress or new economy.
+The fixed errand remains a test fixture.
 
-Rails are authored regions in this pass. Rail resizing, arbitrary widget dragging,
-grid reflow and persistent UI layouts are not implemented. UI/camera survive
-navigation, not restarts. Records are local journal entries, not saved history.
-The existing single-writer and no-power-loss-durability limitations still apply.
-Physical mouse, clipboard and Windows GPU testing are separate from headless CI.
+Rail resizing, movable widget packing, responsive widget forms, full multi-app
+navigation and persistent UI layouts are NOT implemented. They are now current
+Phase 6 work, not optional polish deferred beyond gameplay expansion. UI/camera
+currently survive navigation, not restarts. Records are local journal entries,
+not saved history. Single-writer and no-power-loss-durability limits remain.
+Physical mouse, clipboard and Windows GPU tests are separate from headless CI.
 
-## Next milestone
+## Research completed in this documentation pass
 
-First systemic vertical slice: make an actual city-connected opportunity produce
-meaningful cross-system consequences, adding only the required domain owners.
-Do not turn this shell phase into another infrastructure framework.
-See ADR 0009 for the interaction boundary and deferred layout features.
+Reviewed recovered desktop UI Decision Matrix, shell manifest and 0.68.12
+standalone source: layout model, widget manifest/manipulation, app router,
+lifecycle/read-model framework and Work Scan rendering. Compared relevant
+Godot, Qt, GridStack, Apple and W3C primary guidance. Full source provenance,
+implementation gaps and research limitations are in docs/design/ui_os_research.md.
+No new UI implementation or Windows build is claimed by these documents.
+
+## Next implementation
+
+Phase 6A: Workspace geometry and layout memory. Follow with functional widget
+manipulation, app lifecycle and reactive product components. Reuse current
+simulation and delivery machinery. Phase 7 gameplay expansion is blocked until
+the bounded functional OS acceptance described in docs/roadmap.md and ADR 0010.
