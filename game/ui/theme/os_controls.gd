@@ -13,7 +13,7 @@ const ROLE_FOLD: String = "fold"
 const STATES: PackedStringArray = ["normal", "hover", "pressed", "hover_pressed", "disabled"]
 
 
-static func apply(button: Button, role: String, palette: Dictionary, height_override: float = -1.0) -> void:
+static func apply(button: Button, role: String, palette: Dictionary, height_override: float = -1.0, padding_override: int = -1) -> void:
 	button.set_meta("os_control_role", role)
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -24,7 +24,7 @@ static func apply(button: Button, role: String, palette: Dictionary, height_over
 	if role == ROLE_LAUNCHER:
 		button.custom_minimum_size.x = maxf(button.custom_minimum_size.x, 44.0)
 	for state: String in STATES:
-		button.add_theme_stylebox_override(state, style_for(role, state, palette))
+		button.add_theme_stylebox_override(state, style_for(role, state, palette, padding_override))
 	button.add_theme_stylebox_override("focus", focus_style(role, palette))
 	var text_normal: Color = palette["text"]
 	var text_selected: Color = palette["accent_text"] if role in [ROLE_TAB, ROLE_LAUNCHER] else palette["text"]
@@ -51,10 +51,11 @@ static func install_default_theme(theme: Theme, palette: Dictionary) -> void:
 	theme.set_color("font_disabled_color", "Button", palette["muted"].darkened(0.25))
 
 
-static func style_for(role: String, state: String, palette: Dictionary) -> StyleBoxTexture:
+static func style_for(role: String, state: String, palette: Dictionary, padding_override: int = -1) -> StyleBoxTexture:
 	var fill: Color = _fill(role, state, palette)
 	var edge_palette: Dictionary = _edge_palette(role, state, palette)
-	return OsFrames.frame_style(OsFrames.ROLE_CONTROL, fill, int(_metrics(role)["padding"]), edge_palette)
+	var padding: int = padding_override if padding_override >= 0 else int(_metrics(role)["padding"])
+	return OsFrames.frame_style(OsFrames.ROLE_CONTROL, fill, padding, edge_palette)
 
 
 static func focus_style(role: String, palette: Dictionary) -> StyleBoxTexture:
@@ -92,20 +93,20 @@ static func contract() -> Dictionary:
 static func _metrics(role: String) -> Dictionary:
 	match role:
 		ROLE_PRIMARY:
-			return {"height": 38, "padding": 12}
+			return {"height": 38, "padding": 3}
 		ROLE_LAUNCHER:
-			return {"height": 44, "padding": 4}
+			return {"height": 44, "padding": 3}
 		ROLE_TAB:
-			return {"height": 34, "padding": 7}
+			return {"height": 34, "padding": 3}
 		ROLE_NAV:
-			return {"height": 34, "padding": 7}
+			return {"height": 34, "padding": 3}
 		ROLE_COMPACT:
 			return {"height": 28, "padding": 5}
 		ROLE_HANDLE:
-			return {"height": 28, "padding": 4}
+			return {"height": 28, "padding": 5}
 		ROLE_FOLD:
-			return {"height": 30, "padding": 4}
-	return {"height": 38, "padding": 8}
+			return {"height": 30, "padding": 3}
+	return {"height": 38, "padding": 3}
 
 
 static func _fill(role: String, state: String, palette: Dictionary) -> Color:

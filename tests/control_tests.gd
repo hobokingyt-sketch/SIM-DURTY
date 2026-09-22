@@ -21,6 +21,7 @@ func _test_role_contract() -> void:
 	_check(int(contract[OsControls.ROLE_PRIMARY]["height"]) > int(contract[OsControls.ROLE_TAB]["height"]), "primary role preserves standard height while tabs remain more compact")
 	_check(int(contract[OsControls.ROLE_LAUNCHER]["height"]) == 44, "launcher plate keeps the authored 44-unit footprint")
 	_check(int(contract[OsControls.ROLE_HANDLE]["height"]) == 28 and int(contract[OsControls.ROLE_COMPACT]["height"]) == 28, "widget handles and compact controls preserve the 6B geometry contract")
+	_check(int(contract[OsControls.ROLE_TAB]["padding"]) == 3 and int(contract[OsControls.ROLE_STANDARD]["padding"]) == 3, "tabs preserve the pre-6D workbench content-margin contract")
 
 
 func _test_state_styles() -> void:
