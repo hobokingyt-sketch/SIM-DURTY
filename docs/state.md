@@ -3,16 +3,16 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.11
+Game version: 0.0.12
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Phase 6D.2 — Engineered Frame System
+## Current milestone: Functional Criminal OS, Phase 6D.3 — Control and Icon Kit
 
-This revision layers the locked frame grammar onto the 6D.1 material foundation
-without changing the 6A–6C interaction contracts. Exact acceptance/merge status
-belongs to the matching PR and exact-revision CI evidence. Gameplay expansion
-remains blocked until the full Phase 6 visual/product acceptance under ADR
-0010/0014.
+This revision applies one stateful interaction kit across launcher plates,
+ordinary controls, primary actions, tabs, navigation, fold controls and widget
+handles without changing the 6A–6C ownership contracts. Exact acceptance/merge
+status belongs to the matching PR and exact-revision CI evidence. Gameplay
+expansion remains blocked until full Phase 6 visual/product acceptance.
 
 ## Implemented
 
@@ -68,18 +68,21 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-The locked target now has both the 6D.1 charcoal material foundation and the
-6D.2 scalable engineered frame grammar: true clipped/chamfered corners, layered
-outer/structural/inner edges and restrained seam marks on shell, rails, apps and
-widgets. Fine control/icon state treatment and typography remain later 6D passes.
+The locked target now has the 6D.1 charcoal material foundation, 6D.2 scalable
+engineered frames, and 6D.3 stateful machined controls. Launcher plates, primary
+actions, tabs, navigation, fold controls and widget handles share one role/state
+system; selected/focus emphasis uses restrained brass rather than glow. Unicode
+interaction glyphs are replaced by one outlined icon family. Typography remains
+the next dedicated visual pass.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Phase 6D.3 control and icon kit, followed by typography, reactive Work
-Scan, second-surface proof, motion and final integrated OS acceptance.
+Next: Phase 6D.4 typography, spacing and information rhythm, followed by
+reactive Work Scan, second-surface proof, motion and final integrated OS
+acceptance.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.

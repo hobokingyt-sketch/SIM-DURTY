@@ -37,7 +37,7 @@ Deliver:
 
 Do not yet redesign every component. The implementation uses one shared low-contrast shader-backed material on chassis, rails, app wells and widget bodies while leaving interaction geometry unchanged.
 
-### 6D.2 — Engineered frame system — CURRENT IMPLEMENTATION
+### 6D.2 — Engineered frame system — COMPLETE
 
 Translate the concept's strongest signature into reusable primitives.
 
@@ -51,7 +51,7 @@ Deliver:
 
 This pass should make the OS read as a connected machine before fine detail. The implementation uses generated nine-patch frame textures so chamfers and border layers survive rail/widget resizing, plus non-interactive seam overlays for restrained structural ticks.
 
-### 6D.3 — Control and icon kit — NEXT
+### 6D.3 — Control and icon kit — CURRENT IMPLEMENTATION
 
 Polish reusable interaction assets:
 - launcher plates,
@@ -65,9 +65,9 @@ Polish reusable interaction assets:
 - selected/active states,
 - consistent outlined icon treatment.
 
-Interaction states must change material/edge depth, not add neon glow.
+Interaction states change material seating and edge hierarchy rather than adding neon glow. The implementation uses authored control roles for standard, primary, tab, launcher, navigation, compact, handle and fold controls, plus one outlined SVG icon family for launcher and manipulation/navigation symbols.
 
-### 6D.4 — Typography, spacing and information rhythm
+### 6D.4 — Typography, spacing and information rhythm — NEXT
 
 Apply the concept's visual hierarchy:
 - large app/task titles,

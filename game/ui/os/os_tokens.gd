@@ -29,6 +29,33 @@ static func frame_palette() -> Dictionary:
 	}
 
 
+static func control_palette() -> Dictionary:
+	return {
+		"shadow": EDGE_SHADOW,
+		"middle": EDGE_MID,
+		"highlight": EDGE_HIGHLIGHT,
+		"text": TEXT,
+		"muted": MUTED,
+		"icon": Color("d8ddda"),
+		"accent": ACCENT,
+		"accent_dark": ACCENT.darkened(0.28),
+		"accent_light": ACCENT.lightened(0.16),
+		"accent_text": Color("e4c47f"),
+		"well": WELL,
+		"raised": RAISED,
+		"raised_hover": RAISED_HOVER,
+		"raised_pressed": RAISED_PRESSED,
+		"disabled": DISABLED,
+		"selected": ACCENT_RECESS.darkened(0.16),
+		"selected_hover": ACCENT_RECESS.lightened(0.02),
+		"primary": ACCENT_RECESS,
+		"primary_hover": ACCENT_RECESS.lightened(0.08),
+		"primary_pressed": ACCENT_RECESS.darkened(0.13),
+		"handle": WELL.lightened(0.035),
+		"handle_hover": RAISED,
+	}
+
+
 static func box(color: Color, padding: int = 12) -> StyleBoxFlat:
 	var result: StyleBoxFlat = StyleBoxFlat.new()
 	result.bg_color = color
@@ -48,15 +75,7 @@ static func make_theme() -> Theme:
 		result.set_color(name, "Button", TEXT)
 	result.set_color("font_disabled_color", "Button", MUTED.darkened(0.35))
 	result.set_stylebox("panel", "PanelContainer", box(SURFACE))
-	# 6D.1 changes material/color only. Engineered edge grammar lands in 6D.2.
-	result.set_stylebox("normal", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, RAISED, 3, frame_palette()))
-	result.set_stylebox("hover", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, RAISED_HOVER, 3, frame_palette()))
-	result.set_stylebox("pressed", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, RAISED_PRESSED, 3, frame_palette()))
-	result.set_stylebox("disabled", "Button", OsFrames.frame_style(OsFrames.ROLE_CONTROL, DISABLED, 3, frame_palette()))
-	var focus: StyleBoxFlat = box(Color(0, 0, 0, 0), 0)
-	focus.border_color = ACCENT
-	focus.set_border_width_all(2)
-	result.set_stylebox("focus", "Button", focus)
+	OsControls.install_default_theme(result, control_palette())
 	var hline: StyleBoxLine = StyleBoxLine.new()
 	hline.color = EDGE_MID
 	hline.thickness = 1
@@ -91,8 +110,7 @@ static func wrapped(parent: Node, text: String, font_size: int = 18, color: Colo
 static func button(parent: Node, text: String, action: Callable) -> Button:
 	var node: Button = Button.new()
 	node.text = text
-	node.mouse_force_pass_scroll_events = false
-	node.custom_minimum_size.y = 38
+	OsControls.apply(node, OsControls.ROLE_STANDARD, control_palette())
 	parent.add_child(node)
 	if action.is_valid():
 		node.pressed.connect(action)

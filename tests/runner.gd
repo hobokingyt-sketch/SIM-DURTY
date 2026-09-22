@@ -12,6 +12,7 @@ const WidgetTests = preload("res://tests/widget_tests.gd")
 const AppTests = preload("res://tests/app_tests.gd")
 const MaterialTests = preload("res://tests/material_tests.gd")
 const FrameTests = preload("res://tests/frame_tests.gd")
+const ControlTests = preload("res://tests/control_tests.gd")
 var failures: int = 0
 
 
@@ -20,7 +21,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Frames 6D.2")
+	print("[tests] SIM-DURTY Controls 6D.3")
 	_test_runtime_health()
 	_test_build_info_contract()
 	_test_debug_report_contract()
@@ -43,6 +44,8 @@ func _run() -> void:
 	failures += await material_suite.run(self)
 	var frame_suite: RefCounted = FrameTests.new()
 	failures += await frame_suite.run(self)
+	var control_suite: RefCounted = ControlTests.new()
+	failures += await control_suite.run(self)
 	if failures == 0:
 		print("[tests] PASS")
 		quit(0)
