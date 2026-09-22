@@ -11,7 +11,7 @@ Reference UI viewport: 2560×1440
 
 ## Current milestone
 
-**Infrastructure 1 — Project Memory & Guardrails**
+**Infrastructure 1 — Project Memory & Guardrails — COMPLETE**
 
 Purpose: make long-running chat-to-game development recoverable and resistant to architecture/design drift.
 
@@ -45,8 +45,8 @@ Purpose: make long-running chat-to-game development recoverable and resistant to
 - [x] Pull-request health checklist
 - [x] Architecture-guard script
 - [x] Architecture guard wired into CI
-- [ ] Infrastructure 1 CI verified
-- [ ] Infrastructure 1 merged to main
+- [x] Infrastructure 1 CI verified
+- [x] Infrastructure 1 merged to main
 
 ## Runtime
 
