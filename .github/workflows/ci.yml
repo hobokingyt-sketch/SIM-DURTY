@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  foundation-health:
-    name: Import, Test, Boot
+  project-health:
+    name: Architecture, Import, Test, Boot
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
@@ -36,6 +36,9 @@ jobs:
 
       - name: Import project
         run: ./godot --headless --path . --editor --quit-after 1
+
+      - name: Architecture guard
+        run: ./godot --headless --path . --script tools/validation/architecture_guard.gd
 
       - name: Run automated tests
         run: ./godot --headless --path . --script tests/runner.gd

@@ -1,21 +1,21 @@
 ; Engine configuration file.
-; Foundation 0: keep this intentionally small and explicit.
+; Infrastructure 1: 2560x1440 is the authored UI reference viewport.
 
 config_version=5
 
 [application]
 
 config/name="SIM-DURTY"
-config/version="0.0.0-foundation.0"
+config/version="0.0.1-infrastructure.1"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/main_scene="res://game/app/main.tscn"
 
 [display]
 
-window/size/viewport_width=1600
-window/size/viewport_height=900
-window/size/window_width_override=1280
-window/size/window_height_override=720
+window/size/viewport_width=2560
+window/size/viewport_height=1440
+window/size/window_width_override=1600
+window/size/window_height_override=900
 window/stretch/mode="canvas_items"
 
 [rendering]
