@@ -2,7 +2,6 @@ extends Control
 
 const WORK: SkeletonWorkDefinition = preload("res://game/content/work/skeleton_errand.tres")
 
-# File schema, not the legacy filename, controls compatibility.
 @export var save_path: String = "user://walking_skeleton/slot_v1.json"
 @export var auto_load: bool = true
 @onready var view: SkeletonView = %SkeletonView
@@ -19,6 +18,8 @@ func _ready() -> void:
 	var probe_mode: String = ""
 	var recovery_mode: String = ""
 	var os_mode: String = ""
+	var workspace_mode: String = ""
+	get_window().min_size = Vector2i(1280, 800)
 	if OS.is_debug_build():
 		for argument: String in OS.get_cmdline_user_args():
 			if argument.begins_with("--skeleton-probe="):
@@ -27,6 +28,8 @@ func _ready() -> void:
 				recovery_mode = argument.trim_prefix("--recovery-probe=")
 			if argument.begins_with("--os-probe="):
 				os_mode = argument.trim_prefix("--os-probe=")
+			if argument.begins_with("--workspace-probe="):
+				workspace_mode = argument.trim_prefix("--workspace-probe=")
 		if not probe_mode.is_empty():
 			save_path = "user://_ci_walking_skeleton/probe_slot_v1.json"
 			auto_load = false
@@ -36,6 +39,9 @@ func _ready() -> void:
 		if not os_mode.is_empty():
 			save_path = "user://_ci_os_shell/slot_v1.json"
 			auto_load = false
+		if not workspace_mode.is_empty():
+			save_path = "user://_ci_workspace/slot_v1.json"
+			auto_load = workspace_mode == "read"
 	session = SkeletonSession.new(WORK)
 	save_slot = SkeletonSave.new(save_path)
 	session.changed.connect(_refresh)
@@ -49,18 +55,22 @@ func _ready() -> void:
 	view.inspection_requested.connect(_inspect_storage)
 	view.recovery_requested.connect(_recover)
 	view.configure_work(WORK)
+	view.configure_workspace(save_path, not workspace_mode.is_empty())
 	view.show_build(BuildInfo.snapshot())
 	_refresh()
 	_inspect_storage()
 	if auto_load and int(_storage_info["primary"]["error"]) != ERR_FILE_NOT_FOUND:
 		_load()
 	elif bool(_storage_info["can_recover"]):
-		view.show_status("Saved slot is missing. A previous save is available below.", true)
+		view.show_status("Saved slot is missing. A previous save is available in the right rail.", true)
 	else:
 		view.show_status("Save when you want to keep this session.")
-	print("[SIM-DURTY] OS City Skeleton boot OK | build=%s" % BuildInfo.build_id())
+	print("[SIM-DURTY] Workspace 6A boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
-	if not os_mode.is_empty():
+	if not workspace_mode.is_empty():
+		var probe: Script = load("res://game/devtools/workspace_probe.gd") as Script
+		probe.call_deferred("run", self, workspace_mode)
+	elif not os_mode.is_empty():
 		var probe: Script = load("res://game/devtools/os_shell_probe.gd") as Script
 		probe.call_deferred("run", self, os_mode)
 	elif not recovery_mode.is_empty():
@@ -73,9 +83,8 @@ func _ready() -> void:
 
 func _work() -> void:
 	var error: Error = session.perform_work()
-	view.show_status("Errand complete. +%s; %d minutes passed." % [
-		SkeletonView.money_text(WORK.payout_cents), WORK.duration_minutes,
-	] if error == OK else "This test session has reached its supported limit.", error != OK)
+	view.show_status("Errand complete. +%s; %d minutes passed." % [SkeletonView.money_text(WORK.payout_cents), WORK.duration_minutes] \
+		if error == OK else "This test session has reached its supported limit.", error != OK)
 
 
 func _advance(minutes: int) -> void:
@@ -159,21 +168,17 @@ func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
 	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "OS + City Skeleton", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"milestone": "6A Workspace geometry & layout memory", "save_schema": SkeletonSave.SCHEMA_VERSION,
 		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
 		"clock_mode": "command-driven; one tick = one minute",
 		"next_command": spine["next_command"], "next_event_id": spine["next_id"],
 		"rng_draws": spine["rng"]["draws"], "last_test_draw": spine["last_roll"],
-		"state_hash": session.state_hash(),
-		"cash_cents": state["cash_cents"], "elapsed_minutes": state["elapsed_minutes"],
-		"completed_actions": state["completed_actions"],
+		"state_hash": session.state_hash(), "cash_cents": state["cash_cents"],
+		"elapsed_minutes": state["elapsed_minutes"], "completed_actions": state["completed_actions"],
 		"unsaved_session": session.checkpoint() != _saved_checkpoint,
 		"last_storage_error": int(last_storage_error),
-		"save_inspection": _storage_info.get("primary", {}),
-		"backup_inspection": _storage_info.get("backup", {}),
-		"recovery": _recovery_note,
-		"recent_events": session.recent_events(),
-		"presentation": view.ui_snapshot(),
+		"save_inspection": _storage_info.get("primary", {}), "backup_inspection": _storage_info.get("backup", {}),
+		"recovery": _recovery_note, "recent_events": session.recent_events(), "presentation": view.ui_snapshot(),
 	})
 
 
@@ -188,7 +193,7 @@ func _copy_debug_report() -> void:
 
 func _storage_message(error: Error, operation: String) -> String:
 	if bool(_storage_info.get("can_recover", false)):
-		return "Saved slot needs recovery. A verified previous save is available below."
+		return "Saved slot needs recovery. A verified previous save is available in the right rail."
 	if error == ERR_FILE_NOT_FOUND:
 		return "No saved slot yet. Your current session is unchanged."
 	if error == ERR_UNAVAILABLE:

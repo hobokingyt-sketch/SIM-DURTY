@@ -42,3 +42,4 @@ finally {
     if ($started -and -not $process.HasExited) { $process.Kill($true); $process.WaitForExit() }
     $process.Dispose()
 }
+& (Join-Path $PSScriptRoot 'verify_workspace.ps1') -ExecutablePath $ExecutablePath -ReportDirectory $ReportDirectory

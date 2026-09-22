@@ -1,7 +1,6 @@
 class_name CriminalOsShell
 extends Control
 
-# Presentation boundary retained by the SkeletonView compatibility adapter.
 signal work_requested
 signal save_requested
 signal load_requested
@@ -12,6 +11,7 @@ signal sample_requested
 signal inspection_requested
 signal recovery_requested
 
+# Existing app/probe boundary. Widgets are not new gameplay authorities.
 var cash_label: Label
 var time_label: Label
 var count_label: Label
@@ -39,10 +39,18 @@ var record_scroll: ScrollContainer
 var record_label: Label
 var context_title: Label
 var status_kind: Label
+var workspace: WorkspaceContainer
+var layout_toggle: Button
+var layout_scroll: ScrollContainer
+var reset_layout_button: Button
+var scale_picker: OptionButton
+var rail_controls: Dictionary = {}
+var layout_storage_error: Error = OK
 
 var _model: OsPresentationState = OsPresentationState.new()
-var _left: VBoxContainer
-var _glance_scroll: ScrollContainer
+var _preferences: WorkspacePreferences
+var _expanded: Dictionary = {}
+var _folded: Dictionary = {}
 var _context: VBoxContainer
 var _operations: VBoxContainer
 var _recovery_row: VBoxContainer
@@ -54,7 +62,10 @@ var _availability: Label
 var _operation_title: Label
 var _operation_terms: Label
 var _build_label: Label
-var _selection_label: Label
+var _brand_label: Label
+var _work_scroll: ScrollContainer
+var _layout_note: Label
+var _page: String = "work"
 var _work_id: String = ""
 var _work_name: String = ""
 var _terms: String = ""
@@ -64,190 +75,333 @@ var _storage_alert: bool = false
 
 func _ready() -> void:
 	theme = OsTokens.make_theme()
-	var backdrop: ColorRect = ColorRect.new()
-	backdrop.color = OsTokens.BACKGROUND
-	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(backdrop)
-	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var margin: MarginContainer = MarginContainer.new()
-	add_child(margin)
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "top", "right", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 24)
-	var root: VBoxContainer = OsTokens.column(margin, 16)
-	_build_header(root)
-	var body: HBoxContainer = OsTokens.row(root, 16)
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_build_glance(body)
-	_build_city(body)
-	_build_context_and_operations(body)
-	_build_recovery(root)
-	_build_drawers(root)
-	_build_footer(root)
-	_model.changed.connect(_apply_navigation)
-	_apply_navigation()
-
-
-func _build_header(parent: Node) -> void:
-	var row: HBoxContainer = OsTokens.row(parent, 24)
-	row.custom_minimum_size.y = 80
-	var brand: VBoxContainer = OsTokens.column(row, 0)
-	OsTokens.label(brand, "SIM-DURTY", 36)
-	OsTokens.label(brand, "CITY DESK  /  OS SKELETON", 20, OsTokens.ACCENT)
-	OsTokens.spacer(row)
-	city_button = OsTokens.button(row, "City", func() -> void: _model.open_app("city"))
-	city_button.toggle_mode = true
-	operations_button = OsTokens.button(row, "Operations", open_operations)
-	operations_button.toggle_mode = true
-	glance_toggle = OsTokens.button(row, "Glance", Callable())
-	glance_toggle.toggle_mode = true
-	glance_toggle.set_pressed_no_signal(true)
-	glance_toggle.toggled.connect(func(opened: bool) -> void: _model.set_glance_open(opened))
-	OsTokens.spacer(row)
-	time_label = OsTokens.label(row, "Day 1 · 08:00", 30)
-	time_label.tooltip_text = "Time advances through commands. No automatic or offline progress."
-
-
-func _build_glance(parent: Node) -> void:
-	# Bound the rail independently: opening a drawer must never push Save off-screen.
-	_glance_scroll = ScrollContainer.new()
-	_glance_scroll.custom_minimum_size.x = 350
-	_glance_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_glance_scroll.mouse_force_pass_scroll_events = false
-	parent.add_child(_glance_scroll)
-	_left = OsTokens.column(_glance_scroll, 16)
-	_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_left.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	var money: VBoxContainer = OsTokens.card(_left)
-	OsTokens.label(money, "ON HAND", 22, OsTokens.MUTED)
-	cash_label = OsTokens.label(money, "$10.00", 52)
-	dirty_label = OsTokens.label(money, "Unsaved session", 22, OsTokens.MUTED)
-	var scan: VBoxContainer = OsTokens.card(_left)
-	OsTokens.label(scan, "Work Scan", 30)
-	_availability = OsTokens.wrapped(scan, "Checking work", 22, OsTokens.ACCENT)
-	_scan_title = OsTokens.wrapped(scan, "", 28, OsTokens.TEXT)
-	_scan_terms = OsTokens.label(scan, "", 24, OsTokens.MUTED)
-	inspect_button = OsTokens.button(scan, "Inspect work", func() -> void: select_work(_work_id))
-	var activity: VBoxContainer = OsTokens.card(_left)
-	OsTokens.label(activity, "COMPLETED", 22, OsTokens.MUTED)
-	count_label = OsTokens.label(activity, "0", 40)
-	OsTokens.label(activity, "Errands this save", 22, OsTokens.MUTED)
-	var space: Control = Control.new()
-	space.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	space.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_left.add_child(space)
-	OsTokens.wrapped(_left, "City layout preview. The errand is the only working activity.", 22)
-
-
-func _build_city(parent: Node) -> void:
-	var workspace: VBoxContainer = OsTokens.column(parent, 16)
-	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var heading: HBoxContainer = OsTokens.row(workspace)
-	var titles: VBoxContainer = OsTokens.column(heading, 2)
-	OsTokens.label(titles, "City", 36)
-	OsTokens.label(titles, "Authored blockout · not a live city yet", 22, OsTokens.MUTED)
-	OsTokens.spacer(heading)
-	OsTokens.button(heading, "−", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5))
-	OsTokens.button(heading, "+", func() -> void: city.zoom_at(1.2, city.size * 0.5))
-	OsTokens.button(heading, "Reset view", func() -> void: city.reset_camera())
+	workspace = WorkspaceContainer.new()
+	workspace.name = "Workspace"
+	add_child(workspace)
+	_build_left()
+	_build_right()
+	_build_top()
+	_build_bottom()
 	city = CityBlockout.new()
-	city.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	city.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	workspace.add_child(city)
+	workspace.register_region("city", city)
+	# The layout solver, not an old test-surface minimum, owns available city geometry.
+	city.custom_minimum_size = Vector2.ZERO
 	city.work_selected.connect(select_work)
 	city.selection_cleared.connect(clear_selection)
-	var foot: HBoxContainer = OsTokens.row(workspace)
-	_selection_label = OsTokens.label(foot, "Nothing selected", 22, OsTokens.ACCENT)
-	OsTokens.spacer(foot)
-	OsTokens.label(foot, "Wheel: zoom  ·  Right-drag: pan", 20, OsTokens.MUTED)
+	workspace.layout_applied.connect(_apply_geometry)
+	workspace.model.changed.connect(_fit_workspace)
+	workspace.model.committed.connect(_persist_layout)
+	resized.connect(_fit_workspace)
+	_model.changed.connect(_apply_navigation)
+	_fit_workspace()
+	_apply_navigation()
+	_choose_page("work")
 
 
-func _build_context_and_operations(parent: Node) -> void:
-	var panel: PanelContainer = PanelContainer.new()
-	panel.custom_minimum_size.x = 520
-	parent.add_child(panel)
+func configure_workspace(slot: String, force_persistence: bool = false) -> void:
+	# Existing probes/tests never inherit owner preferences; the workspace probe opts in.
+	if not force_persistence and (slot.contains("/_tests") or slot.contains("/_ci_")):
+		_preferences = null
+		workspace.model.restore(WorkspaceLayout.defaults())
+		return
+	_preferences = WorkspacePreferences.new(WorkspacePreferences.path_for_slot(slot))
+	var result: Dictionary = _preferences.read_layout()
+	layout_storage_error = int(result["error"]) as Error
+	if layout_storage_error == OK:
+		workspace.model.restore(result["layout"])
+	elif layout_storage_error == ERR_FILE_NOT_FOUND:
+		layout_storage_error = OK
+	_fit_workspace()
+
+
+func _persist_layout() -> void:
+	if _preferences != null:
+		layout_storage_error = _preferences.write_layout(workspace.model.snapshot())
+	_update_layout_note()
+
+
+func _fit_workspace() -> void:
+	if not is_instance_valid(workspace):
+		return
+	var factor: float = workspace.model.scale_for(size)
+	workspace.scale = Vector2.ONE * factor
+	workspace.position = Vector2.ZERO
+	workspace.size = size / factor
+	workspace.queue_sort()
+
+
+func _surface(side: String) -> Panel:
+	var panel: Panel = Panel.new()
+	panel.name = side.capitalize() + "Rail"
+	panel.clip_contents = true
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.mouse_force_pass_scroll_events = false
+	panel.add_theme_stylebox_override("panel", OsTokens.box(OsTokens.SURFACE, 0))
+	workspace.register_region(side, panel)
+	return panel
+
+
+func _inset(parent: Control, padding: int = 16) -> VBoxContainer:
+	var margin: MarginContainer = MarginContainer.new()
+	parent.add_child(margin)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for edge: String in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + edge, padding)
+	return OsTokens.column(margin, 16)
+
+
+func _scroll(parent: Node) -> ScrollContainer:
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.mouse_force_pass_scroll_events = false
-	panel.add_child(scroll)
-	var stack: VBoxContainer = OsTokens.column(scroll, 24)
-	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_context = OsTokens.column(stack, 24)
-	var heading: HBoxContainer = OsTokens.row(_context)
-	OsTokens.label(heading, "CONTEXT", 22, OsTokens.ACCENT)
-	OsTokens.spacer(heading)
-	OsTokens.button(heading, "Clear", clear_selection)
-	context_title = OsTokens.wrapped(_context, "Select work", 36, OsTokens.TEXT)
-	_context_terms = OsTokens.label(_context, "", 28, OsTokens.ACCENT)
-	_context_body = OsTokens.wrapped(_context, "Inspect an opportunity from Work Scan or select its city location.")
-	open_operations_button = OsTokens.button(_context, "Open Operations", open_operations)
-	_operations = OsTokens.column(stack, 24)
-	var app_header: HBoxContainer = OsTokens.row(_operations)
-	OsTokens.label(app_header, "OPERATIONS", 22, OsTokens.ACCENT)
-	OsTokens.spacer(app_header)
-	close_operations_button = OsTokens.button(app_header, "Close", func() -> void: _model.open_app("city"))
-	_operation_title = OsTokens.wrapped(_operations, "", 36, OsTokens.TEXT)
-	_operation_terms = OsTokens.label(_operations, "", 28, OsTokens.ACCENT)
-	OsTokens.wrapped(_operations, "Carry out the selected work.")
-	work_button = OsTokens.button(_operations, "Run an errand", func() -> void: work_requested.emit())
-	work_button.add_theme_stylebox_override("normal", OsTokens.box(Color("574b37"), 18))
-	work_button.add_theme_stylebox_override("hover", OsTokens.box(Color("6c5b3f"), 18))
-	work_button.custom_minimum_size.y = 72
-	OsTokens.wrapped(_operations, "Prototype terms only. Crew, travel and risk are not active yet.", 22)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	return scroll
 
 
-func _build_recovery(parent: Node) -> void:
-	_recovery_row = OsTokens.column(parent, 10)
-	_recovery_row.visible = false
-	recovery_hint = OsTokens.wrapped(_recovery_row, "", 22, OsTokens.ERROR)
-	recovery_button = OsTokens.button(_recovery_row, "Recover previous save", func() -> void: recovery_requested.emit())
-	recovery_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+func _icon(parent: Node, kind: String, title: String, action: Callable) -> Button:
+	var button: Button = OsTokens.button(parent, "", action)
+	button.icon = WorkspaceIcons.texture(kind)
+	button.expand_icon = true
+	button.add_theme_constant_override("icon_max_width", 24)
+	button.custom_minimum_size = Vector2(44, 44)
+	button.tooltip_text = title
+	button.accessibility_name = title
+	button.flat = true
+	return button
 
 
-func _build_drawers(parent: Node) -> void:
-	developer_scroll = ScrollContainer.new()
-	developer_scroll.custom_minimum_size.y = 300
-	developer_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	developer_scroll.visible = false
-	parent.add_child(developer_scroll)
-	var contents: VBoxContainer = OsTokens.column(developer_scroll)
-	contents.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spine_panel = SpinePanel.new()
-	contents.add_child(spine_panel)
-	spine_panel.advance_requested.connect(func(minutes: int) -> void: advance_requested.emit(minutes))
-	spine_panel.sample_requested.connect(func() -> void: sample_requested.emit())
-	reset_button = OsTokens.button(contents, "Reset session", func() -> void: reset_requested.emit())
-	reset_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	reset_button.tooltip_text = "Resets the live session only. Your saved slot is untouched."
-	record_scroll = ScrollContainer.new()
-	record_scroll.custom_minimum_size.y = 220
-	record_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	record_scroll.visible = false
-	parent.add_child(record_scroll)
-	var records: VBoxContainer = OsTokens.column(record_scroll, 12)
-	records.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	OsTokens.label(records, "RECENT ACTIVITY", 22, OsTokens.ACCENT)
-	record_label = OsTokens.wrapped(records, "No events since this session was loaded or reset.", 24, OsTokens.TEXT)
-	OsTokens.label(records, "Current session only · retained save history is not implemented", 20, OsTokens.MUTED)
-
-
-func _build_footer(parent: Node) -> void:
-	var status: HBoxContainer = OsTokens.row(parent)
-	status_kind = OsTokens.label(status, "UPDATE", 22, OsTokens.ACCENT)
-	status_label = OsTokens.wrapped(status, "", 24, OsTokens.TEXT)
-	status_label.custom_minimum_size.y = 58
-	var controls: HBoxContainer = OsTokens.row(parent, 16)
-	_build_label = OsTokens.label(controls, "Local development", 20, OsTokens.MUTED)
-	_build_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	save_button = OsTokens.button(controls, "Save", func() -> void: save_requested.emit())
-	load_button = OsTokens.button(controls, "Load", func() -> void: load_requested.emit())
-	record_toggle = OsTokens.button(controls, "Recent activity", Callable())
-	record_toggle.toggle_mode = true
-	record_toggle.toggled.connect(_toggle_record)
-	developer_toggle = OsTokens.button(controls, "Developer tools", Callable())
+func _build_left() -> void:
+	var rail: Panel = _surface("left")
+	var mark: Label = OsTokens.label(rail, "SD", 24, OsTokens.ACCENT)
+	mark.position = Vector2(15, 20)
+	_brand_label = OsTokens.label(rail, "SIM-DURTY", 22)
+	_brand_label.position = Vector2(76, 22)
+	var launcher: VBoxContainer = OsTokens.column(rail, 10)
+	launcher.position = Vector2(10, 78)
+	launcher.size.x = 44
+	city_button = _icon(launcher, "city", "City", func() -> void: _model.open_app("city"))
+	city_button.toggle_mode = true
+	operations_button = _icon(launcher, "work", "Operations", open_operations)
+	operations_button.toggle_mode = true
+	layout_toggle = _icon(launcher, "layout", "Workspace layout", func() -> void: _choose_page("layout"))
+	glance_toggle = _icon(launcher, "rail", "Show or fold the left rail", Callable())
+	glance_toggle.toggle_mode = true
+	glance_toggle.toggled.connect(func(opened: bool) -> void: workspace.model.set_collapsed("left", not opened))
+	var divider: HSeparator = HSeparator.new()
+	launcher.add_child(divider)
+	save_button = _icon(launcher, "save", "Save game", func() -> void: save_requested.emit())
+	load_button = _icon(launcher, "load", "Load game", func() -> void: load_requested.emit())
+	developer_toggle = _icon(launcher, "tools", "Developer tools", Callable())
 	developer_toggle.toggle_mode = true
 	developer_toggle.toggled.connect(_toggle_tools)
-	copy_button = OsTokens.button(controls, "Copy report", func() -> void: debug_report_requested.emit())
+	copy_button = _icon(launcher, "report", "Copy debug report", func() -> void: debug_report_requested.emit())
+	var scroll: ScrollContainer = _scroll(rail)
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.offset_left = 76
+	scroll.offset_top = 92
+	scroll.offset_right = -18
+	scroll.offset_bottom = -18
+	_expanded["left"] = scroll
+	var summary: VBoxContainer = OsTokens.column(scroll, 12)
+	summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	OsTokens.label(summary, "ON HAND", 13, OsTokens.MUTED)
+	cash_label = OsTokens.label(summary, "$10.00", 40)
+	cash_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	dirty_label = OsTokens.wrapped(summary, "Unsaved session", 14)
+	var spacer: Control = Control.new()
+	spacer.custom_minimum_size.y = 28
+	summary.add_child(spacer)
+	OsTokens.label(summary, "COMPLETED", 13, OsTokens.MUTED)
+	count_label = OsTokens.label(summary, "0", 34)
+	OsTokens.wrapped(summary, "Errands this save", 15)
+	_build_label = OsTokens.wrapped(summary, "Local development", 13)
+
+
+func _build_right() -> void:
+	var rail: Panel = _surface("right")
+	var full: VBoxContainer = _inset(rail, 20)
+	_expanded["right"] = full.get_parent()
+	var heading: HBoxContainer = OsTokens.row(full, 8)
+	OsTokens.label(heading, "CONTEXT", 13, OsTokens.ACCENT)
+	OsTokens.spacer(heading)
+	OsTokens.button(heading, "›", func() -> void: workspace.model.set_collapsed("right", true)).tooltip_text = "Fold right rail"
+	var scroll: ScrollContainer = _scroll(full)
+	var stack: VBoxContainer = OsTokens.column(scroll, 20)
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recovery_row = OsTokens.column(stack, 12)
+	_recovery_row.visible = false
+	recovery_hint = OsTokens.wrapped(_recovery_row, "", 16, OsTokens.ERROR)
+	recovery_button = OsTokens.button(_recovery_row, "Recover previous save", func() -> void: recovery_requested.emit())
+	_context = OsTokens.column(stack, 18)
+	context_title = OsTokens.wrapped(_context, "Select work", 26, OsTokens.TEXT)
+	_context_terms = OsTokens.wrapped(_context, "", 18, OsTokens.ACCENT)
+	_context_body = OsTokens.wrapped(_context, "Choose work from the workbench or its city location.", 17)
+	open_operations_button = OsTokens.button(_context, "Open Operations", open_operations)
+	OsTokens.button(_context, "Clear selection", clear_selection)
+	_operations = OsTokens.column(stack, 18)
+	OsTokens.label(_operations, "OPERATIONS", 13, OsTokens.ACCENT)
+	_operation_title = OsTokens.wrapped(_operations, "", 26, OsTokens.TEXT)
+	_operation_terms = OsTokens.wrapped(_operations, "", 18, OsTokens.ACCENT)
+	work_button = OsTokens.button(_operations, "Run an errand", func() -> void: work_requested.emit())
+	work_button.add_theme_stylebox_override("normal", OsTokens.box(Color("4c4637"), 12))
+	close_operations_button = OsTokens.button(_operations, "Back to city", func() -> void: _model.open_app("city"))
+	OsTokens.wrapped(_operations, "Test activity. Crew, travel and risk are not active.", 15)
+	var folded: VBoxContainer = _inset(rail, 8)
+	_folded["right"] = folded.get_parent()
+	OsTokens.button(folded, "‹", func() -> void: workspace.model.set_collapsed("right", false)).tooltip_text = "Expand right rail"
+
+
+func _build_top() -> void:
+	var rail: Panel = _surface("top")
+	var stack: VBoxContainer = _inset(rail, 8)
+	stack.add_theme_constant_override("separation", 6)
+	var head: HBoxContainer = OsTokens.row(stack, 12)
+	OsTokens.label(head, "CITY WORKSPACE", 15, OsTokens.MUTED)
+	OsTokens.spacer(head)
+	time_label = OsTokens.label(head, "Day 1 · 08:00", 23)
+	var fold: Button = OsTokens.button(head, "⌃", func() -> void: workspace.toggle_rail("top"))
+	fold.custom_minimum_size.y = 30
+	fold.tooltip_text = "Fold or expand top rail"
+	var status: HBoxContainer = OsTokens.row(stack, 12)
+	_expanded["top"] = status
+	status_kind = OsTokens.label(status, "UPDATE", 12, OsTokens.ACCENT)
+	status_label = OsTokens.wrapped(status, "", 16, OsTokens.TEXT)
+	status_label.max_lines_visible = 2
+	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
+
+func _build_bottom() -> void:
+	var rail: Panel = _surface("bottom")
+	var stack: VBoxContainer = _inset(rail, 8)
+	stack.add_theme_constant_override("separation", 10)
+	var tabs: HBoxContainer = OsTokens.row(stack, 10)
+	OsTokens.label(tabs, "WORKBENCH", 13, OsTokens.MUTED)
+	OsTokens.spacer(tabs)
+	var work_tab: Button = OsTokens.button(tabs, "Work", func() -> void: _choose_page("work"))
+	work_tab.custom_minimum_size.y = 30
+	record_toggle = OsTokens.button(tabs, "Activity", Callable())
+	record_toggle.custom_minimum_size.y = 30
+	record_toggle.toggle_mode = true
+	record_toggle.toggled.connect(_toggle_record)
+	var layout_tab: Button = OsTokens.button(tabs, "Layout", func() -> void: _choose_page("layout"))
+	layout_tab.custom_minimum_size.y = 30
+	var fold: Button = OsTokens.button(tabs, "⌄", func() -> void: workspace.toggle_rail("bottom"))
+	fold.custom_minimum_size.y = 30
+	fold.tooltip_text = "Fold or expand bottom rail"
+	var pages: VBoxContainer = OsTokens.column(stack, 0)
+	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_expanded["bottom"] = pages
+	_work_scroll = _scroll(pages)
+	var work_row: HBoxContainer = OsTokens.row(_work_scroll, 28)
+	work_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var work: VBoxContainer = OsTokens.column(work_row, 6)
+	work.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	OsTokens.label(work, "Work Scan", 22)
+	_scan_title = OsTokens.wrapped(work, "", 18, OsTokens.TEXT)
+	_scan_terms = OsTokens.label(work, "", 16, OsTokens.ACCENT)
+	_availability = OsTokens.label(work, "", 14, OsTokens.MUTED)
+	var actions: VBoxContainer = OsTokens.column(work_row, 8)
+	inspect_button = OsTokens.button(actions, "Inspect work", func() -> void: select_work(_work_id))
+	var camera_row: HBoxContainer = OsTokens.row(actions, 8)
+	OsTokens.button(camera_row, "−", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5)).tooltip_text = "Zoom out"
+	OsTokens.button(camera_row, "+", func() -> void: city.zoom_at(1.2, city.size * 0.5)).tooltip_text = "Zoom in"
+	OsTokens.button(camera_row, "Reset view", func() -> void: city.reset_camera())
+	record_scroll = _scroll(pages)
+	var records: VBoxContainer = OsTokens.column(record_scroll, 8)
+	records.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	record_label = OsTokens.wrapped(records, "", 18, OsTokens.TEXT)
+	OsTokens.label(records, "Current session only", 14, OsTokens.MUTED)
+	developer_scroll = _scroll(pages)
+	var tools: VBoxContainer = OsTokens.column(developer_scroll, 12)
+	tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spine_panel = SpinePanel.new()
+	tools.add_child(spine_panel)
+	spine_panel.advance_requested.connect(func(minutes: int) -> void: advance_requested.emit(minutes))
+	spine_panel.sample_requested.connect(func() -> void: sample_requested.emit())
+	for label: Label in [spine_panel.identity, spine_panel.random_value, spine_panel.storage_label, spine_panel.events_label]:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.add_theme_font_size_override("font_size", 18)
+	reset_button = OsTokens.button(tools, "Reset session", func() -> void: reset_requested.emit())
+	reset_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	reset_button.tooltip_text = "Reset live gameplay only. Saved progress stays intact."
+	layout_scroll = _scroll(pages)
+	_build_layout_controls(layout_scroll)
+
+
+func _build_layout_controls(parent: Node) -> void:
+	var stack: VBoxContainer = OsTokens.column(parent, 8)
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_layout_note = OsTokens.wrapped(stack, "", 15)
+	for side: String in WorkspaceLayout.SIDES:
+		var row: HBoxContainer = OsTokens.row(stack, 12)
+		var name_label: Label = OsTokens.label(row, side.capitalize(), 18)
+		name_label.custom_minimum_size.x = 76
+		var value: Label = OsTokens.label(row, "", 15, OsTokens.MUTED)
+		value.custom_minimum_size.x = 155
+		var smaller: Button = OsTokens.button(row, "−20", func() -> void: workspace.step(side, -20))
+		var larger: Button = OsTokens.button(row, "+20", func() -> void: workspace.step(side, 20))
+		var fold: Button = OsTokens.button(row, "Fold", func() -> void: workspace.toggle_rail(side))
+		for control: Button in [smaller, larger, fold]:
+			control.custom_minimum_size.y = 34
+		rail_controls[side] = {"value": value, "smaller": smaller, "larger": larger, "fold": fold}
+	var options: HBoxContainer = OsTokens.row(stack, 12)
+	OsTokens.label(options, "Interface size", 16)
+	scale_picker = OptionButton.new()
+	scale_picker.add_item("100%", 100)
+	scale_picker.add_item("125%", 125)
+	options.add_child(scale_picker)
+	scale_picker.item_selected.connect(func(index: int) -> void: workspace.model.set_scale_percent(scale_picker.get_item_id(index)))
+	reset_layout_button = OsTokens.button(options, "Reset layout", func() -> void: workspace.model.reset_layout())
+	reset_layout_button.tooltip_text = "Restore workspace defaults only. Does not reset gameplay, camera or save."
+
+
+func _apply_geometry(result: Dictionary) -> void:
+	for side: String in _expanded:
+		(_expanded[side] as Control).visible = not bool(result["collapsed"][side])
+	for side: String in _folded:
+		(_folded[side] as Control).visible = bool(result["collapsed"][side])
+	_brand_label.visible = not bool(result["collapsed"]["left"])
+	glance_toggle.set_pressed_no_signal(not bool(result["collapsed"]["left"]))
+	var preferred: Dictionary = workspace.model.snapshot()
+	for side: String in rail_controls:
+		var controls: Dictionary = rail_controls[side]
+		(controls["value"] as Label).text = "%d / %d preferred" % [result["extents"][side], preferred["rails"][side]["extent"]]
+		(controls["fold"] as Button).text = "Expand" if result["collapsed"][side] else "Fold"
+	scale_picker.select(0 if int(preferred["scale_percent"]) == 100 else 1)
+	_update_layout_note()
+
+
+func _update_layout_note() -> void:
+	if not is_instance_valid(_layout_note):
+		return
+	_layout_note.text = "Drag seams or use the controls below. Changes save automatically; gameplay is untouched."
+	if layout_storage_error != OK:
+		_layout_note.text = "Using a temporary layout. The existing profile was preserved (error %d). Copy report for details." % int(layout_storage_error)
+	elif workspace.model.scale_for(size) * 100 < float(workspace.model.snapshot()["scale_percent"]):
+		_layout_note.text = "125% needs a 1600×1000 window. Using 100% here; your larger-size preference is kept."
+
+
+func _choose_page(page: String) -> void:
+	_page = page
+	_work_scroll.visible = page == "work"
+	record_scroll.visible = page == "record"
+	developer_scroll.visible = page == "tools"
+	layout_scroll.visible = page == "layout"
+	record_toggle.set_pressed_no_signal(page == "record")
+	developer_toggle.set_pressed_no_signal(page == "tools")
+	workspace.model.set_collapsed("bottom", false)
+	if page == "tools":
+		inspection_requested.emit()
+
+
+func _toggle_tools(opened: bool) -> void:
+	_choose_page("tools" if opened else "work")
+
+
+func _toggle_record(opened: bool) -> void:
+	_choose_page("record" if opened else "work")
 
 
 func configure_work(definition: SkeletonWorkDefinition) -> void:
@@ -264,7 +418,10 @@ func configure_work(definition: SkeletonWorkDefinition) -> void:
 
 
 func select_work(work_id: String) -> Error:
-	return _model.select_work(work_id)
+	var error: Error = _model.select_work(work_id)
+	if error == OK:
+		workspace.model.set_collapsed("right", false)
+	return error
 
 
 func clear_selection() -> void:
@@ -273,48 +430,31 @@ func clear_selection() -> void:
 
 func open_operations() -> void:
 	_model.open_app("operations")
+	workspace.model.set_collapsed("right", false)
 
 
 func _apply_navigation() -> void:
 	var state: Dictionary = _model.snapshot()
 	var selected: bool = not str(state["selected_id"]).is_empty()
-	var operations_open: bool = state["active_app"] == "operations"
-	_context.visible = not operations_open
-	_operations.visible = operations_open
-	_glance_scroll.visible = state["glance_open"]
-	glance_toggle.set_pressed_no_signal(state["glance_open"])
-	city_button.set_pressed_no_signal(not operations_open)
-	operations_button.set_pressed_no_signal(operations_open)
+	var opened: bool = state["active_app"] == "operations"
+	_context.visible = not opened
+	_operations.visible = opened
+	city_button.set_pressed_no_signal(not opened)
+	operations_button.set_pressed_no_signal(opened)
 	city.set_selected(selected)
 	context_title.text = _work_name if selected else "Select work"
 	_context_terms.text = _terms if selected else ""
-	_context_body.text = "Open Operations to carry out this work. The marked location is a spatial test fixture." if selected else \
-		"Inspect an opportunity from Work Scan or select its city location."
+	_context_body.text = "Ready to open in Operations." if selected else "Choose work from the workbench or its city location."
 	open_operations_button.disabled = not selected
-	_selection_label.text = _work_name if selected else "Nothing selected"
-
-
-func _toggle_tools(opened: bool) -> void:
-	developer_scroll.visible = opened
-	if opened:
-		record_toggle.set_pressed_no_signal(false)
-		record_scroll.visible = false
-		inspection_requested.emit()
-
-
-func _toggle_record(opened: bool) -> void:
-	record_scroll.visible = opened
-	if opened:
-		developer_toggle.set_pressed_no_signal(false)
-		developer_scroll.visible = false
 
 
 func show_state(state: Dictionary, work_available: bool, dirty: bool) -> void:
 	cash_label.text = money_text(int(state["cash_cents"]))
+	cash_label.tooltip_text = cash_label.text
 	time_label.text = time_text(int(state["elapsed_minutes"]))
 	count_label.text = str(state["completed_actions"])
 	work_button.disabled = not work_available
-	_availability.text = "1 available" if work_available else "Unavailable at this session limit"
+	_availability.text = "1 available · test activity" if work_available else "Unavailable at this session limit"
 	dirty_label.text = "Unsaved session" if dirty else "Matches saved slot"
 
 
@@ -326,14 +466,14 @@ func show_storage(info: Dictionary) -> void:
 	_storage_alert = available or primary_error not in [OK, ERR_FILE_NOT_FOUND]
 	if available:
 		var backup: Dictionary = info["backup"]
-		recovery_hint.text = "Previous save: %s, %d completed. Recovery replaces this live session; the original file is kept." % [
-			money_text(int(backup["cash_cents"])), int(backup["completed_actions"]),
-		]
+		recovery_hint.text = "Previous save: %s, %d completed. Recovery replaces this live session; original kept." % [money_text(int(backup["cash_cents"])), int(backup["completed_actions"])]
+		workspace.model.set_collapsed("right", false)
 	_update_attention()
 
 
 func show_status(message: String, is_error: bool = false) -> void:
 	status_label.text = message
+	status_label.tooltip_text = message
 	_message_error = is_error
 	status_label.modulate = OsTokens.ERROR if is_error else Color.WHITE
 	_update_attention()
@@ -344,7 +484,7 @@ func _update_attention() -> void:
 
 
 func show_build(build: Dictionary) -> void:
-	_build_label.text = "v%s  ·  %s" % [build["game_version"], build["build_id"]]
+	_build_label.text = "v%s\n%s" % [build["game_version"], build["build_id"]]
 
 
 func show_events(events: Array[Dictionary]) -> void:
@@ -357,23 +497,25 @@ func show_events(events: Array[Dictionary]) -> void:
 		elif event["type"] == "rng_probe":
 			title = "Diagnostic random draw"
 		lines.append("%s   ·   %s   ·   #%d" % [time_text(int(event["tick"])), title, int(event["sequence"])])
-	record_label.text = "\n".join(lines) if not lines.is_empty() else \
-		"No events since this session was loaded or reset."
+	record_label.text = "\n".join(lines) if not lines.is_empty() else "No events since this session was loaded or reset."
 
 
 func ui_snapshot() -> Dictionary:
 	var state: Dictionary = _model.snapshot()
 	state["camera"] = city.camera_snapshot()
+	state["glance_open"] = not bool(workspace.model.solve(workspace.size)["collapsed"]["left"])
 	state["developer_open"] = developer_scroll.visible
 	state["record_open"] = record_scroll.visible
+	state["layout"] = workspace.model.snapshot()
+	state["layout_storage_error"] = int(layout_storage_error)
+	state["effective_ui_scale"] = workspace.scale.x
+	state["layout_editing"] = workspace.model.active_side()
 	return state
 
 
 static func time_text(elapsed_minutes: int) -> String:
 	var clock_minutes: int = 480 + elapsed_minutes
-	return "Day %d · %02d:%02d" % [
-		1 + floori(clock_minutes / 1440.0), floori((clock_minutes % 1440) / 60.0), clock_minutes % 60,
-	]
+	return "Day %d · %02d:%02d" % [1 + floori(clock_minutes / 1440.0), floori((clock_minutes % 1440) / 60.0), clock_minutes % 60]
 
 
 static func money_text(cents: int) -> String:
