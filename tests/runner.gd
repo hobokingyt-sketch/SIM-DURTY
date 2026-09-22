@@ -1,6 +1,8 @@
 extends SceneTree
 
 const RuntimeHealthScript = preload("res://game/core/debug/runtime_health.gd")
+const BuildInfoScript = preload("res://game/core/build/build_info.gd")
+const DebugReportScript = preload("res://game/core/debug/debug_report.gd")
 
 var failures: int = 0
 
@@ -10,9 +12,11 @@ func _init() -> void:
 
 
 func _run() -> void:
-	print("[tests] SIM-DURTY Foundation 0")
+	print("[tests] SIM-DURTY Infrastructure 2")
 
 	_test_runtime_health()
+	_test_build_info_contract()
+	_test_debug_report_contract()
 	_test_main_scene_loads()
 
 	if failures == 0:
@@ -30,7 +34,43 @@ func _test_runtime_health() -> void:
 	_assert_true(bool(report.get("ok", false)), "runtime health reports OK")
 	_assert_true(
 		int(report.get("foundation_version", -1)) == 0,
-		"runtime health reports Foundation 0"
+		"runtime health preserves Foundation 0 contract"
+	)
+
+
+func _test_build_info_contract() -> void:
+	var info: Dictionary = BuildInfoScript.snapshot()
+
+	_assert_true(
+		not str(info.get("build_id", "")).is_empty(),
+		"build info always has a build ID"
+	)
+	_assert_true(
+		not str(info.get("game_version", "")).is_empty(),
+		"build info exposes game version"
+	)
+	_assert_true(
+		not str(info.get("engine_version", "")).is_empty(),
+		"build info exposes engine version"
+	)
+
+
+func _test_debug_report_contract() -> void:
+	var report: String = DebugReportScript.compose({
+		"milestone": "Infrastructure 2",
+	})
+
+	_assert_true(
+		report.contains("SIM-DURTY DEBUG REPORT"),
+		"debug report has stable header"
+	)
+	_assert_true(
+		report.contains("build_id:"),
+		"debug report contains build identity"
+	)
+	_assert_true(
+		report.contains("simulation_tick: none"),
+		"debug report does not invent simulation state"
 	)
 
 
