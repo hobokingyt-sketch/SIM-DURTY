@@ -2,11 +2,9 @@ class_name OsPresentationState
 extends RefCounted
 
 signal changed
-
 var _work_id: String = ""
 var _selected_id: String = ""
 var _active_app: String = "city"
-var _glance_open: bool = true
 
 
 func configure(work_id: String) -> void:
@@ -42,10 +40,6 @@ func open_app(app_id: String) -> Error:
 	return OK
 
 
-func set_glance_open(value: bool) -> void:
-	_glance_open = value
-	changed.emit()
-
-
 func snapshot() -> Dictionary:
-	return {"selected_id": _selected_id, "active_app": _active_app, "glance_open": _glance_open}
+	# Rail visibility now has exactly one owner: WorkspaceLayout.
+	return {"selected_id": _selected_id, "active_app": _active_app}

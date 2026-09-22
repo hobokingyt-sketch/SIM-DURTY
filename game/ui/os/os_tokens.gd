@@ -1,21 +1,20 @@
 class_name OsTokens
 extends RefCounted
 
-# One small visual vocabulary for the native OS, not a second UI framework.
-const BACKGROUND: Color = Color("11161a")
-const SURFACE: Color = Color("1b2228")
-const RAISED: Color = Color("252e35")
-const TEXT: Color = Color("e6e8e5")
-const MUTED: Color = Color("a4afb6")
+const BACKGROUND: Color = Color("111619")
+const SURFACE: Color = Color("1b2226")
+const RAISED: Color = Color("283135")
+const TEXT: Color = Color("e5e8e4")
+const MUTED: Color = Color("a2adae")
 const ACCENT: Color = Color("c6ac7b")
 const ERROR: Color = Color("efab94")
 const GAP: int = 20
 
 
-static func box(color: Color, padding: int = 24) -> StyleBoxFlat:
+static func box(color: Color, padding: int = 12) -> StyleBoxFlat:
 	var result: StyleBoxFlat = StyleBoxFlat.new()
 	result.bg_color = color
-	result.set_corner_radius_all(8)
+	result.set_corner_radius_all(3)
 	result.content_margin_left = padding
 	result.content_margin_right = padding
 	result.content_margin_top = padding
@@ -25,17 +24,18 @@ static func box(color: Color, padding: int = 24) -> StyleBoxFlat:
 
 static func make_theme() -> Theme:
 	var result: Theme = Theme.new()
-	result.default_font_size = 24
+	result.default_font_size = 18
 	result.set_color("font_color", "Label", TEXT)
-	result.set_color("font_color", "Button", TEXT)
-	result.set_color("font_hover_color", "Button", TEXT)
-	result.set_color("font_pressed_color", "Button", TEXT)
+	for name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
+		result.set_color(name, "Button", TEXT)
 	result.set_color("font_disabled_color", "Button", MUTED.darkened(0.3))
 	result.set_stylebox("panel", "PanelContainer", box(SURFACE))
-	result.set_stylebox("normal", "Button", box(RAISED, 16))
-	result.set_stylebox("hover", "Button", box(Color("34414a"), 16))
-	result.set_stylebox("pressed", "Button", box(Color("49483c"), 16))
-	result.set_stylebox("disabled", "Button", box(Color("20262b"), 16))
+	# Content margins must not force compact header buttons beyond a 48-unit rail.
+	# Standard controls still have a 38-unit target; icon launchers retain 44 units.
+	result.set_stylebox("normal", "Button", box(RAISED, 3))
+	result.set_stylebox("hover", "Button", box(Color("344148"), 3))
+	result.set_stylebox("pressed", "Button", box(Color("49483c"), 3))
+	result.set_stylebox("disabled", "Button", box(Color("20262b"), 3))
 	var focus: StyleBoxFlat = box(Color(0, 0, 0, 0), 0)
 	focus.border_color = ACCENT
 	focus.set_border_width_all(2)
@@ -45,7 +45,7 @@ static func make_theme() -> Theme:
 	return result
 
 
-static func label(parent: Node, text: String, font_size: int = 24, color: Color = TEXT) -> Label:
+static func label(parent: Node, text: String, font_size: int = 18, color: Color = TEXT) -> Label:
 	var node: Label = Label.new()
 	node.text = text
 	node.add_theme_font_size_override("font_size", font_size)
@@ -55,7 +55,7 @@ static func label(parent: Node, text: String, font_size: int = 24, color: Color 
 	return node
 
 
-static func wrapped(parent: Node, text: String, font_size: int = 24, color: Color = MUTED) -> Label:
+static func wrapped(parent: Node, text: String, font_size: int = 18, color: Color = MUTED) -> Label:
 	var node: Label = label(parent, text, font_size, color)
 	node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -66,7 +66,7 @@ static func button(parent: Node, text: String, action: Callable) -> Button:
 	var node: Button = Button.new()
 	node.text = text
 	node.mouse_force_pass_scroll_events = false
-	node.custom_minimum_size.y = 56
+	node.custom_minimum_size.y = 38
 	parent.add_child(node)
 	if action.is_valid():
 		node.pressed.connect(action)
@@ -85,13 +85,6 @@ static func row(parent: Node, gap: int = GAP) -> HBoxContainer:
 	node.add_theme_constant_override("separation", gap)
 	parent.add_child(node)
 	return node
-
-
-static func card(parent: Node, padding: int = 28) -> VBoxContainer:
-	var panel: PanelContainer = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", box(SURFACE, padding))
-	parent.add_child(panel)
-	return column(panel)
 
 
 static func spacer(parent: Node) -> Control:
