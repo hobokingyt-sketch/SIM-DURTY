@@ -21,9 +21,9 @@ reactive-engineering phase, not a vague “polish” pass.
 6B. Movable widgets, deterministic packing and semantic forms (PR #15).
 6C. Center/rail app lifecycle, remembered navigation and continuity (PR #16).
 
-## Phase 6D: Reactive Product UI + Locked Visual System — NEXT
+## Phase 6D: Reactive Product UI + Locked Visual System — CURRENT
 
-### 6D.1 — Material foundation
+### 6D.1 — Material foundation — CURRENT IMPLEMENTATION
 
 Build the shared charcoal material kit before styling individual screens.
 
@@ -35,9 +35,9 @@ Deliver:
 - reference captures proving the texture remains subtle at 2560×1440 and the
   1280×800 supported minimum.
 
-Do not yet redesign every component.
+Do not yet redesign every component. The implementation uses one shared low-contrast shader-backed material on chassis, rails, app wells and widget bodies while leaving interaction geometry unchanged.
 
-### 6D.2 — Engineered frame system
+### 6D.2 — Engineered frame system — NEXT
 
 Translate the concept's strongest signature into reusable primitives.
 

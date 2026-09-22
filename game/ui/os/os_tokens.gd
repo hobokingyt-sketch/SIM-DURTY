@@ -1,13 +1,23 @@
 class_name OsTokens
 extends RefCounted
 
-const BACKGROUND: Color = Color("111619")
-const SURFACE: Color = Color("1b2226")
-const RAISED: Color = Color("283135")
-const TEXT: Color = Color("e5e8e4")
-const MUTED: Color = Color("a2adae")
-const ACCENT: Color = Color("c6ac7b")
-const ERROR: Color = Color("efab94")
+# Phase 6D.1: locked charcoal material hierarchy.
+const CHASSIS: Color = Color("111315")
+const BACKGROUND: Color = CHASSIS
+const SURFACE: Color = Color("1b1f21")
+const WELL: Color = Color("15181a")
+const RAISED: Color = Color("272c2f")
+const RAISED_HOVER: Color = Color("30363a")
+const RAISED_PRESSED: Color = Color("202427")
+const DISABLED: Color = Color("1a1d1f")
+const EDGE_HIGHLIGHT: Color = Color("485055")
+const EDGE_MID: Color = Color("30373b")
+const EDGE_SHADOW: Color = Color("080a0b")
+const TEXT: Color = Color("ecebe6")
+const MUTED: Color = Color("a8adaf")
+const ACCENT: Color = Color("cba45e")
+const ACCENT_RECESS: Color = Color("5b4930")
+const ERROR: Color = Color("d4927b")
 const GAP: int = 20
 
 
@@ -28,14 +38,13 @@ static func make_theme() -> Theme:
 	result.set_color("font_color", "Label", TEXT)
 	for name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
 		result.set_color(name, "Button", TEXT)
-	result.set_color("font_disabled_color", "Button", MUTED.darkened(0.3))
+	result.set_color("font_disabled_color", "Button", MUTED.darkened(0.35))
 	result.set_stylebox("panel", "PanelContainer", box(SURFACE))
-	# Content margins must not force compact header buttons beyond a 48-unit rail.
-	# Standard controls still have a 38-unit target; icon launchers retain 44 units.
+	# 6D.1 changes material/color only. Engineered edge grammar lands in 6D.2.
 	result.set_stylebox("normal", "Button", box(RAISED, 3))
-	result.set_stylebox("hover", "Button", box(Color("344148"), 3))
-	result.set_stylebox("pressed", "Button", box(Color("49483c"), 3))
-	result.set_stylebox("disabled", "Button", box(Color("20262b"), 3))
+	result.set_stylebox("hover", "Button", box(RAISED_HOVER, 3))
+	result.set_stylebox("pressed", "Button", box(RAISED_PRESSED, 3))
+	result.set_stylebox("disabled", "Button", box(DISABLED, 3))
 	var focus: StyleBoxFlat = box(Color(0, 0, 0, 0), 0)
 	focus.border_color = ACCENT
 	focus.set_border_width_all(2)

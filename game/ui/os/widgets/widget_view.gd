@@ -32,7 +32,8 @@ func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_force_pass_scroll_events = false
-	add_theme_stylebox_override("panel", OsTokens.box(Color("20282c"), 0))
+	add_theme_stylebox_override("panel", OsTokens.box(OsTokens.WELL, 0))
+	OsMaterials.apply_diffuse(self, OsMaterials.ROLE_WELL, "widget-" + widget_id)
 	var inset: MarginContainer = MarginContainer.new()
 	add_child(inset)
 	inset.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -100,8 +101,10 @@ func _handle(parent: Node, kind: String) -> WidgetHandle:
 static func _small_button(button: Button) -> void:
 	button.custom_minimum_size = Vector2(28, 28)
 	button.add_theme_font_size_override("font_size", 15)
-	for state: String in ["normal", "hover", "pressed", "disabled"]:
-		button.add_theme_stylebox_override(state, OsTokens.box(OsTokens.RAISED if state == "normal" else OsTokens.SURFACE.lightened(0.1), 5))
+	button.add_theme_stylebox_override("normal", OsTokens.box(OsTokens.RAISED, 5))
+	button.add_theme_stylebox_override("hover", OsTokens.box(OsTokens.RAISED_HOVER, 5))
+	button.add_theme_stylebox_override("pressed", OsTokens.box(OsTokens.RAISED_PRESSED, 5))
+	button.add_theme_stylebox_override("disabled", OsTokens.box(OsTokens.DISABLED, 5))
 	button.mouse_force_pass_scroll_events = false
 
 

@@ -3,15 +3,15 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.9
+Game version: 0.0.10
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Phase 6C
+## Current milestone: Functional Criminal OS, Phase 6D.1 — Material Foundation
 
-This revision implements app lifecycle, selection and navigation on the 6A/6B
-workspace. Exact acceptance/merge status belongs to the matching PR and
-exact-revision CI evidence. The full OS phase still requires 6D product/reactive
-acceptance before gameplay expansion under ADR 0010.
+This revision begins the locked charcoal visual system without changing the
+6A–6C interaction contracts. Exact acceptance/merge status belongs to the
+matching PR and exact-revision CI evidence. Gameplay expansion remains blocked
+until the full Phase 6 visual/product acceptance under ADR 0010/0014.
 
 ## Implemented
 
@@ -67,17 +67,18 @@ Actual pass/fail evidence belongs to the matching exact-source PR run.
 The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
-This is a design lock, not a claim that v0.0.9 already matches it. The current
-flat theme remains functional scaffolding.
+The locked target is now partially implemented. Phase 6D.1 changes the material
+foundation only: palette, depth roles and subtle diffuse charcoal texture.
+Engineered frames, control geometry and typography remain later 6D passes.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next: Phase 6D.1 material foundation, followed by engineered frames, control
-assets, typography, reactive Work Scan, second-surface proof, motion and final
-integrated OS acceptance.
+Next: Phase 6D.2 engineered frame system, followed by control assets,
+typography, reactive Work Scan, second-surface proof, motion and final integrated
+OS acceptance.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.
