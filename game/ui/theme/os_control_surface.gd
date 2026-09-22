@@ -3,16 +3,23 @@ extends RefCounted
 
 const TEXTURE_SIZE: int = 44
 
+const JOIN_SINGLE: String = "single"
+const JOIN_FIRST: String = "first"
+const JOIN_MIDDLE: String = "middle"
+const JOIN_LAST: String = "last"
+const JOINS: PackedStringArray = [JOIN_SINGLE, JOIN_FIRST, JOIN_MIDDLE, JOIN_LAST]
+
 
 static func style(
 	role: String,
 	state: String,
 	palette: Dictionary,
-	padding: int
+	padding: int,
+	join: String = JOIN_SINGLE
 ) -> StyleBoxTexture:
 	var definition: Dictionary = spec(role)
 	var style: StyleBoxTexture = StyleBoxTexture.new()
-	style.texture = _texture(role, state, palette)
+	style.texture = _texture(role, state, palette, _normalize_join(join))
 	var patch: float = float(definition["patch"])
 	for side: int in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
 		style.set_texture_margin(side, patch)
@@ -21,17 +28,18 @@ static func style(
 	return style
 
 
-static func focus_style(role: String, palette: Dictionary) -> StyleBoxTexture:
+static func focus_style(role: String, palette: Dictionary, join: String = JOIN_SINGLE) -> StyleBoxTexture:
 	var image: Image = Image.create(TEXTURE_SIZE, TEXTURE_SIZE, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
 	var definition: Dictionary = spec(role)
 	var chamfer: int = int(definition["chamfer"])
+	var resolved_join: String = _normalize_join(join)
 	for y: int in range(TEXTURE_SIZE):
 		for x: int in range(TEXTURE_SIZE):
 			var point: Vector2i = Vector2i(x, y)
-			if not _inside(point, 0, chamfer):
+			if not _inside_joined(point, 0, chamfer, resolved_join):
 				continue
-			if _inside(point, 2, maxi(1, chamfer - 2)):
+			if _inside_joined(point, 2, maxi(1, chamfer - 2), resolved_join):
 				continue
 			var edge: Color = palette["accent"]
 			if _bottom_right_side(point, 0):
@@ -82,17 +90,20 @@ static func contract() -> Dictionary:
 	return result
 
 
-static func _texture(role: String, state: String, palette: Dictionary) -> Texture2D:
+static func _texture(role: String, state: String, palette: Dictionary, join: String) -> Texture2D:
 	var image: Image = Image.create(TEXTURE_SIZE, TEXTURE_SIZE, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
 	var definition: Dictionary = spec(role)
 	var chamfer: int = int(definition["chamfer"])
-	var face_inset: int = int(definition["face_inset"])
+	var base_face_inset: int = int(definition["face_inset"])
 	var face_bevel: int = int(definition["face_bevel"])
-	var face_chamfer: int = maxi(1, chamfer - 1)
 	var accent_edge: bool = _uses_accent_edge(role, state)
 	var pressed: bool = state in ["pressed", "hover_pressed"]
 	var disabled: bool = state == "disabled"
+	# R5 seats an engaged/pressed face one physical pixel deeper without changing
+	# the control's external geometry.
+	var face_inset: int = base_face_inset + (1 if pressed and not disabled else 0)
+	var face_chamfer: int = maxi(1, chamfer - 1)
 	var housing: Color = palette["control_housing"]
 	var structure: Color = palette["accent_dark"] if accent_edge else palette["middle"]
 	var structure_high: Color = palette["accent"] if accent_edge else palette["highlight"]
@@ -105,22 +116,27 @@ static func _texture(role: String, state: String, palette: Dictionary) -> Textur
 	for y: int in range(TEXTURE_SIZE):
 		for x: int in range(TEXTURE_SIZE):
 			var point: Vector2i = Vector2i(x, y)
-			if not _inside(point, 0, chamfer):
+			if not _inside_joined(point, 0, chamfer, join):
 				continue
 
 			var color: Color = housing
-			if not _inside(point, 1, maxi(1, chamfer - 1)):
+			if not _inside_joined(point, 1, maxi(1, chamfer - 1), join):
 				color = palette["shadow"]
-			elif not _inside(point, 2, maxi(1, chamfer - 2)):
+			elif not _inside_joined(point, 2, maxi(1, chamfer - 2), join):
 				if _top_left_side(point, 1):
 					color = structure_high
 				elif _bottom_right_side(point, 1):
 					color = structure.darkened(0.16)
 				else:
 					color = structure
-			elif _inside(point, face_inset, face_chamfer):
+			elif not _inside_joined(point, face_inset, face_chamfer, join):
+				# A restrained seat separates the face from the structural edge.
+				# It is slightly deeper while engaged, so selection reads as physical
+				# state rather than another color treatment.
+				color = housing.lerp(palette["shadow"], 0.30 if pressed else 0.16)
+			else:
 				color = face
-				if not _inside(point, face_inset + face_bevel, maxi(1, face_chamfer - face_bevel)):
+				if not _inside_joined(point, face_inset + face_bevel, maxi(1, face_chamfer - face_bevel), join):
 					color = _face_bevel(point, face_inset, face, palette, pressed)
 
 			image.set_pixel(x, y, color)
@@ -187,6 +203,10 @@ static func _face_bevel(
 
 
 static func _inside(point: Vector2i, inset: int, chamfer: int) -> bool:
+	return _inside_joined(point, inset, chamfer, JOIN_SINGLE)
+
+
+static func _inside_joined(point: Vector2i, inset: int, chamfer: int, join: String) -> bool:
 	var low: int = inset
 	var high: int = TEXTURE_SIZE - 1 - inset
 	if point.x < low or point.y < low or point.x > high or point.y > high:
@@ -195,15 +215,21 @@ static func _inside(point: Vector2i, inset: int, chamfer: int) -> bool:
 	var right: int = high - point.x
 	var top: int = point.y - low
 	var bottom: int = high - point.y
-	if left < chamfer and top < chamfer and left + top < chamfer:
+	var left_outer: bool = join in [JOIN_SINGLE, JOIN_FIRST]
+	var right_outer: bool = join in [JOIN_SINGLE, JOIN_LAST]
+	if left_outer and left < chamfer and top < chamfer and left + top < chamfer:
 		return false
-	if right < chamfer and top < chamfer and right + top < chamfer:
+	if right_outer and right < chamfer and top < chamfer and right + top < chamfer:
 		return false
-	if left < chamfer and bottom < chamfer and left + bottom < chamfer:
+	if left_outer and left < chamfer and bottom < chamfer and left + bottom < chamfer:
 		return false
-	if right < chamfer and bottom < chamfer and right + bottom < chamfer:
+	if right_outer and right < chamfer and bottom < chamfer and right + bottom < chamfer:
 		return false
 	return true
+
+
+static func _normalize_join(join: String) -> String:
+	return join if join in JOINS else JOIN_SINGLE
 
 
 static func _top_left_side(point: Vector2i, inset: int) -> bool:

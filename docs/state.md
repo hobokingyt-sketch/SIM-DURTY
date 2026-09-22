@@ -3,16 +3,17 @@
 Repository: hobokingyt-sketch/SIM-DURTY
 Engine: Godot 4.7.2, unchanged
 Language: typed GDScript
-Game version: 0.0.17
+Game version: 0.0.18
 Reference design: 2560x1440
 
-## Current milestone: Functional Criminal OS, Phase 6D.4 — Typography, Spacing & Information Rhythm
+## Current milestone: Functional Criminal OS, Visual Refinement R5 — Precision Component Craft
 
-This revision applies one semantic typography and spacing system across the
-existing shell, apps, widgets and controls without changing the 6A–6C ownership
-or geometry contracts. Exact acceptance/merge status belongs to the matching PR
-and exact-revision CI evidence. Gameplay expansion remains blocked until full
-Phase 6 visual/product acceptance.
+This revision refines the existing small-control construction without changing
+the 6A–6C ownership, geometry or information contracts. Related controls form
+joined assemblies, selected/pressed faces seat one pixel deeper, compact icons
+use one optical mounting rule, and widget header tools fit together as one real
+control pair. Exact acceptance/merge status belongs to the matching PR and
+exact-revision CI evidence.
 
 ## Implemented
 
@@ -69,17 +70,17 @@ The project owner accepted the charcoal engineered-OS concept as the visual
 north star after Phase 6C. See `docs/design/visual_north_star.md` and ADR 0014.
 
 R1–R4 establish and calibrate the material, depth, frame and control system.
-Phase 6D.4 now makes information hierarchy equally systematic: large app/task
-titles, medium region titles, readable uppercase system labels, clear body/meta
-copy, stable numeric readouts and a shared 4 px-based spacing rhythm. Temporary
-architecture/testing explanations are removed from player-facing surfaces.
+6D.4 makes typography and spacing systematic. R5 now applies the same discipline
+at component scale: engaged faces seat physically, related controls share outer
+shape and internal seams, and compact icon mounting is optically normalized.
+No decorative chrome is added to simulate complexity.
 
 ## Limits and next
 
 The city is still a static blockout with the existing errand. App view memory is
 runtime presentation state, not a new persistent preference.
 
-Next after 6D.4 acceptance: Phase 6D.5 — Work Scan product pass.
+Next after R5 acceptance: Phase 6D.5 — Work Scan product pass.
 
 Gameplay expansion remains blocked until the owner accepts the functional and
 visual OS.

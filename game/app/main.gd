@@ -78,7 +78,7 @@ func _ready() -> void:
 		view.show_status("Saved slot is missing. A previous save is available in the right rail.", true)
 	else:
 		view.show_status("Save when you want to keep this session.")
-	print("[SIM-DURTY] 6D.4 typography rhythm boot OK | build=%s" % BuildInfo.build_id())
+	print("[SIM-DURTY] Visual R5 precision component craft boot OK | build=%s" % BuildInfo.build_id())
 	print(debug_report())
 	if not app_mode.is_empty():
 		var app_probe_script: Script = load("res://game/devtools/app_probe.gd") as Script
@@ -189,7 +189,7 @@ func debug_report() -> String:
 	var state: Dictionary = session.snapshot()
 	var spine: Dictionary = session.spine_snapshot()
 	return DebugReport.compose({
-		"milestone": "6D.4 Typography spacing and information rhythm", "save_schema": SkeletonSave.SCHEMA_VERSION,
+		"milestone": "6D-R5 Precision component craft", "save_schema": SkeletonSave.SCHEMA_VERSION,
 		"simulation_seed": spine["rng"]["seed"], "simulation_tick": spine["tick"],
 		"clock_mode": "command-driven; one tick = one minute",
 		"next_command": spine["next_command"], "next_event_id": spine["next_id"],

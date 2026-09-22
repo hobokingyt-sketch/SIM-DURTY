@@ -47,12 +47,14 @@ func _ready() -> void:
 	var title: Label = OsTokens.type_label(header, str(WidgetLayout.TITLES[widget_id]), OsTypography.ROLE_SYSTEM_LABEL, OsTokens.MUTED)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	resize_handle = _handle(header, "resize")
+	var header_tools: HBoxContainer = OsTokens.row(header, -1)
+	header_tools.name = "WidgetHeaderTools"
+	resize_handle = _handle(header_tools, "resize", OsControlSurface.JOIN_FIRST)
 	menu_button = MenuButton.new()
 	menu_button.text = ""
-	_small_button(menu_button)
+	_small_button(menu_button, OsControlSurface.JOIN_LAST)
 	OsControls.set_icon(menu_button, "menu", 16)
-	header.add_child(menu_button)
+	header_tools.add_child(menu_button)
 	menu_button.tooltip_text = "Widget position and size"
 	menu_button.accessibility_name = str(WidgetLayout.TITLES[widget_id]) + " options"
 	var menu: PopupMenu = menu_button.get_popup()
@@ -90,21 +92,21 @@ func _ready() -> void:
 	apply_form("compact")
 
 
-func _handle(parent: Node, kind: String) -> WidgetHandle:
+func _handle(parent: Node, kind: String, join: String = OsControlSurface.JOIN_SINGLE) -> WidgetHandle:
 	var handle: WidgetHandle = WidgetHandle.new()
 	handle.widget_id = widget_id
 	handle.kind = kind
-	_small_button(handle)
-	OsControls.apply(handle, OsControls.ROLE_HANDLE, OsTokens.control_palette())
+	handle.custom_minimum_size = Vector2(28, 28)
+	OsControls.apply(handle, OsControls.ROLE_HANDLE, OsTokens.control_palette(), -1.0, -1, join)
 	parent.add_child(handle)
 	handle.manipulation_requested.connect(func(id: String, type: String, point: Vector2) -> void: manipulation_requested.emit(id, type, point))
 	handle.key_requested.connect(func(id: String, type: String, direction: int, transfer: bool) -> void: key_requested.emit(id, type, direction, transfer))
 	return handle
 
 
-static func _small_button(button: Button) -> void:
+static func _small_button(button: Button, join: String = OsControlSurface.JOIN_SINGLE) -> void:
 	button.custom_minimum_size = Vector2(28, 28)
-	OsControls.apply(button, OsControls.ROLE_COMPACT, OsTokens.control_palette())
+	OsControls.apply(button, OsControls.ROLE_COMPACT, OsTokens.control_palette(), -1.0, -1, join)
 
 
 func bind_work(definition: SkeletonWorkDefinition) -> void:

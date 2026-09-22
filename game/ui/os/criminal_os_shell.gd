@@ -221,8 +221,8 @@ func _icon(parent: Node, kind: String, title: String, action: Callable) -> Butto
 	return button
 
 
-func _control_icon(button: Button, kind: String, role: String = OsControls.ROLE_COMPACT, max_width: int = 16) -> Button:
-	OsControls.apply(button, role, OsTokens.control_palette())
+func _control_icon(button: Button, kind: String, role: String = OsControls.ROLE_COMPACT, max_width: int = 16, join: String = OsControlSurface.JOIN_SINGLE) -> Button:
+	OsControls.apply(button, role, OsTokens.control_palette(), -1.0, -1, join)
 	OsControls.set_icon(button, kind, max_width)
 	return button
 
@@ -338,17 +338,19 @@ func _build_center_apps() -> void:
 	var work_view: MarginContainer = MarginContainer.new()
 	var work_stack: VBoxContainer = _app_inset(work_view, OsTokens.SPACE_XL)
 	var work_header: HBoxContainer = _app_header(work_stack, "Operations")
-	var work_back: Button = OsTokens.button(work_header, "Back", func() -> void: _model.back())
-	_control_icon(work_back, "back", OsControls.ROLE_NAV)
+	var work_controls: HBoxContainer = OsTokens.row(work_header, -1)
+	work_controls.name = "OperationsWorkControls"
+	var work_back: Button = OsTokens.button(work_controls, "Back", func() -> void: _model.back())
+	_control_icon(work_back, "back", OsControls.ROLE_NAV, 16, OsControlSurface.JOIN_FIRST)
 	center_back_buttons.append(work_back)
-	close_operations_button = OsTokens.button(work_header, "City", func() -> void: _model.return_to_city())
-	_control_icon(close_operations_button, "city", OsControls.ROLE_NAV)
-	operations_work_tab = OsTokens.button(work_header, "Work", func() -> void: _model.navigate_view("work"))
+	close_operations_button = OsTokens.button(work_controls, "City", func() -> void: _model.return_to_city())
+	_control_icon(close_operations_button, "city", OsControls.ROLE_NAV, 16, OsControlSurface.JOIN_MIDDLE)
+	operations_work_tab = OsTokens.button(work_controls, "Work", func() -> void: _model.navigate_view("work"))
 	operations_work_tab.toggle_mode = true
-	OsControls.apply(operations_work_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
-	operations_record_tab = OsTokens.button(work_header, "Record", func() -> void: _model.navigate_view("record"))
+	OsControls.apply(operations_work_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), -1.0, -1, OsControlSurface.JOIN_MIDDLE)
+	operations_record_tab = OsTokens.button(work_controls, "Record", func() -> void: _model.navigate_view("record"))
 	operations_record_tab.toggle_mode = true
-	OsControls.apply(operations_record_tab, OsControls.ROLE_TAB, OsTokens.control_palette())
+	OsControls.apply(operations_record_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), -1.0, -1, OsControlSurface.JOIN_LAST)
 	OsTokens.type_label(work_stack, "SELECTED WORK", OsTypography.ROLE_SYSTEM_LABEL, OsTokens.ACCENT)
 	_operations = OsTokens.column(work_stack, OsTokens.SPACE_MD)
 	_operation_title = OsTokens.type_wrapped(_operations, "", OsTypography.ROLE_TASK_TITLE, OsTokens.TEXT)
@@ -360,17 +362,19 @@ func _build_center_apps() -> void:
 	var record_view: MarginContainer = MarginContainer.new()
 	var record_stack: VBoxContainer = _app_inset(record_view, OsTokens.SPACE_XL)
 	var record_header: HBoxContainer = _app_header(record_stack, "Operations")
-	var record_back: Button = OsTokens.button(record_header, "Back", func() -> void: _model.back())
-	_control_icon(record_back, "back", OsControls.ROLE_NAV)
+	var record_controls: HBoxContainer = OsTokens.row(record_header, -1)
+	record_controls.name = "OperationsRecordControls"
+	var record_back: Button = OsTokens.button(record_controls, "Back", func() -> void: _model.back())
+	_control_icon(record_back, "back", OsControls.ROLE_NAV, 16, OsControlSurface.JOIN_FIRST)
 	center_back_buttons.append(record_back)
-	var record_city: Button = OsTokens.button(record_header, "City", func() -> void: _model.return_to_city())
-	_control_icon(record_city, "city", OsControls.ROLE_NAV)
-	operations_record_work_button = OsTokens.button(record_header, "Work", func() -> void: _model.navigate_view("work"))
+	var record_city: Button = OsTokens.button(record_controls, "City", func() -> void: _model.return_to_city())
+	_control_icon(record_city, "city", OsControls.ROLE_NAV, 16, OsControlSurface.JOIN_MIDDLE)
+	operations_record_work_button = OsTokens.button(record_controls, "Work", func() -> void: _model.navigate_view("work"))
 	operations_record_work_button.toggle_mode = true
-	OsControls.apply(operations_record_work_button, OsControls.ROLE_TAB, OsTokens.control_palette())
-	var operations_record_selected: Button = OsTokens.button(record_header, "Record", func() -> void: _model.navigate_view("record"))
+	OsControls.apply(operations_record_work_button, OsControls.ROLE_TAB, OsTokens.control_palette(), -1.0, -1, OsControlSurface.JOIN_MIDDLE)
+	var operations_record_selected: Button = OsTokens.button(record_controls, "Record", func() -> void: _model.navigate_view("record"))
 	operations_record_selected.toggle_mode = true
-	OsControls.apply(operations_record_selected, OsControls.ROLE_TAB, OsTokens.control_palette())
+	OsControls.apply(operations_record_selected, OsControls.ROLE_TAB, OsTokens.control_palette(), -1.0, -1, OsControlSurface.JOIN_LAST)
 	operations_record_selected.set_meta("os_app_view", "operations_record_selected")
 	OsTokens.type_label(record_stack, "CURRENT SESSION RECORD", OsTypography.ROLE_SYSTEM_LABEL, OsTokens.ACCENT)
 	var record_scroll_view: ScrollContainer = _scroll(record_stack)
@@ -384,21 +388,23 @@ func _build_right_record_views() -> void:
 	var activity_view: MarginContainer = MarginContainer.new()
 	var activity_stack: VBoxContainer = _app_inset(activity_view, OsTokens.SPACE_SM)
 	OsTokens.type_label(activity_stack, "Session Record", OsTypography.ROLE_REGION_TITLE)
-	var activity_nav: HBoxContainer = OsTokens.row(activity_stack, OsTokens.SPACE_XS)
+	var activity_nav: HBoxContainer = OsTokens.row(activity_stack, -1)
+	activity_nav.name = "RecordActivityNav"
 	var activity_back: Button = OsTokens.button(activity_nav, "Back", func() -> void: _model.back())
-	OsControls.apply(activity_back, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(activity_back, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_FIRST)
 	OsControls.set_icon(activity_back, "back", 16)
 	var activity_city: Button = OsTokens.button(activity_nav, "City", func() -> void: _model.return_to_city())
-	OsControls.apply(activity_city, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(activity_city, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_LAST)
 	OsControls.set_icon(activity_city, "city", 16)
 	right_back_buttons.append(activity_back)
-	var activity_tabs: HBoxContainer = OsTokens.row(activity_stack, OsTokens.SPACE_XS)
+	var activity_tabs: HBoxContainer = OsTokens.row(activity_stack, -1)
+	activity_tabs.name = "RecordActivityTabs"
 	record_activity_tab = OsTokens.button(activity_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
 	record_activity_tab.toggle_mode = true
-	OsControls.apply(record_activity_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(record_activity_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_FIRST)
 	record_storage_tab = OsTokens.button(activity_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
 	record_storage_tab.toggle_mode = true
-	OsControls.apply(record_storage_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(record_storage_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_LAST)
 	OsTokens.type_label(activity_stack, "CURRENT SESSION", OsTypography.ROLE_SYSTEM_LABEL, OsTokens.ACCENT)
 	var activity_scroll: ScrollContainer = _scroll(activity_stack)
 	var activity_content: VBoxContainer = OsTokens.column(activity_scroll, OsTokens.SPACE_XS)
@@ -409,21 +415,23 @@ func _build_right_record_views() -> void:
 	var storage_view: MarginContainer = MarginContainer.new()
 	var storage_stack: VBoxContainer = _app_inset(storage_view, OsTokens.SPACE_SM)
 	OsTokens.type_label(storage_stack, "Session Record", OsTypography.ROLE_REGION_TITLE)
-	var storage_nav: HBoxContainer = OsTokens.row(storage_stack, OsTokens.SPACE_XS)
+	var storage_nav: HBoxContainer = OsTokens.row(storage_stack, -1)
+	storage_nav.name = "RecordStorageNav"
 	var storage_back: Button = OsTokens.button(storage_nav, "Back", func() -> void: _model.back())
-	OsControls.apply(storage_back, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(storage_back, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_FIRST)
 	OsControls.set_icon(storage_back, "back", 16)
 	var storage_city: Button = OsTokens.button(storage_nav, "City", func() -> void: _model.return_to_city())
-	OsControls.apply(storage_city, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(storage_city, OsControls.ROLE_NAV, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_LAST)
 	OsControls.set_icon(storage_city, "city", 16)
 	right_back_buttons.append(storage_back)
-	var storage_tabs: HBoxContainer = OsTokens.row(storage_stack, OsTokens.SPACE_XS)
+	var storage_tabs: HBoxContainer = OsTokens.row(storage_stack, -1)
+	storage_tabs.name = "RecordStorageTabs"
 	record_storage_activity_button = OsTokens.button(storage_tabs, "Activity", func() -> void: _model.navigate_view("activity"))
 	record_storage_activity_button.toggle_mode = true
-	OsControls.apply(record_storage_activity_button, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(record_storage_activity_button, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_FIRST)
 	record_storage_storage_button = OsTokens.button(storage_tabs, "Storage", func() -> void: _model.navigate_view("storage"))
 	record_storage_storage_button.toggle_mode = true
-	OsControls.apply(record_storage_storage_button, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5)
+	OsControls.apply(record_storage_storage_button, OsControls.ROLE_TAB, OsTokens.control_palette(), 28, 5, OsControlSurface.JOIN_LAST)
 	OsTokens.type_label(storage_stack, "SAVE SLOT", OsTypography.ROLE_SYSTEM_LABEL, OsTokens.ACCENT)
 	_rail_storage_label = OsTokens.type_wrapped(storage_stack, "No saved slot yet.", OsTypography.ROLE_BODY, OsTokens.TEXT)
 	right_app_surface.register_view("storage", storage_view)
@@ -447,12 +455,14 @@ func _build_top() -> void:
 	var head: HBoxContainer = OsTokens.row(stack, OsTokens.SPACE_SM)
 	OsTokens.type_label(head, "CITY WORKSPACE", OsTypography.ROLE_SYSTEM_LABEL, OsTokens.MUTED)
 	OsTokens.spacer(head)
-	var zoom_out: Button = OsTokens.button(head, "", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5))
-	var zoom_in: Button = OsTokens.button(head, "", func() -> void: city.zoom_at(1.2, city.size * 0.5))
-	var reset_view: Button = OsTokens.button(head, "", func() -> void: city.reset_camera())
-	_control_icon(zoom_out, "zoom_out", OsControls.ROLE_COMPACT)
-	_control_icon(zoom_in, "zoom_in", OsControls.ROLE_COMPACT)
-	_control_icon(reset_view, "reset", OsControls.ROLE_COMPACT)
+	var view_controls: HBoxContainer = OsTokens.row(head, -1)
+	view_controls.name = "CityViewControls"
+	var zoom_out: Button = OsTokens.button(view_controls, "", func() -> void: city.zoom_at(1.0 / 1.2, city.size * 0.5))
+	var zoom_in: Button = OsTokens.button(view_controls, "", func() -> void: city.zoom_at(1.2, city.size * 0.5))
+	var reset_view: Button = OsTokens.button(view_controls, "", func() -> void: city.reset_camera())
+	_control_icon(zoom_out, "zoom_out", OsControls.ROLE_COMPACT, 16, OsControlSurface.JOIN_FIRST)
+	_control_icon(zoom_in, "zoom_in", OsControls.ROLE_COMPACT, 16, OsControlSurface.JOIN_MIDDLE)
+	_control_icon(reset_view, "reset", OsControls.ROLE_COMPACT, 16, OsControlSurface.JOIN_LAST)
 	zoom_out.tooltip_text = "Zoom out"
 	zoom_in.tooltip_text = "Zoom in"
 	reset_view.tooltip_text = "Reset city view"
@@ -478,16 +488,18 @@ func _build_bottom() -> void:
 	var tabs: HBoxContainer = OsTokens.row(stack, OsTokens.SPACE_SM)
 	OsTokens.type_label(tabs, "WORKBENCH", OsTypography.ROLE_SYSTEM_LABEL, OsTokens.MUTED)
 	OsTokens.spacer(tabs)
-	bottom_work_tab = OsTokens.button(tabs, "Work", func() -> void: _choose_page("work"))
+	var workbench_tabs: HBoxContainer = OsTokens.row(tabs, -1)
+	workbench_tabs.name = "WorkbenchTabs"
+	bottom_work_tab = OsTokens.button(workbench_tabs, "Work", func() -> void: _choose_page("work"))
 	bottom_work_tab.toggle_mode = true
-	OsControls.apply(bottom_work_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 30)
-	record_toggle = OsTokens.button(tabs, "Activity", Callable())
+	OsControls.apply(bottom_work_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 30, -1, OsControlSurface.JOIN_FIRST)
+	record_toggle = OsTokens.button(workbench_tabs, "Activity", Callable())
 	record_toggle.toggle_mode = true
-	OsControls.apply(record_toggle, OsControls.ROLE_TAB, OsTokens.control_palette(), 30)
+	OsControls.apply(record_toggle, OsControls.ROLE_TAB, OsTokens.control_palette(), 30, -1, OsControlSurface.JOIN_MIDDLE)
 	record_toggle.toggled.connect(_toggle_record)
-	bottom_layout_tab = OsTokens.button(tabs, "Layout", func() -> void: _choose_page("layout"))
+	bottom_layout_tab = OsTokens.button(workbench_tabs, "Layout", func() -> void: _choose_page("layout"))
 	bottom_layout_tab.toggle_mode = true
-	OsControls.apply(bottom_layout_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 30)
+	OsControls.apply(bottom_layout_tab, OsControls.ROLE_TAB, OsTokens.control_palette(), 30, -1, OsControlSurface.JOIN_LAST)
 	var fold: Button = OsTokens.button(tabs, "", func() -> void: workspace.toggle_rail("bottom"))
 	_control_icon(fold, "fold_down", OsControls.ROLE_FOLD)
 	fold.tooltip_text = "Fold or expand bottom rail"

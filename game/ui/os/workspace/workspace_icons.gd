@@ -4,6 +4,21 @@ extends RefCounted
 # One outlined icon family for launchers and compact OS controls.
 static var _textures: Dictionary = {}
 const STROKE_WIDTH: float = 1.8
+# Optical caps compensate for sparse small glyphs without changing the shared
+# 24x24 drawing grid. Large launcher symbols retain their requested size.
+const OPTICAL_MAX: Dictionary = {
+	"back": 16,
+	"fold_left": 15,
+	"fold_right": 15,
+	"fold_up": 15,
+	"fold_down": 15,
+	"zoom_in": 16,
+	"zoom_out": 16,
+	"reset": 16,
+	"move": 15,
+	"resize": 16,
+	"menu": 14,
+}
 const PATHS: Dictionary = {
 	"city": '<path d="M3 21V10h5v11M9 21V3h7v18M17 21V8h4v13M1 21h22M11 7h3M11 11h3M11 15h3"/>',
 	"work": '<rect x="3" y="7" width="18" height="14" rx="1"/><path d="M8 7V3h8v4M3 12h18M10 12v3h4v-3"/>',
@@ -39,8 +54,13 @@ static func texture(kind: String) -> Texture2D:
 	return result
 
 
+static func optical_width(kind: String, requested: int) -> int:
+	return mini(requested, int(OPTICAL_MAX.get(kind, requested)))
+
+
 static func contract() -> Dictionary:
 	return {
 		"stroke_width": STROKE_WIDTH,
 		"kinds": PATHS.keys(),
+		"optical_max": OPTICAL_MAX.duplicate(),
 	}
